@@ -25,7 +25,7 @@ function App() {
 
     let newOffers = [];
 
-    if (block.toUpperCase() === "C") {
+    if (block.toUpperCase() === "201") {
       newOffers = [
         {
           id: 1,
@@ -42,7 +42,7 @@ function App() {
           color: "#D81B60",
         },
       ];
-    } else if (block.toUpperCase() === "D") {
+    } else if (block.toUpperCase() === "217") {
       newOffers = [
         {
           id: 3,
@@ -159,7 +159,7 @@ function App() {
           <input
             value={block}
             onChange={(e) => setBlock(e.target.value)}
-            placeholder="Block (z. B. C)"
+            placeholder="Block (z. B. 201)"
             style={inputStyle}
           />
           <input
