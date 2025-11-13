@@ -9,7 +9,7 @@ function App() {
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // loading state for fake API
+  const [isLoading, setIsLoading] = useState(false);
 
   const teamColor = "#C8102E"; // FC Köln red
 
@@ -58,7 +58,8 @@ function App() {
     minHeight: "100vh",
     backgroundColor: "#0f0f0f",
     color: "white",
-    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    fontFamily:
+      "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -77,11 +78,7 @@ function App() {
   const headerInner = {
     maxWidth: 480,
     margin: "0 auto",
-    padding: "10px 16px",
     boxSizing: "border-box",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
   };
 
   const mainContainer = {
@@ -121,70 +118,67 @@ function App() {
   return (
     <div style={pageStyles}>
       {/* HEADER */}
-<div style={headerOuter}>
-  <div
-    style={{
-      ...headerInner,
-      position: "relative",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-end",
-      padding: "32px 16px", // controls header height
-      boxSizing: "border-box",
-    }}
-  >
-    {/* CENTERED LOGO WITH RED GLOW */}
-    <div
-      style={{
-        position: "absolute",
-        left: "50%",
-        transform: "translateX(-50%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(200,16,46,0.7) 0%, rgba(200,16,46,0.1) 55%, transparent 75%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <img
-          src={fckoelnLogo}
-          alt="FC Köln Logo"
-          className="logo-glow"
+      <div style={headerOuter}>
+        <div
           style={{
-            width: 52,
-            height: 52,
-            objectFit: "contain",
+            ...headerInner,
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            padding: "32px 16px", // controls header height
           }}
-        />
+        >
+          {/* CENTERED LOGO WITH RED GLOW */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle, rgba(200,16,46,0.7) 0%, rgba(200,16,46,0.1) 55%, transparent 75%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src={fckoelnLogo}
+                alt="FC Köln Logo"
+                className="logo-glow"
+                style={{
+                  width: 52,
+                  height: 52,
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT MENU ICON */}
+          <div
+            style={{
+              fontSize: 26,
+              opacity: 0.75,
+              padding: "6px 10px",
+              borderRadius: 999,
+              backgroundColor: "rgba(0,0,0,0.35)",
+            }}
+          >
+            ⋮
+          </div>
+        </div>
       </div>
-    </div>
-
-    {/* RIGHT MENU ICON */}
-    <div
-      style={{
-        fontSize: 26,
-        opacity: 0.75,
-        padding: "6px 10px",
-        borderRadius: 999,
-        backgroundColor: "rgba(0,0,0,0.35)",
-      }}
-    >
-      ⋮
-    </div>
-  </div>
-</div>
-
-
 
       {/* MAIN CONTENT */}
       <div style={mainContainer}>
@@ -197,8 +191,8 @@ function App() {
             marginBottom: 16,
           }}
         >
-          Diese Demo nutzt eine Fake-API. Je nach Block / Reihe / Sitz kommen
-          unterschiedliche Upgrade-Angebote zurück.
+          Diese Demo nutzt eine Fake-API und zeigt unten eine vereinfachte
+          Stadiongrafik mit markierten Blöcken.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -242,6 +236,11 @@ function App() {
             {error}
           </div>
         )}
+
+        {/* STADIUM MAP */}
+        <div style={{ marginTop: 24 }}>
+          <StadiumMap currentBlock={block} offers={offers} teamColor={teamColor} />
+        </div>
 
         {/* OFFERS */}
         {offers.length > 0 && (
@@ -330,72 +329,79 @@ function App() {
 }
 
 /**
- * 💾 Fake API function
- * Simulates a backend call that calculates upgrade offers
- * based on block / row / seat and returns a Promise.
+ * 💾 Fake API function (mock backend)
+ * Now includes a "targetBlock" field for each offer,
+ * so the stadium map can highlight upgrade blocks.
  */
 function fetchSeatUpgradeOffers({ block, row, seat }) {
   return new Promise((resolve, reject) => {
-    // simulate network delay
     setTimeout(() => {
       const upperBlock = block.toUpperCase();
+      const rowNumber = parseInt(row, 10);
+      const seatNumber = parseInt(seat, 10);
 
-      // 🔴 simulate an error case for demo (e.g. invalid block)
       if (upperBlock === "Z") {
         reject(new Error("Fake API error for block Z"));
         return;
       }
 
-      const rowNumber = parseInt(row, 10);
-      const seatNumber = parseInt(seat, 10);
-
-      // base offers
       let offers = [];
 
-      // Premium-ish logic
+      // Example logic: center / VIP upgrades by block
       if (upperBlock === "C") {
-        offers.push({
-          id: 1,
-          title: "Upgrade Mittelblock",
-          description: "Bessere Sicht auf Höhe der Mittellinie.",
-          priceEuro: 25,
-          color: "#D81B60",
-        });
+        offers.push(
+          {
+            id: 1,
+            title: "Upgrade Mittelblock",
+            description: "Bessere Sicht auf Höhe der Mittellinie.",
+            priceEuro: 25,
+            color: "#D81B60",
+            targetBlock: "C",
+          },
+          {
+            id: 2,
+            title: "VIP-Upgrade Gegengerade",
+            description: "Premium-Sitze auf der Gegengerade.",
+            priceEuro: 39,
+            color: "#43A047",
+            targetBlock: "B",
+          }
+        );
       }
 
       if (upperBlock === "D") {
         offers.push({
-          id: 2,
-          title: "VIP-Upgrade",
-          description: "Gepolsterte Sitze und Zugang zum VIP-Bereich.",
-          priceEuro: 40,
+          id: 3,
+          title: "VIP-Upgrade Südkurve",
+          description: "Gepolsterte Sitze + VIP-Bereich.",
+          priceEuro: 45,
           color: "#43A047",
+          targetBlock: "D",
         });
       }
 
-      // First rows → cheaper upgrade to move closer
       if (!isNaN(rowNumber) && rowNumber > 15) {
         offers.push({
-          id: 3,
+          id: 4,
           title: "Näher ans Spielfeld",
           description: "Wechsel in eine Reihe näher am Feld.",
-          priceEuro: 15,
+          priceEuro: 18,
           color: "#E53935",
+          targetBlock: upperBlock || "C",
         });
       }
 
-      // Basic fallback offer if nothing else matches
       if (offers.length === 0) {
         offers.push({
-          id: 4,
+          id: 5,
           title: "Standard-Upgrade",
           description: "Eine Kategorie höher mit etwas besserer Sicht.",
-          priceEuro: 10,
+          priceEuro: 12,
           color: "#FB8C00",
+          targetBlock: "B",
         });
       }
 
-      // add a little dynamic detail using seatNumber
       const withDynamicText = offers.map((offer) => ({
         ...offer,
         description:
@@ -406,8 +412,179 @@ function fetchSeatUpgradeOffers({ block, row, seat }) {
       }));
 
       resolve(withDynamicText);
-    }, 700); // 0.7s delay to feel like network
+    }, 700);
   });
+}
+
+/**
+ * 🏟 Simple Stadium Map (SVG)
+ * - Shows blocks A, B, C, D
+ * - Highlights current block
+ * - Highlights upgrade target blocks from offers
+ */
+function StadiumMap({ currentBlock, offers, teamColor }) {
+  const upperCurrent = (currentBlock || "").trim().toUpperCase();
+
+  const upgradeBlocks = Array.from(
+    new Set(
+      offers
+        .map((o) => (o.targetBlock ? o.targetBlock.toUpperCase() : null))
+        .filter(Boolean)
+    )
+  );
+
+  const allBlocks = ["A", "B", "C", "D"];
+
+  function getFill(blockId) {
+    const isCurrent = blockId === upperCurrent;
+    const isUpgrade = upgradeBlocks.includes(blockId);
+
+    if (isCurrent && isUpgrade) {
+      return "#C8102E"; // both current + upgrade: strong red
+    }
+    if (isCurrent) {
+      return teamColor;
+    }
+    if (isUpgrade) {
+      return "#FBC02D"; // yellow highlight for upgrade blocks
+    }
+    return "#222"; // default
+  }
+
+  return (
+    <div
+      style={{
+        backgroundColor: "#151515",
+        borderRadius: 12,
+        padding: 14,
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 13,
+          color: "#ccc",
+          marginBottom: 8,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span>Stadion-Übersicht (vereinfacht)</span>
+        <span style={{ fontSize: 11, opacity: 0.8 }}>
+          Rot = aktueller Block, Gelb = Upgrade
+        </span>
+      </div>
+
+      <svg
+        viewBox="0 0 200 120"
+        style={{ width: "100%", display: "block" }}
+      >
+        {/* Outer stadium shape */}
+        <rect
+          x="10"
+          y="10"
+          width="180"
+          height="100"
+          rx="18"
+          ry="18"
+          fill="#111"
+          stroke="#555"
+          strokeWidth="2"
+        />
+
+        {/* Pitch */}
+        <rect
+          x="55"
+          y="30"
+          width="90"
+          height="60"
+          fill="#0d3b1e"
+          stroke="#2e7d32"
+          strokeWidth="1.5"
+        />
+
+        {/* Center line */}
+        <line
+          x1="100"
+          y1="30"
+          x2="100"
+          y2="90"
+          stroke="#2e7d32"
+          strokeWidth="1"
+          strokeDasharray="3 3"
+        />
+
+        {/* Blocks A, B, C, D */}
+        {/* Top row: A, B */}
+        <rect
+          x="25"
+          y="15"
+          width="60"
+          height="20"
+          fill={getFill("A")}
+          stroke="#555"
+          strokeWidth="1"
+        />
+        <rect
+          x="115"
+          y="15"
+          width="60"
+          height="20"
+          fill={getFill("B")}
+          stroke="#555"
+          strokeWidth="1"
+        />
+
+        {/* Bottom row: C, D */}
+        <rect
+          x="25"
+          y="85"
+          width="60"
+          height="20"
+          fill={getFill("C")}
+          stroke="#555"
+          strokeWidth="1"
+        />
+        <rect
+          x="115"
+          y="85"
+          width="60"
+          height="20"
+          fill={getFill("D")}
+          stroke="#555"
+          strokeWidth="1"
+        />
+
+        {/* Block labels */}
+        <text x="55" y="29" fill="#fff" fontSize="10" textAnchor="middle">
+          A
+        </text>
+        <text x="145" y="29" fill="#fff" fontSize="10" textAnchor="middle">
+          B
+        </text>
+        <text x="55" y="99" fill="#fff" fontSize="10" textAnchor="middle">
+          C
+        </text>
+        <text x="145" y="99" fill="#fff" fontSize="10" textAnchor="middle">
+          D
+        </text>
+
+        {/* "You are here" indicator if current block is known */}
+        {allBlocks.includes(upperCurrent) && (
+          <text
+            x="100"
+            y="110"
+            fill="#ccc"
+            fontSize="10"
+            textAnchor="middle"
+          >
+            Aktueller Block: {upperCurrent}
+          </text>
+        )}
+      </svg>
+    </div>
+  );
 }
 
 export default App;
