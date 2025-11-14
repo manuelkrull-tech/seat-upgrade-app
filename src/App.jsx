@@ -37,6 +37,9 @@ function App() {
   const [savedOffers, setSavedOffers] = useState([]);
   const [history, setHistory] = useState([]);
 
+  const [checkoutOffer, setCheckoutOffer] = useState(null);
+  const [checkoutGuest, setCheckoutGuest] = useState(null);
+
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -95,6 +98,8 @@ function App() {
     setSeat("");
     setOffers([]);
     setSelectedOffer(null);
+    setCheckoutOffer(null);
+    setCheckoutGuest(null);
     setError("");
   }
 
@@ -108,6 +113,7 @@ function App() {
     e.preventDefault();
     setError("");
     setSelectedOffer(null);
+    setCheckoutOffer(null);
     setOffers([]);
     setIsLoading(true);
 
@@ -138,8 +144,18 @@ function App() {
     }
   }
 
-  function handleAcceptOffer(offer) {
+  // Start guest checkout for selected offer
+  function handleStartCheckout(offer) {
+    setCheckoutOffer(offer);
+    setSelectedOffer(null);
+    setCheckoutGuest(null);
+  }
+
+  // Confirm checkout as guest
+  function handleConfirmCheckout(offer, guest) {
+    setCheckoutGuest(guest);
     setSelectedOffer(offer);
+    setCheckoutOffer(null);
 
     const entry = {
       time: new Date().toLocaleTimeString(),
@@ -149,6 +165,9 @@ function App() {
       seat,
       offerTitle: offer.title,
       priceEuro: offer.priceEuro,
+      guestName: guest.name,
+      guestEmail: guest.email,
+      guestPaymentMethod: guest.paymentMethod,
     };
 
     setHistory((prev) => [entry, ...prev]);
@@ -194,10 +213,13 @@ function App() {
             error={error}
             isLoading={isLoading}
             offers={offers}
+            checkoutOffer={checkoutOffer}
             selectedOffer={selectedOffer}
+            checkoutGuest={checkoutGuest}
             savedIds={savedIds}
             onSubmit={handleSubmit}
-            onAcceptOffer={handleAcceptOffer}
+            onStartCheckout={handleStartCheckout}
+            onConfirmCheckout={handleConfirmCheckout}
             onToggleSave={handleToggleSave}
             history={history}
           />
@@ -206,10 +228,10 @@ function App() {
         {activeTab === "saved" && (
           <SavedTab
             savedOffers={savedOffers}
-            currentEvent={currentEvent}
             onSelectOffer={(offer) => {
-              setSelectedOffer(offer);
               setActiveTab("upgrades");
+              setCheckoutOffer(offer);
+              setSelectedOffer(null);
             }}
           />
         )}
@@ -357,7 +379,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   );
 }
 
-/* ---------- UPGRADES TAB ---------- */
+/* ---------- UPGRADES TAB + GUEST CHECKOUT ---------- */
 
 function UpgradesTab({
   currentEvent,
@@ -372,15 +394,44 @@ function UpgradesTab({
   error,
   isLoading,
   offers,
+  checkoutOffer,
   selectedOffer,
+  checkoutGuest,
   savedIds,
   onSubmit,
-  onAcceptOffer,
+  onStartCheckout,
+  onConfirmCheckout,
   onToggleSave,
   history,
 }) {
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("card"); // "card" | "paypal" | "apple"
+
   if (!currentEvent) {
     return <p style={{ color: "#ccc" }}>Kein Event ausgewählt.</p>;
+  }
+
+  const hasSeatEntered = block && row && seat;
+
+  // Compute price breakdown for checkout
+  const serviceFee = checkoutOffer
+    ? Math.round(checkoutOffer.priceEuro * 0.08 * 100) / 100
+    : 0;
+  const totalPrice = checkoutOffer
+    ? Math.round((checkoutOffer.priceEuro + serviceFee) * 100) / 100
+    : 0;
+
+  function handleSubmitCheckout(e) {
+    e.preventDefault();
+    if (!guestEmail) {
+      return;
+    }
+    onConfirmCheckout(checkoutOffer, {
+      name: guestName || "Gast",
+      email: guestEmail,
+      paymentMethod,
+    });
   }
 
   return (
@@ -478,8 +529,224 @@ function UpgradesTab({
         )}
       </div>
 
-      {/* Offers */}
-      {offers.length > 0 && (
+      {/* If checkoutOffer exists -> show guest checkout page */}
+      {checkoutOffer && hasSeatEntered && (
+        <div
+          style={{
+            marginTop: 24,
+            padding: 16,
+            borderRadius: 12,
+            backgroundColor: "#151515",
+            border: "1px solid #333",
+          }}
+        >
+          <h3 style={{ marginTop: 0, marginBottom: 8 }}>Checkout als Gast</h3>
+          <p style={{ fontSize: 13, color: "#ccc", marginBottom: 10 }}>
+            Bestätige dein Upgrade ohne Konto. Deine Tickets würden in einer
+            echten Version per E-Mail verschickt.
+          </p>
+
+          {/* Seat comparison */}
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              backgroundColor: "#111",
+              border: "1px solid #333",
+              fontSize: 13,
+              color: "#ccc",
+              marginBottom: 14,
+            }}
+          >
+            <div
+              style={{
+                marginBottom: 6,
+                color: "#999",
+                fontWeight: "bold",
+              }}
+            >
+              Vorher:
+            </div>
+            <div>
+              Block {block}, Reihe {row}, Sitz {seat}
+            </div>
+
+            <div
+              style={{
+                marginTop: 10,
+                marginBottom: 6,
+                color: "#999",
+                fontWeight: "bold",
+              }}
+            >
+              Nachher (Upgrade):
+            </div>
+            <div style={{ color: "#fff" }}>
+              Block{" "}
+              {checkoutOffer.comparison?.toBlock || checkoutOffer.targetBlock}
+            </div>
+            <div
+              style={{ marginTop: 10, fontSize: 12, color: "#bbb" }}
+            >
+              Höhere Kategorie · bessere Sicht · beliebter Bereich
+            </div>
+          </div>
+
+          {/* Price breakdown */}
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              backgroundColor: "#101010",
+              border: "1px solid #333",
+              fontSize: 13,
+              color: "#ddd",
+              marginBottom: 14,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 4,
+              }}
+            >
+              <span>Upgrade-Preis</span>
+              <span>{checkoutOffer.priceEuro.toFixed(2)} €</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 6,
+                fontSize: 12,
+                color: "#bbb",
+              }}
+            >
+              <span>Servicegebühr (8%)</span>
+              <span>{serviceFee.toFixed(2)} €</span>
+            </div>
+            <div
+              style={{
+                borderTop: "1px solid #333",
+                marginTop: 6,
+                paddingTop: 6,
+                display: "flex",
+                justifyContent: "space-between",
+                fontWeight: "bold",
+              }}
+            >
+              <span>Gesamt</span>
+              <span>{totalPrice.toFixed(2)} €</span>
+            </div>
+          </div>
+
+          {/* Guest details */}
+          <form onSubmit={handleSubmitCheckout}>
+            <input
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              placeholder="Name (optional)"
+              style={{
+                ...inputStyle,
+                textAlign: "left",
+                fontSize: 14,
+              }}
+            />
+            <input
+              value={guestEmail}
+              onChange={(e) => setGuestEmail(e.target.value)}
+              placeholder="E-Mail für Ticketbestätigung"
+              style={{
+                ...inputStyle,
+                textAlign: "left",
+                fontSize: 14,
+              }}
+            />
+
+            {/* Payment method (fake) */}
+            <div
+              style={{
+                marginBottom: 12,
+                marginTop: 4,
+                padding: 10,
+                borderRadius: 10,
+                backgroundColor: "#111",
+                border: "1px solid #333",
+                fontSize: 13,
+                color: "#ddd",
+              }}
+            >
+              <div style={{ marginBottom: 8, fontWeight: "bold" }}>
+                Zahlungsmethode (Demo)
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "space-between",
+                }}
+              >
+                {[
+                  { id: "card", label: "Kreditkarte", emoji: "💳" },
+                  { id: "paypal", label: "PayPal", emoji: "🅿️" },
+                  { id: "apple", label: "Apple Pay", emoji: "" },
+                ].map((m) => {
+                  const isActive = paymentMethod === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id)}
+                      style={{
+                        flex: 1,
+                        padding: "6px 4px",
+                        borderRadius: 8,
+                        border: isActive
+                          ? "1px solid #fff"
+                          : "1px solid #444",
+                        backgroundColor: isActive ? "#2E7D32" : "#1a1a1a",
+                        color: "#fff",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>{m.emoji}</span>
+                      <span>{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={!guestEmail}
+              style={{
+                width: "100%",
+                padding: 12,
+                borderRadius: 10,
+                border: "none",
+                backgroundColor: !guestEmail ? "#444" : "#2E7D32",
+                color: "#fff",
+                fontWeight: "bold",
+                cursor: !guestEmail ? "not-allowed" : "pointer",
+                fontSize: 15,
+              }}
+            >
+              Upgrade jetzt bestätigen
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Offers (only when not in checkout mode) */}
+      {!checkoutOffer && offers.length > 0 && (
         <div style={{ marginTop: 24 }}>
           {offers.map((offer) => {
             const isSaved = savedIds.has(offer.id);
@@ -612,20 +879,22 @@ function UpgradesTab({
                 )}
 
                 <button
-                  onClick={() => onAcceptOffer(offer)}
+                  onClick={() => hasSeatEntered && onStartCheckout(offer)}
                   style={{
                     marginTop: 12,
                     padding: "10px 16px",
                     borderRadius: 8,
-                    backgroundColor: offer.color,
+                    backgroundColor: hasSeatEntered ? offer.color : "#444",
                     border: "none",
                     color: "#111",
                     fontWeight: "bold",
-                    cursor: "pointer",
+                    cursor: hasSeatEntered ? "pointer" : "not-allowed",
                     width: "100%",
                   }}
                 >
-                  Upgrade auswählen
+                  {hasSeatEntered
+                    ? "Weiter zum Checkout"
+                    : "Zuerst Sitzplatz eingeben"}
                 </button>
               </div>
             );
@@ -633,8 +902,8 @@ function UpgradesTab({
         </div>
       )}
 
-      {/* Confirmation */}
-      {selectedOffer && (
+      {/* Confirmation after checkout */}
+      {selectedOffer && checkoutGuest && (
         <div
           style={{
             marginTop: 24,
@@ -650,6 +919,18 @@ function UpgradesTab({
           </p>
           <p>{selectedOffer.title}</p>
           <p>{selectedOffer.priceEuro.toFixed(2)} €</p>
+          <p style={{ marginTop: 8, fontSize: 12 }}>
+            Bestätigung (Demo) für: {checkoutGuest.name} –{" "}
+            {checkoutGuest.email}
+          </p>
+          <p style={{ marginTop: 4, fontSize: 12 }}>
+            Zahlungsmethode (Demo):{" "}
+            {checkoutGuest.paymentMethod === "card"
+              ? "Kreditkarte"
+              : checkoutGuest.paymentMethod === "paypal"
+              ? "PayPal"
+              : "Apple Pay"}
+          </p>
         </div>
       )}
 
@@ -662,7 +943,17 @@ function UpgradesTab({
               <li key={i} style={{ marginBottom: 4 }}>
                 [{item.time}] {item.event} – {item.block}/{item.row}/
                 {item.seat} → {item.offerTitle} (+{item.priceEuro.toFixed(2)} €
-                )
+                ){" "}
+                {item.guestName ? `für ${item.guestName}` : ""}{" "}
+                {item.guestPaymentMethod
+                  ? `· Zahlung: ${
+                      item.guestPaymentMethod === "card"
+                        ? "Kreditkarte"
+                        : item.guestPaymentMethod === "paypal"
+                        ? "PayPal"
+                        : "Apple Pay"
+                    }`
+                  : ""}
               </li>
             ))}
           </ul>
@@ -932,7 +1223,13 @@ function fetchKoelnOffers({ block, row, seat }) {
           priceEuro: 18,
           color: "#E53935",
           targetBlock:
-            stand === "S" ? "S2" : stand === "N" ? "N2" : stand === "O" ? "O2" : "W2",
+            stand === "S"
+              ? "S2"
+              : stand === "N"
+              ? "N2"
+              : stand === "O"
+              ? "O2"
+              : "W2",
         });
       }
 
