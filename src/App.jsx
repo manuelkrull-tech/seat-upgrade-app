@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const EVENTS = [
   {
@@ -6,21 +6,21 @@ const EVENTS = [
     name: "1. FC Köln vs Hertha BSC",
     venue: "RheinEnergieSTADION",
     primaryColor: "#C8102E",
-    seatLabel: "Block (z. B. S3, N2, O3, W1)",
+    seatLabel: "Block (z.B. S3, N2, O3, W1)",
   },
   {
     id: "drake-uber",
     name: "Drake – World Tour",
     venue: "Uber Arena Berlin",
     primaryColor: "#8E24AA",
-    seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
+    seatLabel: "Bereich (z.B. 211, 103, Innenraum)",
   },
   {
     id: "eisbaeren-adler",
     name: "Eisbären Berlin vs Adler Mannheim",
     venue: "Uber Arena Berlin",
     primaryColor: "#1565C0",
-    seatLabel: "Sektion (z. B. 106, 204, 119)",
+    seatLabel: "Sektion (z.B. 106, 204, 119)",
   },
 ];
 
@@ -408,13 +408,21 @@ function UpgradesTab({
   const [guestEmail, setGuestEmail] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card"); // "card" | "paypal" | "apple"
 
+  // Ticket-code state (local, demo)
+  const [ticketCode, setTicketCode] = useState("");
+  const [ticketStatus, setTicketStatus] = useState("idle"); // "idle" | "checking" | "ok" | "error"
+
+  // Real-time availability per offer (offer.id -> remaining seats)
+  const [availability, setAvailability] = useState({}); // { [offerId]: number }
+
   if (!currentEvent) {
     return <p style={{ color: "#ccc" }}>Kein Event ausgewählt.</p>;
   }
 
   const hasSeatEntered = block && row && seat;
+  const canCheckoutWithTicket = hasSeatEntered && ticketStatus === "ok";
 
-  // Compute price breakdown for checkout
+  // Compute price breakdown for checkout (uses dynamic price stored in checkoutOffer)
   const serviceFee = checkoutOffer
     ? Math.round(checkoutOffer.priceEuro * 0.08 * 100) / 100
     : 0;
@@ -432,6 +440,134 @@ function UpgradesTab({
       email: guestEmail,
       paymentMethod,
     });
+  }
+
+  // Fake ticket validation (demo)
+  function handleVerifyTicket(e) {
+    e.preventDefault();
+    const trimmed = (ticketCode || "").trim();
+
+    if (!trimmed || trimmed.length < 6) {
+      setTicketStatus("error");
+      return;
+    }
+
+    setTicketStatus("checking");
+
+    // Simulate API call delay
+    setTimeout(() => {
+      // In real life this would be an API response from the club
+      setTicketStatus("ok");
+    }, 700);
+  }
+
+  // Reset status when user changes ticket code
+  function handleChangeTicketCode(value) {
+    setTicketCode(value);
+    setTicketStatus("idle");
+  }
+
+  // --- availability initialisation based on offers + urgency ---
+
+  // Helper to pick a starting availability based on urgency
+  function initialAvailabilityForOffer(offer) {
+    const level = offer.urgency?.level;
+    if (level === "high") {
+      // very few seats
+      return 1 + Math.floor(Math.random() * 3); // 1–3
+    }
+    if (level === "medium") {
+      return 3 + Math.floor(Math.random() * 5); // 3–7
+    }
+    // low / unknown
+    return 6 + Math.floor(Math.random() * 7); // 6–12
+  }
+
+  // Whenever offers change, (re)initialise availability for new ones
+  useEffect(() => {
+    if (!offers || offers.length === 0) {
+      setAvailability({});
+      return;
+    }
+
+    setAvailability((prev) => {
+      const next = { ...prev };
+
+      // ensure each offer has a starting value
+      offers.forEach((o) => {
+        const key = String(o.id);
+        if (next[key] == null) {
+          next[key] = initialAvailabilityForOffer(o);
+        }
+      });
+
+      // remove entries for offers that no longer exist
+      Object.keys(next).forEach((key) => {
+        const stillExists = offers.some((o) => String(o.id) === key);
+        if (!stillExists) {
+          delete next[key];
+        }
+      });
+
+      return next;
+    });
+  }, [offers]);
+
+  // interval to simulate real-time availability drop
+  useEffect(() => {
+    if (!offers || offers.length === 0) return;
+
+    const interval = setInterval(() => {
+      setAvailability((prev) => {
+        const keys = Object.keys(prev);
+        if (keys.length === 0) return prev;
+
+        // Pick a random offer to update
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        const current = prev[randomKey];
+
+        // If already 0 or 1, we sometimes leave it; don't always go to 0
+        if (current == null || current <= 0) {
+          return prev;
+        }
+
+        // Copy and decrement
+        const next = { ...prev };
+        // 50% chance to decrement by 1
+        if (Math.random() < 0.5) {
+          next[randomKey] = current - 1;
+        }
+        return next;
+      });
+    }, 10000); // every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [offers]);
+
+  // --- helper: compute dynamic price based on availability ---
+
+  function getDynamicPrice(offer) {
+    const base = offer.priceEuro;
+    const remaining =
+      availability[String(offer.id)] != null
+        ? availability[String(offer.id)]
+        : null;
+
+    if (remaining === null) {
+      return base;
+    }
+    if (remaining <= 0) {
+      return base; // sold out, price irrelevant
+    }
+    let factor;
+    if (remaining <= 3) {
+      factor = 1.35; // high scarcity
+    } else if (remaining <= 6) {
+      factor = 1.2; // medium scarcity
+    } else {
+      factor = 0.9; // plenty left → small discount
+    }
+    return Math.round(base * factor * 100) / 100;
   }
 
   return (
@@ -453,7 +589,8 @@ function UpgradesTab({
         </div>
         <div style={{ color: "#ccc" }}>{currentEvent.venue}</div>
         <div style={{ marginTop: 6, color: "#aaa", fontSize: 12 }}>
-          Demo: Sitzplatz eingeben, mögliche Upgrades werden simuliert.
+          Demo: Sitzplatz + Ticket-Code eingeben, Ticket prüfen und mögliche
+          Upgrades simulieren. Verfügbarkeit & Preis reagieren dynamisch.
         </div>
       </div>
 
@@ -494,6 +631,64 @@ function UpgradesTab({
           placeholder="Sitz (z. B. 27)"
           style={inputStyle}
         />
+
+        {/* Ticket-Code field */}
+        <input
+          value={ticketCode}
+          onChange={(e) => handleChangeTicketCode(e.target.value)}
+          placeholder="Ticket-Code / Barcode (Demo)"
+          style={{
+            ...inputStyle,
+            textAlign: "left",
+            fontSize: 14,
+          }}
+        />
+
+        {/* Ticket verify button + status */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleVerifyTicket}
+            style={{
+              flexShrink: 0,
+              padding: "8px 12px",
+              borderRadius: 999,
+              border: "none",
+              backgroundColor: "#444",
+              color: "#fff",
+              fontSize: 12,
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            {ticketStatus === "checking"
+              ? "Ticket wird geprüft..."
+              : "Ticket prüfen (Demo)"}
+          </button>
+
+          <div style={{ fontSize: 11, color: "#bbb" }}>
+            {ticketStatus === "idle" && "Ticket wird nur lokal simuliert."}
+            {ticketStatus === "checking" &&
+              "Abgleich mit Ticket-System (Demo)..."}
+            {ticketStatus === "ok" && (
+              <span style={{ color: "#81C784" }}>
+                ✅ Ticket verifiziert (Demo)
+              </span>
+            )}
+            {ticketStatus === "error" && (
+              <span style={{ color: "#ef9a9a" }}>
+                ❌ Ticket ungültig (Demo) – Code prüfen.
+              </span>
+            )}
+          </div>
+        </div>
 
         <button type="submit" style={buttonStyle} disabled={isLoading}>
           {isLoading ? "Lade Upgrade-Angebote..." : "Upgrade-Angebote anzeigen"}
@@ -611,7 +806,7 @@ function UpgradesTab({
                 marginBottom: 4,
               }}
             >
-              <span>Upgrade-Preis</span>
+              <span>Upgrade-Preis (dynamisch)</span>
               <span>{checkoutOffer.priceEuro.toFixed(2)} €</span>
             </div>
             <div
@@ -750,6 +945,35 @@ function UpgradesTab({
         <div style={{ marginTop: 24 }}>
           {offers.map((offer) => {
             const isSaved = savedIds.has(offer.id);
+            const remaining =
+              availability[String(offer.id)] != null
+                ? availability[String(offer.id)]
+                : null;
+
+            const dynamicPrice = getDynamicPrice(offer);
+            const basePrice = offer.priceEuro;
+            const priceChanged = dynamicPrice !== basePrice;
+
+            const availabilityText =
+              remaining === null
+                ? null
+                : remaining <= 0
+                ? "Ausverkauft (Demo)"
+                : remaining <= 3
+                ? `Nur noch ${remaining} Plätze verfügbar`
+                : `${remaining} Plätze verfügbar`;
+
+            const availabilityColor =
+              remaining === null
+                ? "#bbb"
+                : remaining <= 0
+                ? "#ef9a9a"
+                : remaining <= 3
+                ? "#ffcc80"
+                : "#a5d6a7";
+
+            const isSoldOut = remaining !== null && remaining <= 0;
+
             return (
               <div
                 key={offer.id}
@@ -761,6 +985,7 @@ function UpgradesTab({
                   padding: 16,
                   borderRadius: 12,
                   marginBottom: 14,
+                  opacity: isSoldOut ? 0.6 : 1,
                 }}
               >
                 <div
@@ -799,9 +1024,34 @@ function UpgradesTab({
                   </button>
                 </div>
 
+                {/* Dynamic price */}
                 <p style={{ fontWeight: "bold", marginTop: 8 }}>
-                  Preis: {offer.priceEuro.toFixed(2)} €
+                  Preis (dynamisch): {dynamicPrice.toFixed(2)} €
                 </p>
+                {priceChanged && (
+                  <p
+                    style={{
+                      marginTop: 2,
+                      fontSize: 11,
+                      color: "#aaa",
+                    }}
+                  >
+                    Basispreis: {basePrice.toFixed(2)} €
+                  </p>
+                )}
+
+                {/* Availability line */}
+                {availabilityText && (
+                  <p
+                    style={{
+                      marginTop: 4,
+                      fontSize: 12,
+                      color: availabilityColor,
+                    }}
+                  >
+                    {availabilityText}
+                  </p>
+                )}
 
                 {/* Urgency */}
                 {offer.urgency && (
@@ -879,22 +1129,39 @@ function UpgradesTab({
                 )}
 
                 <button
-                  onClick={() => hasSeatEntered && onStartCheckout(offer)}
+                  onClick={() =>
+                    canCheckoutWithTicket &&
+                    !isSoldOut &&
+                    onStartCheckout({
+                      ...offer,
+                      priceEuro: dynamicPrice, // pass dynamic price into checkout
+                    })
+                  }
                   style={{
                     marginTop: 12,
                     padding: "10px 16px",
                     borderRadius: 8,
-                    backgroundColor: hasSeatEntered ? offer.color : "#444",
+                    backgroundColor:
+                      canCheckoutWithTicket && !isSoldOut
+                        ? offer.color
+                        : "#444",
                     border: "none",
                     color: "#111",
                     fontWeight: "bold",
-                    cursor: hasSeatEntered ? "pointer" : "not-allowed",
+                    cursor:
+                      canCheckoutWithTicket && !isSoldOut
+                        ? "pointer"
+                        : "not-allowed",
                     width: "100%",
                   }}
                 >
-                  {hasSeatEntered
-                    ? "Weiter zum Checkout"
-                    : "Zuerst Sitzplatz eingeben"}
+                  {!hasSeatEntered
+                    ? "Zuerst Sitzplatz eingeben"
+                    : ticketStatus !== "ok"
+                    ? "Ticket zuerst verifizieren"
+                    : isSoldOut
+                    ? "Kontingent erschöpft"
+                    : "Weiter zum Checkout"}
                 </button>
               </div>
             );
@@ -1401,6 +1668,7 @@ function fetchHockeyOffers({ block, row, seat }) {
 function KoelnStadiumMap({ currentBlock, offers }) {
   const trimmed = (currentBlock || "").trim().toUpperCase();
   const currentId = trimmed;
+
   const upgradeBlocks = Array.from(
     new Set(
       offers
@@ -1415,30 +1683,11 @@ function KoelnStadiumMap({ currentBlock, offers }) {
     const isCurrent = id === currentId;
     const isUpgrade = upgradeBlocks.includes(id);
 
-    if (isCurrent && isUpgrade) return "#C8102E";
-    if (isCurrent) return "#C8102E";
-    if (isUpgrade) return "#FBC02D";
-    return "#222";
+    if (isCurrent && isUpgrade) return "#C8102E"; // current + upgrade
+    if (isCurrent) return "#C8102E";              // current seat
+    if (isUpgrade) return "#FBC02D";              // upgrade target
+    return "#222";                                // default
   }
-
-  const blocks = [
-    "N1",
-    "N2",
-    "N3",
-    "N4",
-    "S1",
-    "S2",
-    "S3",
-    "S4",
-    "O1",
-    "O2",
-    "O3",
-    "O4",
-    "W1",
-    "W2",
-    "W3",
-    "W4",
-  ];
 
   return (
     <div
@@ -1463,136 +1712,348 @@ function KoelnStadiumMap({ currentBlock, offers }) {
         </span>
       </div>
 
-      <svg viewBox="0 0 240 160" style={{ width: "100%", display: "block" }}>
-        <path
-          d="M 40 40 Q 120 10 200 40 L 215 120 Q 120 155 25 120 Z"
-          fill="#101010"
-          stroke="#444"
-          strokeWidth="2"
-        />
-
-        <polygon
-          points="85,55 175,55 195,115 65,115"
+      <svg
+        viewBox="0 0 260 180"
+        style={{ width: "100%", display: "block" }}
+      >
+        {/* PITCH: 2D rectangle */}
+        <rect
+          x="60"
+          y="40"
+          width="140"
+          height="80"
           fill="#0f3d1a"
           stroke="#2e7d32"
-          strokeWidth="1.5"
+          strokeWidth="2"
+          rx="4"
+          ry="4"
         />
 
+        {/* Halfway line (dotted) */}
         <line
           x1="130"
-          y1="55"
+          y1="40"
           x2="130"
-          y2="115"
+          y2="120"
           stroke="#2e7d32"
           strokeWidth="1"
-          strokeDasharray="3 3"
+          strokeDasharray="4 4"
         />
 
-        {/* Top blocks */}
-        {blocks.slice(0, 4).map((id, idx) => {
-          const xStart = 80 + idx * 20;
-          const xEnd = xStart + 18;
-          const yOuter = 40;
-          const yInner = 55;
+        {/* Center dot */}
+        <circle cx="130" cy="80" r="2" fill="#ffffff" />
+
+        {/* Goals on short sides */}
+        {/* Left goal */}
+        <rect
+          x="55"
+          y="70"
+          width="5"
+          height="20"
+          fill="#101010"
+          stroke="#cccccc"
+          strokeWidth="1"
+        />
+        {/* Right goal */}
+        <rect
+          x="200"
+          y="70"
+          width="5"
+          height="20"
+          fill="#101010"
+          stroke="#cccccc"
+          strokeWidth="1"
+        />
+
+        {/* ============================== */}
+        {/* LONG SIDES (TOP/BOTTOM) – 5   */}
+        {/* ============================== */}
+
+        {/* Top (above pitch) – N1..N5 */}
+        {[
+          { id: "N1", type: "rect" },
+          { id: "N2", type: "rect" },
+          { id: "N3", type: "rectCenter" },
+          { id: "N4", type: "rect" },
+          { id: "N5", type: "rect" },
+        ].map((b, index) => {
+          const y = 18; // top row y
+          const h = 16;
+
+          // manually chosen x positions to nicely span above the pitch (60–200)
+          // center block (N3) is perpendicular rectangle in the middle
+          const positions = {
+            N1: { x1: 60, x2: 84 },
+            N2: { x1: 84, x2: 110 },
+            N3: { x1: 110, x2: 150 },
+            N4: { x1: 150, x2: 176 },
+            N5: { x1: 176, x2: 200 },
+          };
+          const { x1, x2 } = positions[b.id];
+          const midX = (x1 + x2) / 2;
+
+          if (b.type === "rect" || b.type === "rectCenter") {
+            return (
+              <g key={b.id}>
+                <rect
+                  x={x1 + 2}
+                  y={y}
+                  width={x2 - x1 - 4}
+                  height={h}
+                  fill={getFill(b.id)}
+                  stroke="#333"
+                  strokeWidth="1"
+                  rx="2"
+                  ry="2"
+                />
+                <text
+                  x={midX}
+                  y={y - 2}
+                  fill="#ffffff"
+                  fontSize="7"
+                  textAnchor="middle"
+                >
+                  {b.id}
+                </text>
+              </g>
+            );
+          }
+
+          // trapezoid left
+          if (b.type === "trapLeft") {
+            return (
+              <g key={b.id}>
+                <polygon
+                  points={`
+                    ${x1},${y}
+                    ${x2},${y}
+                    ${x2 - 2},${y + h}
+                    ${x1 + 6},${y + h}
+                  `}
+                  fill={getFill(b.id)}
+                  stroke="#333"
+                  strokeWidth="1"
+                />
+                <text
+                  x={midX}
+                  y={y - 2}
+                  fill="#ffffff"
+                  fontSize="7"
+                  textAnchor="middle"
+                >
+                  {b.id}
+                </text>
+              </g>
+            );
+          }
+
+          // trapezoid right
           return (
-            <g key={id}>
+            <g key={b.id}>
               <polygon
-                points={`${xStart},${yOuter} ${xEnd},${yOuter} ${
-                  xEnd + 3
-                },${yInner} ${xStart - 3},${yInner}`}
-                fill={getFill(id)}
+                points={`
+                  ${x1 + 2},${y}
+                  ${x2},${y}
+                  ${x2 - 6},${y + h}
+                  ${x1},${y + h}
+                `}
+                fill={getFill(b.id)}
                 stroke="#333"
                 strokeWidth="1"
               />
               <text
-                x={(xStart + xEnd) / 2}
-                y={yOuter - 2}
-                fill="#fff"
+                x={midX}
+                y={y - 2}
+                fill="#ffffff"
                 fontSize="7"
                 textAnchor="middle"
               >
-                {id}
+                {b.id}
               </text>
             </g>
           );
         })}
 
-        {/* Bottom blocks */}
-        {blocks.slice(4, 8).map((id, idx) => {
-          const xStart = 80 + idx * 20;
-          const xEnd = xStart + 18;
-          const yOuter = 125;
-          const yInner = 115;
+        {/* Bottom (below pitch) – S1..S5 */}
+        {[
+          { id: "S1", type: "rect" },
+          { id: "S2", type: "rect" },
+          { id: "S3", type: "rectCenter" },
+          { id: "S4", type: "rect" },
+          { id: "S5", type: "rect" },
+        ].map((b) => {
+          const y = 126; // bottom row y
+          const h = 16;
+
+          const positions = {
+            S1: { x1: 60, x2: 84 },
+            S2: { x1: 84, x2: 110 },
+            S3: { x1: 110, x2: 150 },
+            S4: { x1: 150, x2: 176 },
+            S5: { x1: 176, x2: 200 },
+          };
+          const { x1, x2 } = positions[b.id];
+          const midX = (x1 + x2) / 2;
+
+          if (b.type === "rect" || b.type === "rectCenter") {
+            return (
+              <g key={b.id}>
+                <rect
+                  x={x1 + 2}
+                  y={y}
+                  width={x2 - x1 - 4}
+                  height={h}
+                  fill={getFill(b.id)}
+                  stroke="#333"
+                  strokeWidth="1"
+                  rx="2"
+                  ry="2"
+                />
+                <text
+                  x={midX}
+                  y={y + h + 10}
+                  fill="#ffffff"
+                  fontSize="7"
+                  textAnchor="middle"
+                >
+                  {b.id}
+                </text>
+              </g>
+            );
+          }
+
+          if (b.type === "trapLeft") {
+            return (
+              <g key={b.id}>
+                <polygon
+                  points={`
+                    ${x1},${y}
+                    ${x2},${y}
+                    ${x2 - 2},${y + h}
+                    ${x1 + 6},${y + h}
+                  `}
+                  fill={getFill(b.id)}
+                  stroke="#333"
+                  strokeWidth="1"
+                />
+                <text
+                  x={midX}
+                  y={y + h + 10}
+                  fill="#ffffff"
+                  fontSize="7"
+                  textAnchor="middle"
+                >
+                  {b.id}
+                </text>
+              </g>
+            );
+          }
+
           return (
-            <g key={id}>
+            <g key={b.id}>
               <polygon
-                points={`${xStart - 3},${yInner} ${xEnd + 3},${yInner} ${xEnd},${yOuter} ${xStart},${yOuter}`}
-                fill={getFill(id)}
+                points={`
+                  ${x1 + 2},${y}
+                  ${x2},${y}
+                  ${x2 - 6},${y + h}
+                  ${x1},${y + h}
+                `}
+                fill={getFill(b.id)}
                 stroke="#333"
                 strokeWidth="1"
               />
               <text
-                x={(xStart + xEnd) / 2}
-                y={yOuter + 9}
-                fill="#fff"
+                x={midX}
+                y={y + h + 10}
+                fill="#ffffff"
                 fontSize="7"
                 textAnchor="middle"
               >
-                {id}
+                {b.id}
               </text>
             </g>
           );
         })}
 
-        {/* Right blocks */}
-        {blocks.slice(8, 12).map((id, idx) => {
-          const yStart = 60 + idx * 12;
-          const yEnd = yStart + 10;
-          const xOuter = 200;
-          const xInner = 185;
+        {/* ===================================== */}
+        {/* SHORT SIDES (LEFT/RIGHT) – 4 blocks  */}
+        {/* ===================================== */}
+
+        {/* Left side – W1..W4 (all rectangles) */}
+        {[
+          { id: "W1", index: 0 },
+          { id: "W2", index: 1 },
+          { id: "W3", index: 2 },
+          { id: "W4", index: 3 },
+        ].map((b) => {
+          const blockHeight = 18;
+          const gap = 2;
+          const y = 40 + b.index * (blockHeight + gap);
+          const x = 26;
+          const width = 20;
+          const midY = y + blockHeight / 2;
+
           return (
-            <g key={id}>
-              <polygon
-                points={`${xInner},${yStart - 2} ${xOuter},${yStart} ${xOuter},${yEnd} ${xInner},${yEnd + 2}`}
-                fill={getFill(id)}
+            <g key={b.id}>
+              <rect
+                x={x}
+                y={y}
+                width={width}
+                height={blockHeight}
+                fill={getFill(b.id)}
                 stroke="#333"
                 strokeWidth="1"
+                rx="2"
+                ry="2"
               />
               <text
-                x={xOuter + 10}
-                y={(yStart + yEnd) / 2}
-                fill="#fff"
+                x={x - 4}
+                y={midY + 2}
+                fill="#ffffff"
                 fontSize="7"
-                textAnchor="middle"
+                textAnchor="end"
               >
-                {id}
+                {b.id}
               </text>
             </g>
           );
         })}
 
-        {/* Left blocks */}
-        {blocks.slice(12, 16).map((id, idx) => {
-          const yStart = 60 + idx * 12;
-          const yEnd = yStart + 10;
-          const xOuter = 40;
-          const xInner = 55;
+        {/* Right side – O1..O4 (all rectangles) */}
+        {[
+          { id: "O1", index: 0 },
+          { id: "O2", index: 1 },
+          { id: "O3", index: 2 },
+          { id: "O4", index: 3 },
+        ].map((b) => {
+          const blockHeight = 18;
+          const gap = 2;
+          const y = 40 + b.index * (blockHeight + gap);
+          const x = 214;
+          const width = 20;
+          const midY = y + blockHeight / 2;
+
           return (
-            <g key={id}>
-              <polygon
-                points={`${xOuter},${yStart} ${xInner},${yStart - 2} ${xInner},${yEnd + 2} ${xOuter},${yEnd}`}
-                fill={getFill(id)}
+            <g key={b.id}>
+              <rect
+                x={x}
+                y={y}
+                width={width}
+                height={blockHeight}
+                fill={getFill(b.id)}
                 stroke="#333"
                 strokeWidth="1"
+                rx="2"
+                ry="2"
               />
               <text
-                x={xOuter - 10}
-                y={(yStart + yEnd) / 2}
-                fill="#fff"
+                x={x + width + 4}
+                y={midY + 2}
+                fill="#ffffff"
                 fontSize="7"
-                textAnchor="middle"
+                textAnchor="start"
               >
-                {id}
+                {b.id}
               </text>
             </g>
           );
@@ -1605,6 +2066,7 @@ function KoelnStadiumMap({ currentBlock, offers }) {
 function ConcertArenaMap({ currentBlock, offers }) {
   const trimmed = (currentBlock || "").trim().toUpperCase();
   const currentId = trimmed;
+
   const upgradeTargets = Array.from(
     new Set(
       offers
@@ -1613,16 +2075,17 @@ function ConcertArenaMap({ currentBlock, offers }) {
     )
   );
 
-  function getFill(label) {
+  function getFill(id) {
     const isCurrent =
-      currentId === label ||
-      (label === "INNENRAUM" && currentId.includes("INNEN"));
-    const isUpgrade = upgradeTargets.includes(label);
+      currentId === id ||
+      (id === "INNENRAUM" && currentId.includes("INNEN")) ||
+      (id === "INNER CIRCLE" && currentId.includes("INNER"));
+    const isUpgrade = upgradeTargets.includes(id);
 
-    if (isCurrent && isUpgrade) return "#8E24AA";
-    if (isCurrent) return "#8E24AA";
-    if (isUpgrade) return "#FBC02D";
-    return "#222";
+    if (isCurrent && isUpgrade) return "#8E24AA"; // both
+    if (isCurrent) return "#C8102E";              // selected seat/area
+    if (isUpgrade) return "#FBC02D";              // upgrade target
+    return "#222";                                // default
   }
 
   return (
@@ -1642,116 +2105,318 @@ function ConcertArenaMap({ currentBlock, offers }) {
           justifyContent: "space-between",
         }}
       >
-        <span>Uber Arena – Konzert Layout</span>
+        <span>Uber Arena – Konzertlayout (Drake)</span>
         <span style={{ fontSize: 11, opacity: 0.8 }}>
-          Innenraum + Ränge schematisch
         </span>
       </div>
 
-      <svg viewBox="0 0 220 160" style={{ width: "100%", display: "block" }}>
-        <ellipse
-          cx="110"
-          cy="80"
-          rx="90"
-          ry="60"
-          fill="#101010"
-          stroke="#444"
-          strokeWidth="2"
-        />
-        <ellipse
-          cx="110"
-          cy="80"
-          rx="80"
-          ry="50"
-          fill="#141414"
-          stroke="#333"
-          strokeWidth="1"
-        />
-        <ellipse
-          cx="110"
-          cy="80"
-          rx="60"
-          ry="35"
-          fill="#181818"
-          stroke="#333"
-          strokeWidth="1"
-        />
-
-        <ellipse
-          cx="110"
-          cy="80"
-          rx="36"
-          ry="22"
-          fill={getFill("INNENRAUM")}
-          stroke="#555"
-          strokeWidth="1"
-        />
-        <text
-          x="110"
-          y="82"
-          fill="#fff"
-          fontSize="8"
-          textAnchor="middle"
-        >
-          Innenraum
-        </text>
-
+      <svg
+        viewBox="0 0 260 180"
+        style={{ width: "100%", display: "block" }}
+      >
+        {/* STANDING AREA (Stehplätze / Innenraum) */}
         <rect
-          x="85"
-          y="45"
-          width="50"
-          height="10"
-          fill="#333"
-          stroke="#777"
-          strokeWidth="1"
-          rx="2"
+          x="75"
+          y="55"
+          width="90"
+          height="60"
+          fill={getFill("INNENRAUM")}
+          stroke="#444"
+          strokeWidth="1.5"
+          rx="12"
+          ry="12"
         />
         <text
-          x="110"
-          y="53"
-          fill="#fff"
-          fontSize="7"
+          x="120"
+          y="88"
+          fill="#ffffff"
+          fontSize="9"
           textAnchor="middle"
         >
-          Bühne
+          Stehplätze
         </text>
 
-        <text
-          x="110"
-          y="22"
-          fill={getFill("211")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          211
-        </text>
-        <text
+        {/* STAGE on the right */}
+        <rect
           x="170"
-          y="80"
-          fill={getFill("103")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          103
-        </text>
+          y="60"
+          width="35"
+          height="50"
+          fill="#eeeeee"
+          stroke="#666666"
+          strokeWidth="1"
+          rx="3"
+          ry="3"
+        />
         <text
-          x="50"
-          y="80"
-          fill={getFill("104")}
+          x="188"
+          y="88"
+          fill="#000000"
           fontSize="8"
           textAnchor="middle"
         >
-          104
+          Stage
         </text>
-        <text
-          x="110"
-          y="135"
-          fill={getFill("204")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          204
-        </text>
+
+        {/* ========================== */}
+        {/* INNER RING (UNTER-RANG)   */}
+        {/* ========================== */}
+
+        {/* Top inner – 101–104 */}
+        {[
+          { id: "101", x: 85},
+          { id: "102", x: 103 },
+          { id: "103", x: 121 },
+          { id: "104", x: 139 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={b.x}
+              y={40}
+              width={16}
+              height={12}
+              fill={getFill(b.id)}
+              stroke="#444"
+              strokeWidth="1"
+              rx="3"
+              ry="3"
+            />
+            <text
+              x={b.x + 8}
+              y={38}
+              fill="#ffffff"
+              fontSize="7"
+              textAnchor="middle"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* Bottom inner – 203–209 (simple row) */}
+        {[
+          { id: "205", x: 85 },
+          { id: "206", x: 103 },
+          { id: "207", x: 121 },
+          { id: "208", x: 139 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={b.x}
+              y={118}
+              width={16}
+              height={12}
+              fill={getFill(b.id)}
+              stroke="#444"
+              strokeWidth="1"
+              rx="3"
+              ry="3"
+            />
+            <text
+              x={b.x + 8}
+              y={137}
+              fill="#ffffff"
+              fontSize="7"
+              textAnchor="middle"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* Left inner – 201, 202 */}
+        {[
+          { id: "A", y: 60 },
+          { id: "B", y: 86 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={58}
+              y={b.y}
+              width={14}
+              height={24}
+              fill={getFill(b.id)}
+              stroke="#444"
+              strokeWidth="1"
+              rx="3"
+              ry="3"
+            />
+            <text
+              x={68}
+              y={b.y + 15}
+              fill="#ffffff"
+              fontSize="7"
+              textAnchor="end"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* Right inner corners – 215, 216 */}
+        {[
+          { id: "C", y: 40 },
+          { id: "D", y: 118 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={170}
+              y={b.y}
+              width={16}
+              height={14}
+              fill={getFill(b.id)}
+              stroke="#444"
+              strokeWidth="1"
+              rx="3"
+              ry="3"
+            />
+            <text
+              x={178}
+              y={b.y + 9}
+              fill="#ffffff"
+              fontSize="7"
+              textAnchor="middle"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* ========================== */}
+        {/* OUTER RING (OBER-RANG)    */}
+        {/* ========================== */}
+
+        {/* Top outer – 401–406 */}
+        {[
+          { id: "406", x: 65 },
+          { id: "405", x: 85 },
+          { id: "404", x: 105 },
+          { id: "403", x: 125 },
+          { id: "402", x: 145 },
+          { id: "401", x: 165 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={b.x}
+              y={20}
+              width={16}
+              height={10}
+              fill={getFill(b.id)}
+              stroke="#333"
+              strokeWidth="1"
+              rx="2"
+              ry="2"
+            />
+            <text
+              x={b.x + 8}
+              y={18}
+              fill="#ffffff"
+              fontSize="6"
+              textAnchor="middle"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* Left outer curve – 407–415 */}
+        {[
+          { id: "407", y: 35 },
+          { id: "408", y: 50 },
+          { id: "409", y: 65 },
+          { id: "410", y: 80 },
+          { id: "411", y: 95 },
+          { id: "412", y: 110 },
+          { id: "413", y: 125 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={36}
+              y={b.y}
+              width={14}
+              height={10}
+              fill={getFill(b.id)}
+              stroke="#333"
+              strokeWidth="1"
+              rx="2"
+              ry="2"
+            />
+            <text
+              x={32}
+              y={b.y + 8}
+              fill="#ffffff"
+              fontSize="6"
+              textAnchor="end"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* Bottom outer blocks – 416–421 */}
+        {[
+          { id: "416", x: 65 },
+          { id: "417", x: 85 },
+          { id: "418", x: 105 },
+          { id: "419", x: 125 },
+          { id: "420", x: 145 },
+          { id: "421", x: 165 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={b.x}
+              y={140}
+              width={16}
+              height={10}
+              fill={getFill(b.id)}
+              stroke="#333"
+              strokeWidth="1"
+              rx="2"
+              ry="2"
+            />
+            <text
+              x={b.x + 8}
+              y={157}
+              fill="#ffffff"
+              fontSize="6"
+              textAnchor="middle"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
+
+        {/* Right outer curve – 210–214 (simplified) */}
+        {[
+          { id: "301", y: 118 },
+          { id: "302", y: 100 },
+          { id: "303", y: 82 },
+          { id: "304", y: 64 },
+          { id: "305", y: 46 },
+        ].map((b) => (
+          <g key={b.id}>
+            <rect
+              x={214}
+              y={b.y}
+              width={14}
+              height={10}
+              fill={getFill(b.id)}
+              stroke="#333"
+              strokeWidth="1"
+              rx="2"
+              ry="2"
+            />
+            <text
+              x={231}
+              y={b.y + 7}
+              fill="#ffffff"
+              fontSize="6"
+              textAnchor="start"
+            >
+              {b.id}
+            </text>
+          </g>
+        ))}
       </svg>
     </div>
   );
@@ -1772,10 +2437,10 @@ function HockeyArenaMap({ currentBlock, offers }) {
     const isCurrent = currentId === id;
     const isUpgrade = upgradeTargets.includes(id);
 
-    if (isCurrent && isUpgrade) return "#1565C0";
-    if (isCurrent) return "#1565C0";
-    if (isUpgrade) return "#FBC02D";
-    return "#222";
+    if (isCurrent && isUpgrade) return "#1565C0"; // both
+    if (isCurrent) return "#1565C0";              // selected
+    if (isUpgrade) return "#FBC02D";              // target
+    return "#222";                                // default
   }
 
   return (
@@ -1795,86 +2460,269 @@ function HockeyArenaMap({ currentBlock, offers }) {
           justifyContent: "space-between",
         }}
       >
-        <span>Uber Arena – Eishockey Layout</span>
+        <span>Uber Arena – Eishockey Layout (2 Ebenen)</span>
         <span style={{ fontSize: 11, opacity: 0.8 }}>
-          Neutral · Zentrum · Torbereiche
+          100/103 = Unterrang · 201/203 = Oberrang
         </span>
       </div>
 
-      <svg viewBox="0 0 230 160" style={{ width: "100%", display: "block" }}>
+      <svg
+        viewBox="0 0 260 180"
+        style={{ width: "100%", display: "block" }}
+      >
+        {/* ICE RINK: rounded rectangle */}
         <rect
-          x="55"
-          y="40"
+          x="70"
+          y="45"
           width="120"
           height="70"
-          rx="18"
-          ry="18"
+          rx="25"
+          ry="25"
           fill="#e0f2ff"
           stroke="#90caf9"
           strokeWidth="2"
         />
 
+        {/* Center line */}
         <line
-          x1="115"
-          y1="40"
-          x2="115"
-          y2="110"
+          x1="130"
+          y1="45"
+          x2="130"
+          y2="115"
           stroke="#f44336"
           strokeWidth="1"
         />
+
+        {/* Blue lines */}
         <line
-          x1="85"
-          y1="40"
-          x2="85"
-          y2="110"
+          x1="95"
+          y1="45"
+          x2="95"
+          y2="115"
           stroke="#1e88e5"
           strokeWidth="1"
         />
         <line
-          x1="145"
-          y1="40"
-          x2="145"
-          y2="110"
+          x1="165"
+          y1="45"
+          x2="165"
+          y2="115"
           stroke="#1e88e5"
           strokeWidth="1"
         />
 
-        <text
-          x="115"
-          y="25"
-          fill={getFill("204")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          204
-        </text>
-        <text
-          x="115"
-          y="135"
-          fill={getFill("104")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          104
-        </text>
-        <text
-          x="45"
-          y="80"
-          fill={getFill("106")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          106
-        </text>
-        <text
-          x="185"
-          y="80"
-          fill={getFill("119")}
-          fontSize="8"
-          textAnchor="middle"
-        >
-          119
-        </text>
+        {/* Center faceoff circle */}
+        <circle
+          cx="130"
+          cy="80"
+          r="10"
+          fill="none"
+          stroke="#1e88e5"
+          strokeWidth="1"
+        />
+        <circle cx="130" cy="80" r="2" fill="#1e88e5" />
+
+        {/* ============================== */}
+        {/* INNER RING – UNTER-RANG       */}
+        {/* 100 & 101 evenly around ice   */}
+        {/* ============================== */}
+
+        {/* Top inner block – 100 */}
+        <g>
+          <rect
+            x="80"
+            y="30"
+            width="100"
+            height="10"
+            fill={getFill("100")}
+            stroke="#333"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="130"
+            y="38"
+            fill="#ffffff"
+            fontSize="7"
+            textAnchor="middle"
+          >
+            100
+          </text>
+        </g>
+
+        {/* Bottom inner block – 103 */}
+        <g>
+          <rect
+            x="80"
+            y="120"
+            width="100"
+            height="10"
+            fill={getFill("103")}
+            stroke="#333"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="130"
+            y="127.5"
+            fill="#ffffff"
+            fontSize="7"
+            textAnchor="middle"
+          >
+            103
+          </text>
+        </g>
+
+        {/* Left inner block – A1 */}
+        <g>
+          <rect
+            x="50"
+            y="50"
+            width="12"
+            height="60"
+            fill={getFill("A1")}
+            stroke="#333"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="61"
+            y="82"
+            fill="#ffffff"
+            fontSize="7"
+            textAnchor="end"
+          >
+            A1
+          </text>
+        </g>
+
+        {/* Right inner block – B1 */}
+        <g>
+          <rect
+            x="198"
+            y="50"
+            width="12"
+            height="60"
+            fill={getFill("B1")}
+            stroke="#333"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="199"
+            y="82"
+            fill="#ffffff"
+            fontSize="7"
+            textAnchor="start"
+          >
+            B1
+          </text>
+        </g>
+
+        {/* ============================== */}
+        {/* OUTER RING – OBER-RANG        */}
+        {/* 201 & 202 = second level      */}
+        {/* ============================== */}
+
+        {/* Top outer block – 201 */}
+        <g>
+          <rect
+            x="70"
+            y="8"
+            width="120"
+            height="20"
+            fill={getFill("201")}
+            stroke="#444"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="130"
+            y="21"
+            fill="#ffffff"
+            fontSize="8"
+            textAnchor="middle"
+          >
+            201
+          </text>
+        </g>
+
+        {/* Bottom outer block – 203 */}
+        <g>
+          <rect
+            x="70"
+            y="132"
+            width="120"
+            height="20"
+            fill={getFill("203")}
+            stroke="#444"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="130"
+            y="145"
+            fill="#ffffff"
+            fontSize="8"
+            textAnchor="middle"
+          >
+            203
+          </text>
+        </g>
+
+        {/* Left outer block – A2 */}
+        <g>
+          <rect
+            x="28"
+            y="45"
+            width="20"
+            height="70"
+            fill={getFill("A2")}
+            stroke="#444"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="45"
+            y="82"
+            fill="#ffffff"
+            fontSize="8"
+            textAnchor="end"
+          >
+            A2
+          </text>
+        </g>
+
+        {/* Right outer block – B2 */}
+        <g>
+          <rect
+            x="212"
+            y="45"
+            width="20"
+            height="70"
+            fill={getFill("B2")}
+            stroke="#444"
+            strokeWidth="1"
+            rx="2"
+            ry="2"
+          />
+          <text
+            x="217"
+            y="82"
+            fill="#ffffff"
+            fontSize="8"
+            textAnchor="start"
+          >
+            B2
+          </text>
+        </g>
       </svg>
     </div>
   );
