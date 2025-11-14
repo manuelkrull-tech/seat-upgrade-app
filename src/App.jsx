@@ -1,5 +1,4 @@
 import { useState } from "react";
-import fckoelnLogo from "./assets/fckoeln.png"; // still using this as app logo for now
 
 const EVENTS = [
   {
@@ -26,68 +25,23 @@ const EVENTS = [
 ];
 
 function App() {
+  const [activeTab, setActiveTab] = useState("events");
   const [selectedEventId, setSelectedEventId] = useState("koeln-hertha");
+
   const [block, setBlock] = useState("");
   const [row, setRow] = useState("");
   const [seat, setSeat] = useState("");
+
   const [offers, setOffers] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [savedOffers, setSavedOffers] = useState([]);
   const [history, setHistory] = useState([]);
+
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const currentEvent = EVENTS.find((e) => e.id === selectedEventId);
-  const teamColor = currentEvent?.primaryColor ?? "#C8102E";
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-    setError("");
-    setSelectedOffer(null);
-    setOffers([]);
-    setIsLoading(true);
-
-    if (!block || !row || !seat) {
-      setIsLoading(false);
-      setError("Bitte alle Felder ausfüllen.");
-      return;
-    }
-
-    try {
-      let result = [];
-      if (selectedEventId === "koeln-hertha") {
-        result = await fetchKoelnOffers({ block, row, seat });
-      } else if (selectedEventId === "drake-uber") {
-        result = await fetchDrakeOffers({ block, row, seat });
-      } else if (selectedEventId === "eisbaeren-adler") {
-        result = await fetchHockeyOffers({ block, row, seat });
-      }
-
-      setOffers(result);
-      if (result.length === 0) {
-        setError("Keine Upgrades für diesen Sitz gefunden.");
-      }
-    } catch (err) {
-      setError("Es ist ein Fehler beim Laden der Upgrades aufgetreten.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function handleAccept(offer) {
-    setSelectedOffer(offer);
-
-    const entry = {
-      time: new Date().toLocaleTimeString(),
-      event: currentEvent?.name,
-      block,
-      row,
-      seat,
-      offerTitle: offer.title,
-      priceEuro: offer.priceEuro,
-    };
-
-    setHistory((prev) => [entry, ...prev]);
-  }
+  const themeColor = currentEvent?.primaryColor ?? "#C8102E";
 
   const pageStyles = {
     minHeight: "100vh",
@@ -98,26 +52,7 @@ function App() {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-  };
-
-  const headerOuter = {
-    width: "100%",
-    backgroundColor: "#111",
-    borderBottom: `4px solid ${teamColor}`,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-    position: "sticky",
-    top: 0,
-    zIndex: 50,
-  };
-
-  const headerInner = {
-    maxWidth: 480,
-    margin: "0 auto",
-    boxSizing: "border-box",
-    padding: "18px 16px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
+    paddingBottom: 60, // space for bottom nav
   };
 
   const mainContainer = {
@@ -144,7 +79,7 @@ function App() {
     width: "100%",
     padding: 14,
     borderRadius: 10,
-    backgroundColor: isLoading ? "#555" : teamColor,
+    backgroundColor: isLoading ? "#555" : themeColor,
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
@@ -154,184 +89,401 @@ function App() {
     opacity: isLoading ? 0.8 : 1,
   };
 
+  function resetSeatState() {
+    setBlock("");
+    setRow("");
+    setSeat("");
+    setOffers([]);
+    setSelectedOffer(null);
+    setError("");
+  }
+
+  function handleSelectEvent(eventId) {
+    setSelectedEventId(eventId);
+    resetSeatState();
+    setActiveTab("upgrades");
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setSelectedOffer(null);
+    setOffers([]);
+    setIsLoading(true);
+
+    if (!block || !row || !seat) {
+      setIsLoading(false);
+      setError("Bitte alle Felder ausfüllen.");
+      return;
+    }
+
+    try {
+      let result = [];
+      if (currentEvent.id === "koeln-hertha") {
+        result = await fetchKoelnOffers({ block, row, seat });
+      } else if (currentEvent.id === "drake-uber") {
+        result = await fetchDrakeOffers({ block, row, seat });
+      } else if (currentEvent.id === "eisbaeren-adler") {
+        result = await fetchHockeyOffers({ block, row, seat });
+      }
+
+      setOffers(result);
+      if (result.length === 0) {
+        setError("Keine Upgrades für diesen Sitz gefunden.");
+      }
+    } catch (err) {
+      setError("Es ist ein Fehler beim Laden der Upgrades aufgetreten.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function handleAcceptOffer(offer) {
+    setSelectedOffer(offer);
+
+    const entry = {
+      time: new Date().toLocaleTimeString(),
+      event: currentEvent?.name,
+      block,
+      row,
+      seat,
+      offerTitle: offer.title,
+      priceEuro: offer.priceEuro,
+    };
+
+    setHistory((prev) => [entry, ...prev]);
+  }
+
+  function handleToggleSave(offer) {
+    const exists = savedOffers.find((o) => o.id === offer.id);
+    if (exists) {
+      setSavedOffers(savedOffers.filter((o) => o.id !== offer.id));
+    } else {
+      setSavedOffers([...savedOffers, offer]);
+    }
+  }
+
+  const savedIds = new Set(savedOffers.map((o) => o.id));
+
   return (
     <div style={pageStyles}>
-      {/* HEADER */}
-      <div style={headerOuter}>
-        <div style={headerInner}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img
-              src={fckoelnLogo}
-              alt="Logo"
-              style={{
-                width: 40,
-                height: 40,
-                objectFit: "contain",
-                borderRadius: "50%",
-                backgroundColor: "#000",
-              }}
-            />
-            <div>
-              <div style={{ fontWeight: "bold", fontSize: 16 }}>
-                Seat Upgrade Demo
-              </div>
-              <div style={{ fontSize: 12, color: "#ccc" }}>
-                {currentEvent?.venue || "Wähle ein Event"}
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              fontSize: 22,
-              opacity: 0.75,
-              padding: "4px 8px",
-              borderRadius: 999,
-              backgroundColor: "rgba(0,0,0,0.35)",
+      {/* PREMIUM HEADER */}
+      <PremiumHeader activeTab={activeTab} currentEvent={currentEvent} />
+
+      <div style={mainContainer}>
+        {/* TAB CONTENT */}
+        {activeTab === "events" && (
+          <EventsTab
+            events={EVENTS}
+            selectedEventId={selectedEventId}
+            onSelectEvent={handleSelectEvent}
+          />
+        )}
+
+        {activeTab === "upgrades" && (
+          <UpgradesTab
+            currentEvent={currentEvent}
+            block={block}
+            row={row}
+            seat={seat}
+            setBlock={setBlock}
+            setRow={setRow}
+            setSeat={setSeat}
+            inputStyle={inputStyle}
+            buttonStyle={buttonStyle}
+            error={error}
+            isLoading={isLoading}
+            offers={offers}
+            selectedOffer={selectedOffer}
+            savedIds={savedIds}
+            onSubmit={handleSubmit}
+            onAcceptOffer={handleAcceptOffer}
+            onToggleSave={handleToggleSave}
+            history={history}
+          />
+        )}
+
+        {activeTab === "saved" && (
+          <SavedTab
+            savedOffers={savedOffers}
+            currentEvent={currentEvent}
+            onSelectOffer={(offer) => {
+              setSelectedOffer(offer);
+              setActiveTab("upgrades");
             }}
-          >
-            ⋮
-          </div>
+          />
+        )}
+
+        {activeTab === "account" && <AccountTab />}
+      </div>
+
+      {/* BOTTOM NAV */}
+      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+    </div>
+  );
+}
+
+/* ---------- HEADER ---------- */
+
+function PremiumHeader({ activeTab, currentEvent }) {
+  const subtitle =
+    activeTab === "events"
+      ? "Wähle dein Event, wir kümmern uns um den Rest"
+      : activeTab === "upgrades" && currentEvent
+      ? currentEvent.name
+      : activeTab === "saved"
+      ? "Gemerkte Upgrades"
+      : "Dein Profil & Einstellungen";
+
+  return (
+    <div
+      style={{
+        position: "sticky",
+        top: 0,
+        width: "100%",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        background: "rgba(15, 15, 15, 0.85)",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        zIndex: 100,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 480,
+          margin: "0 auto",
+          padding: "14px 16px 10px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 14,
+            height: 14,
+            margin: "0 auto 6px",
+            background: "linear-gradient(135deg, #fff, #888)",
+            transform: "rotate(45deg)",
+            borderRadius: 3,
+            opacity: 0.85,
+          }}
+        />
+
+        <div
+          style={{
+            fontWeight: "700",
+            fontSize: 19,
+            letterSpacing: 0.5,
+          }}
+        >
+          SeatUpgrade
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: "#bbb",
+            marginTop: 4,
+            minHeight: 16,
+          }}
+        >
+          {subtitle}
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            height: 2,
+            width: "60%",
+            marginLeft: "auto",
+            marginRight: "auto",
+            background: `linear-gradient(90deg,
+              rgba(255,255,255,0) 0%,
+              rgba(255,255,255,0.25) 50%,
+              rgba(255,255,255,0) 100%
+            )`,
+            borderRadius: 2,
+            opacity: 0.6,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- EVENTS TAB ---------- */
+
+function EventsTab({ events, selectedEventId, onSelectEvent }) {
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, marginBottom: 8 }}>Event auswählen</h2>
+      <p
+        style={{
+          fontSize: 13,
+          color: "#b3b3b3",
+          marginBottom: 12,
+        }}
+      >
+        Wähle dein Spiel oder Konzert, gib deinen Sitzplatz ein und prüfe
+        mögliche Upgrades in Echtzeit.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {events.map((ev) => {
+          const isActive = ev.id === selectedEventId;
+          return (
+            <button
+              key={ev.id}
+              onClick={() => onSelectEvent(ev.id)}
+              style={{
+                padding: 10,
+                borderRadius: 10,
+                border: `1px solid ${
+                  isActive ? ev.primaryColor : "#333"
+                }`,
+                backgroundColor: isActive ? "#1f1f1f" : "#141414",
+                color: "white",
+                textAlign: "left",
+                cursor: "pointer",
+                fontSize: 14,
+              }}
+            >
+              <div style={{ fontWeight: "bold" }}>{ev.name}</div>
+              <div style={{ fontSize: 12, color: "#bbb" }}>{ev.venue}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- UPGRADES TAB ---------- */
+
+function UpgradesTab({
+  currentEvent,
+  block,
+  row,
+  seat,
+  setBlock,
+  setRow,
+  setSeat,
+  inputStyle,
+  buttonStyle,
+  error,
+  isLoading,
+  offers,
+  selectedOffer,
+  savedIds,
+  onSubmit,
+  onAcceptOffer,
+  onToggleSave,
+  history,
+}) {
+  if (!currentEvent) {
+    return <p style={{ color: "#ccc" }}>Kein Event ausgewählt.</p>;
+  }
+
+  return (
+    <div>
+      {/* Event info */}
+      <div
+        style={{
+          padding: 12,
+          marginBottom: 16,
+          borderRadius: 12,
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+          border: "1px solid rgba(255,255,255,0.08)",
+          fontSize: 13,
+        }}
+      >
+        <div style={{ fontWeight: "bold", marginBottom: 4 }}>
+          {currentEvent.name}
+        </div>
+        <div style={{ color: "#ccc" }}>{currentEvent.venue}</div>
+        <div style={{ marginTop: 6, color: "#aaa", fontSize: 12 }}>
+          Demo: Sitzplatz eingeben, mögliche Upgrades werden simuliert.
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
-      <div style={mainContainer}>
-        {/* EVENT SELECTOR */}
-        <div>
-          <h2 style={{ fontSize: 18, marginBottom: 8 }}>Event auswählen</h2>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              marginBottom: 16,
-            }}
-          >
-            {EVENTS.map((ev) => {
-              const isActive = ev.id === selectedEventId;
-              return (
-                <button
-                  key={ev.id}
-                  onClick={() => {
-                    setSelectedEventId(ev.id);
-                    setOffers([]);
-                    setSelectedOffer(null);
-                    setError("");
-                  }}
-                  style={{
-                    padding: 10,
-                    borderRadius: 10,
-                    border: `1px solid ${
-                      isActive ? ev.primaryColor : "#333"
-                    }`,
-                    backgroundColor: isActive ? "#1e1e1e" : "#151515",
-                    color: "white",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    fontSize: 14,
-                  }}
-                >
-                  <div style={{ fontWeight: "bold" }}>{ev.name}</div>
-                  <div style={{ fontSize: 12, color: "#bbb" }}>{ev.venue}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {/* Seat input */}
+      <h3 style={{ textAlign: "center", marginTop: 0 }}>Sitzplatz eingeben</h3>
+      <p
+        style={{
+          textAlign: "center",
+          color: "#b3b3b3",
+          fontSize: 13,
+          marginBottom: 16,
+        }}
+      >
+        {currentEvent.id === "koeln-hertha" &&
+          "Nutze z. B. S3, N2, O3 oder W1 als Block-Bezeichnung."}
+        {currentEvent.id === "drake-uber" &&
+          "Nutze typische Arena-Blöcke (z. B. 211, 103) oder 'Innenraum'."}
+        {currentEvent.id === "eisbaeren-adler" &&
+          "Nutze z. B. 106, 119, 204 als Sektion im Hockey-Setup."}
+      </p>
 
-        {/* SEAT INPUT */}
-        <h3 style={{ textAlign: "center", marginTop: 8 }}>
-          Sitzplatz / Bereich eingeben
-        </h3>
-        <p
+      <form onSubmit={onSubmit}>
+        <input
+          value={block}
+          onChange={(e) => setBlock(e.target.value)}
+          placeholder={currentEvent.seatLabel}
+          style={inputStyle}
+        />
+        <input
+          value={row}
+          onChange={(e) => setRow(e.target.value)}
+          placeholder="Reihe (z. B. 12)"
+          style={inputStyle}
+        />
+        <input
+          value={seat}
+          onChange={(e) => setSeat(e.target.value)}
+          placeholder="Sitz (z. B. 27)"
+          style={inputStyle}
+        />
+
+        <button type="submit" style={buttonStyle} disabled={isLoading}>
+          {isLoading ? "Lade Upgrade-Angebote..." : "Upgrade-Angebote anzeigen"}
+        </button>
+      </form>
+
+      {/* Error */}
+      {error && (
+        <div
           style={{
+            marginTop: 16,
+            padding: 12,
+            borderRadius: 10,
+            backgroundColor: "#8B1A1A",
+            color: "#ffdddd",
             textAlign: "center",
-            color: "#b3b3b3",
-            fontSize: 13,
-            marginBottom: 16,
           }}
         >
-          {selectedEventId === "koeln-hertha" &&
-            "Nutze z. B. S3, N2, O3 oder W1 als Block-Bezeichnung."}
-          {selectedEventId === "drake-uber" &&
-            "Nutze klassische Arena-Blöcke (z. B. 211, 103) oder 'Innenraum'."}
-          {selectedEventId === "eisbaeren-adler" &&
-            "Nutze z. B. 106, 119, 204 als Sektion im Hockey-Setup."}
-        </p>
-
-        <form onSubmit={handleSubmit}>
-          <input
-            value={block}
-            onChange={(e) => setBlock(e.target.value)}
-            placeholder={currentEvent?.seatLabel || "Block / Bereich"}
-            style={inputStyle}
-          />
-          <input
-            value={row}
-            onChange={(e) => setRow(e.target.value)}
-            placeholder="Reihe (z. B. 12)"
-            style={inputStyle}
-          />
-          <input
-            value={seat}
-            onChange={(e) => setSeat(e.target.value)}
-            placeholder="Sitz (z. B. 27)"
-            style={inputStyle}
-          />
-
-          <button type="submit" style={buttonStyle} disabled={isLoading}>
-            {isLoading ? "Lade Upgrade-Angebote..." : "Upgrade-Angebote anzeigen"}
-          </button>
-        </form>
-
-        {/* ERROR */}
-        {error && (
-          <div
-            style={{
-              marginTop: 16,
-              padding: 12,
-              borderRadius: 10,
-              backgroundColor: "#8B1A1A",
-              color: "#ffdddd",
-              textAlign: "center",
-              boxSizing: "border-box",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* MAPS */}
-        <div style={{ marginTop: 24 }}>
-          {selectedEventId === "koeln-hertha" && (
-            <KoelnStadiumMap
-              currentBlock={block}
-              offers={offers}
-              teamColor={teamColor}
-            />
-          )}
-
-          {selectedEventId === "drake-uber" && (
-            <ConcertArenaMap
-              currentBlock={block}
-              offers={offers}
-              themeColor={teamColor}
-            />
-          )}
-
-          {selectedEventId === "eisbaeren-adler" && (
-            <HockeyArenaMap
-              currentBlock={block}
-              offers={offers}
-              themeColor={teamColor}
-            />
-          )}
+          {error}
         </div>
+      )}
 
-        {/* OFFERS */}
-        {offers.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            {offers.map((offer) => (
+      {/* Map */}
+      <div style={{ marginTop: 24 }}>
+        {currentEvent.id === "koeln-hertha" && (
+          <KoelnStadiumMap currentBlock={block} offers={offers} />
+        )}
+        {currentEvent.id === "drake-uber" && (
+          <ConcertArenaMap currentBlock={block} offers={offers} />
+        )}
+        {currentEvent.id === "eisbaeren-adler" && (
+          <HockeyArenaMap currentBlock={block} offers={offers} />
+        )}
+      </div>
+
+      {/* Offers */}
+      {offers.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          {offers.map((offer) => {
+            const isSaved = savedIds.has(offer.id);
+            return (
               <div
                 key={offer.id}
                 style={{
@@ -344,16 +496,125 @@ function App() {
                   marginBottom: 14,
                 }}
               >
-                <h3 style={{ marginTop: 0 }}>{offer.title}</h3>
-                <p style={{ color: "#ccc", marginTop: 4 }}>{offer.description}</p>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 8,
+                  }}
+                >
+                  <div>
+                    <h3 style={{ marginTop: 0, marginBottom: 4 }}>
+                      {offer.title}
+                    </h3>
+                    <p
+                      style={{
+                        color: "#ccc",
+                        marginTop: 0,
+                        fontSize: 13,
+                      }}
+                    >
+                      {offer.description}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => onToggleSave(offer)}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontSize: 18,
+                    }}
+                    aria-label="Merken"
+                  >
+                    {isSaved ? "⭐" : "☆"}
+                  </button>
+                </div>
+
                 <p style={{ fontWeight: "bold", marginTop: 8 }}>
                   Preis: {offer.priceEuro.toFixed(2)} €
                 </p>
 
+                {/* Urgency */}
+                {offer.urgency && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      backgroundColor:
+                        offer.urgency.level === "high"
+                          ? "#8B1A1A"
+                          : offer.urgency.level === "medium"
+                          ? "#7A4F00"
+                          : "#1b3a1b",
+                      color: "#fff",
+                      fontSize: 13,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {offer.urgency.text}
+                  </div>
+                )}
+
+                {/* Comparison */}
+                {offer.comparison && (
+                  <div
+                    style={{
+                      marginTop: 14,
+                      padding: 12,
+                      borderRadius: 10,
+                      backgroundColor: "#111",
+                      border: "1px solid #333",
+                      fontSize: 13,
+                      color: "#ccc",
+                    }}
+                  >
+                    <div
+                      style={{
+                        marginBottom: 6,
+                        color: "#999",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Vorher:
+                    </div>
+                    <div>
+                      Block {offer.comparison.fromBlock}, Reihe{" "}
+                      {offer.comparison.fromRow}, Sitz{" "}
+                      {offer.comparison.fromSeat}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 10,
+                        marginBottom: 6,
+                        color: "#999",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Nachher (Upgrade):
+                    </div>
+                    <div style={{ color: "#fff" }}>
+                      Block {offer.comparison.toBlock}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 10,
+                        fontSize: 12,
+                        color: "#bbb",
+                      }}
+                    >
+                      Höhere Kategorie · bessere Sicht · beliebter Bereich
+                    </div>
+                  </div>
+                )}
+
                 <button
-                  onClick={() => handleAccept(offer)}
+                  onClick={() => onAcceptOffer(offer)}
                   style={{
-                    marginTop: 10,
+                    marginTop: 12,
                     padding: "10px 16px",
                     borderRadius: 8,
                     backgroundColor: offer.color,
@@ -361,57 +622,243 @@ function App() {
                     color: "#111",
                     fontWeight: "bold",
                     cursor: "pointer",
+                    width: "100%",
                   }}
                 >
                   Upgrade auswählen
                 </button>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
+      )}
 
-        {/* CONFIRMATION */}
-        {selectedOffer && (
-          <div
+      {/* Confirmation */}
+      {selectedOffer && (
+        <div
+          style={{
+            marginTop: 24,
+            padding: 16,
+            backgroundColor: "#2E7D32",
+            borderRadius: 12,
+          }}
+        >
+          <h3 style={{ marginTop: 0 }}>Upgrade ausgewählt 🎉</h3>
+          <p>{currentEvent.name}</p>
+          <p>
+            Platz: {block}, Reihe {row}, Sitz {seat}
+          </p>
+          <p>{selectedOffer.title}</p>
+          <p>{selectedOffer.priceEuro.toFixed(2)} €</p>
+        </div>
+      )}
+
+      {/* History (compact) */}
+      {history.length > 0 && (
+        <div style={{ marginTop: 28 }}>
+          <h3 style={{ fontSize: 15 }}>Session-Log</h3>
+          <ul style={{ color: "#bbb", paddingLeft: 16, fontSize: 12 }}>
+            {history.slice(0, 6).map((item, i) => (
+              <li key={i} style={{ marginBottom: 4 }}>
+                [{item.time}] {item.event} – {item.block}/{item.row}/
+                {item.seat} → {item.offerTitle} (+{item.priceEuro.toFixed(2)} €
+                )
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- SAVED TAB ---------- */
+
+function SavedTab({ savedOffers, onSelectOffer }) {
+  if (savedOffers.length === 0) {
+    return (
+      <div>
+        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Gemerkte Upgrades</h2>
+        <p style={{ fontSize: 13, color: "#bbb" }}>
+          Du hast noch keine Upgrades gemerkt. Tippe auf ☆ bei einem Angebot,
+          um es hier zu speichern.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, marginBottom: 8 }}>Gemerkte Upgrades</h2>
+      <p style={{ fontSize: 13, color: "#bbb", marginBottom: 12 }}>
+        Diese Upgrades hast du dir gemerkt. Du kannst sie später auswählen.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {savedOffers.map((offer) => (
+          <button
+            key={offer.id}
+            onClick={() => onSelectOffer(offer)}
             style={{
-              marginTop: 24,
-              padding: 16,
-              backgroundColor: "#2E7D32",
-              borderRadius: 12,
-              boxSizing: "border-box",
+              textAlign: "left",
+              padding: 12,
+              borderRadius: 10,
+              border: "1px solid #333",
+              backgroundColor: "#171717",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 13,
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Upgrade ausgewählt 🎉</h3>
-            <p>{currentEvent?.name}</p>
-            <p>
-              Platz: {block}, Reihe {row}, Sitz {seat}
-            </p>
-            <p>{selectedOffer.title}</p>
-            <p>{selectedOffer.priceEuro.toFixed(2)} €</p>
-          </div>
-        )}
-
-        {/* HISTORY */}
-        {history.length > 0 && (
-          <div style={{ marginTop: 28 }}>
-            <h3>Session-Log</h3>
-            <ul style={{ color: "#bbb", paddingLeft: 16 }}>
-              {history.map((item, i) => (
-                <li key={i} style={{ marginBottom: 6, fontSize: 13 }}>
-                  [{item.time}] {item.event} – {item.block}/{item.row}/
-                  {item.seat} → <strong>{item.offerTitle}</strong> (
-                  {item.priceEuro.toFixed(2)} €)
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+            <div style={{ fontWeight: "bold", marginBottom: 4 }}>
+              {offer.title}
+            </div>
+            <div style={{ color: "#ccc", marginBottom: 4 }}>
+              {offer.description}
+            </div>
+            <div style={{ fontWeight: "bold" }}>
+              {offer.priceEuro.toFixed(2)} €
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-/* ---------- FAKE APIs FOR EACH EVENT ---------- */
+/* ---------- ACCOUNT TAB ---------- */
+
+function AccountTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, marginBottom: 8 }}>Konto</h2>
+      <p style={{ fontSize: 13, color: "#bbb", marginBottom: 12 }}>
+        In einer echten Version könntest du hier dein Fanprofil, bevorzugte
+        Teams, Zahlungsarten und Benachrichtigungen verwalten.
+      </p>
+      <div
+        style={{
+          padding: 14,
+          borderRadius: 12,
+          backgroundColor: "#151515",
+          border: "1px solid #333",
+          fontSize: 13,
+        }}
+      >
+        <div style={{ marginBottom: 6 }}>👤 Gast-Fan</div>
+        <div style={{ color: "#ccc" }}>
+          • Keine Anmeldung erforderlich in dieser Demo.
+        </div>
+        <div style={{ color: "#ccc" }}>
+          • Upgrades werden nur lokal simuliert.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- BOTTOM NAV ---------- */
+
+function BottomNav({ activeTab, onChange }) {
+  const items = [
+    { id: "events", label: "Events", icon: "🏟️" },
+    { id: "upgrades", label: "Upgrades", icon: "⬆️" },
+    { id: "saved", label: "Gemerkt", icon: "⭐" },
+    { id: "account", label: "Konto", icon: "👤" },
+  ];
+
+  return (
+    <nav
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 52,
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        background: "rgba(5, 5, 5, 0.95)",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
+        display: "flex",
+        justifyContent: "center",
+        zIndex: 200,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "stretch",
+        }}
+      >
+        {items.map((item) => {
+          const isActive = item.id === activeTab;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onChange(item.id)}
+              style={{
+                flex: 1,
+                border: "none",
+                background: "transparent",
+                color: isActive ? "#fff" : "#aaa",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 10,
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              <span style={{ fontSize: 17, lineHeight: 1 }}>
+                {item.icon}
+              </span>
+              <span style={{ marginTop: 2 }}>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/* ---------- UTILS: URGENCY & OFFERS ---------- */
+
+function getUrgencyLabel() {
+  const options = [
+    { text: "🔥 Nur 2 Plätze verfügbar", level: "high" },
+    { text: "🔥 Nur 3 Plätze verfügbar", level: "high" },
+    { text: "⏳ Begrenztes Kontingent", level: "medium" },
+    { text: "⭐ Sehr gefragt", level: "medium" },
+    { text: "🟢 Gute Verfügbarkeit", level: "low" },
+  ];
+
+  const weighted = [
+    ...options.filter((o) => o.level === "high"),
+    ...options.filter((o) => o.level === "medium"),
+    ...options.filter((o) => o.level === "medium"),
+    ...options.filter((o) => o.level === "low"),
+  ];
+
+  return weighted[Math.floor(Math.random() * weighted.length)];
+}
+
+function addUrgencyAndComparison(offers, { block, row, seat }) {
+  return offers.map((o) => ({
+    ...o,
+    urgency: getUrgencyLabel(),
+    comparison: {
+      fromBlock: block,
+      fromRow: row,
+      fromSeat: seat,
+      toBlock: o.targetBlock,
+    },
+  }));
+}
+
+/* ---------- FAKE APIS ---------- */
 
 function fetchKoelnOffers({ block, row, seat }) {
   return new Promise((resolve, reject) => {
@@ -509,7 +956,7 @@ function fetchKoelnOffers({ block, row, seat }) {
             : ` (Sitz ${seatNumber} – begrenztes Kontingent)`),
       }));
 
-      resolve(withDynamicText);
+      resolve(addUrgencyAndComparison(withDynamicText, { block, row, seat }));
     }, 700);
   });
 }
@@ -529,7 +976,7 @@ function fetchDrakeOffers({ block, row, seat }) {
         offers.push({
           id: 10,
           title: "Front of Stage Upgrade",
-          description: "Direkt vor der Bühne – maximale Nähe zu Drake.",
+          description: "Direkt vor der Bühne – maximale Nähe.",
           priceEuro: 120,
           color: "#AB47BC",
           targetBlock: "INNER CIRCLE",
@@ -539,7 +986,7 @@ function fetchDrakeOffers({ block, row, seat }) {
           id: 11,
           title: "Innenraum-Upgrade",
           description:
-            "Wechsel vom Sitzplatz in den Innenraum – dichter an der Bühne.",
+            "Vom Sitzplatz in den Innenraum – dichter an der Bühne.",
           priceEuro: 89,
           color: "#8E24AA",
           targetBlock: "INNENRAUM",
@@ -576,7 +1023,7 @@ function fetchDrakeOffers({ block, row, seat }) {
             : ` (Sitz ${seatNumber} – limitiertes Kontingent)`),
       }));
 
-      resolve(withDynamicText);
+      resolve(addUrgencyAndComparison(withDynamicText, { block, row, seat }));
     }, 700);
   });
 }
@@ -596,8 +1043,8 @@ function fetchHockeyOffers({ block, row, seat }) {
       if (isGoalEnd) {
         offers.push({
           id: 20,
-          title: "Bessere Sicht auf Angriffsdrittel",
-          description: "Upgrade in einen Block mit besserer Sicht auf das Tor.",
+          title: "Angriffsdrittel-Sicht",
+          description: "Upgrade in einen Block mit besserer Sicht aufs Tor.",
           priceEuro: 16,
           color: "#42A5F5",
           targetBlock: "104",
@@ -619,7 +1066,8 @@ function fetchHockeyOffers({ block, row, seat }) {
         offers.push({
           id: 22,
           title: "Näher ans Eis",
-          description: "Wechsel in eine der unteren Reihen – näher an Checks & Action.",
+          description:
+            "Wechsel in eine der unteren Reihen – näher an Checks & Action.",
           priceEuro: 18,
           color: "#29B6F6",
           targetBlock: trimmed,
@@ -646,25 +1094,16 @@ function fetchHockeyOffers({ block, row, seat }) {
             : ` (Sitz ${seatNumber} – limitiertes Kontingent)`),
       }));
 
-      resolve(withDynamicText);
+      resolve(addUrgencyAndComparison(withDynamicText, { block, row, seat }));
     }, 700);
   });
 }
 
-/* ---------- MAP COMPONENTS FOR EACH EVENT ---------- */
+/* ---------- MAPS ---------- */
 
-function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
+function KoelnStadiumMap({ currentBlock, offers }) {
   const trimmed = (currentBlock || "").trim().toUpperCase();
   const currentId = trimmed;
-  const standNames = {
-    N: "Nordtribüne",
-    S: "Südtribüne (Heimfans)",
-    O: "Osttribüne",
-    W: "Westtribüne",
-  };
-  const currentStandLetter = currentId ? currentId[0] : "";
-  const currentStandName = standNames[currentStandLetter];
-
   const upgradeBlocks = Array.from(
     new Set(
       offers
@@ -675,19 +1114,34 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
     )
   );
 
-  function getFill(blockId) {
-    const isCurrent = blockId === currentId;
-    const isUpgrade = upgradeBlocks.includes(blockId);
+  function getFill(id) {
+    const isCurrent = id === currentId;
+    const isUpgrade = upgradeBlocks.includes(id);
 
     if (isCurrent && isUpgrade) return "#C8102E";
-    if (isCurrent) return teamColor;
+    if (isCurrent) return "#C8102E";
     if (isUpgrade) return "#FBC02D";
     return "#222";
   }
 
-  // Simple 3D style: we’ll just reuse block ids N1–N4, S1–S4, O1–O4, W1–W4
-  // but only care about first letter for realism.
-  const blocks = ["N1", "N2", "N3", "N4", "S1", "S2", "S3", "S4", "O1", "O2", "O3", "O4", "W1", "W2", "W3", "W4"];
+  const blocks = [
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "O1",
+    "O2",
+    "O3",
+    "O4",
+    "W1",
+    "W2",
+    "W3",
+    "W4",
+  ];
 
   return (
     <div
@@ -708,12 +1162,11 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
       >
         <span>RheinEnergieSTADION – schematische Ansicht</span>
         <span style={{ fontSize: 11, opacity: 0.8 }}>
-          Rot = aktueller Block · Gelb = Upgrade-Ziel
+          Rot = dein Block · Gelb = Upgrade-Ziel
         </span>
       </div>
 
       <svg viewBox="0 0 240 160" style={{ width: "100%", display: "block" }}>
-        {/* Outer bowl */}
         <path
           d="M 40 40 Q 120 10 200 40 L 215 120 Q 120 155 25 120 Z"
           fill="#101010"
@@ -721,7 +1174,6 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           strokeWidth="2"
         />
 
-        {/* Pitch */}
         <polygon
           points="85,55 175,55 195,115 65,115"
           fill="#0f3d1a"
@@ -729,7 +1181,6 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           strokeWidth="1.5"
         />
 
-        {/* Center line */}
         <line
           x1="130"
           y1="55"
@@ -740,8 +1191,7 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           strokeDasharray="3 3"
         />
 
-        {/* Just draw four segments per side, labelled generically */}
-        {/* Top/North blocks */}
+        {/* Top blocks */}
         {blocks.slice(0, 4).map((id, idx) => {
           const xStart = 80 + idx * 20;
           const xEnd = xStart + 18;
@@ -750,7 +1200,9 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           return (
             <g key={id}>
               <polygon
-                points={`${xStart},${yOuter} ${xEnd},${yOuter} ${xEnd + 3},${yInner} ${xStart - 3},${yInner}`}
+                points={`${xStart},${yOuter} ${xEnd},${yOuter} ${
+                  xEnd + 3
+                },${yInner} ${xStart - 3},${yInner}`}
                 fill={getFill(id)}
                 stroke="#333"
                 strokeWidth="1"
@@ -768,7 +1220,7 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           );
         })}
 
-        {/* Bottom/South blocks */}
+        {/* Bottom blocks */}
         {blocks.slice(4, 8).map((id, idx) => {
           const xStart = 80 + idx * 20;
           const xEnd = xStart + 18;
@@ -795,7 +1247,7 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           );
         })}
 
-        {/* Right/East blocks */}
+        {/* Right blocks */}
         {blocks.slice(8, 12).map((id, idx) => {
           const yStart = 60 + idx * 12;
           const yEnd = yStart + 10;
@@ -822,7 +1274,7 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
           );
         })}
 
-        {/* Left/West blocks */}
+        {/* Left blocks */}
         {blocks.slice(12, 16).map((id, idx) => {
           const yStart = 60 + idx * 12;
           const yEnd = yStart + 10;
@@ -848,25 +1300,12 @@ function KoelnStadiumMap({ currentBlock, offers, teamColor }) {
             </g>
           );
         })}
-
-        {currentId && (
-          <text
-            x="120"
-            y="155"
-            fill="#ccc"
-            fontSize="11"
-            textAnchor="middle"
-          >
-            Aktueller Block: {currentId}
-            {currentStandName ? ` · ${currentStandName}` : ""}
-          </text>
-        )}
       </svg>
     </div>
   );
 }
 
-function ConcertArenaMap({ currentBlock, offers, themeColor }) {
+function ConcertArenaMap({ currentBlock, offers }) {
   const trimmed = (currentBlock || "").trim().toUpperCase();
   const currentId = trimmed;
   const upgradeTargets = Array.from(
@@ -883,8 +1322,8 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
       (label === "INNENRAUM" && currentId.includes("INNEN"));
     const isUpgrade = upgradeTargets.includes(label);
 
-    if (isCurrent && isUpgrade) return themeColor;
-    if (isCurrent) return themeColor;
+    if (isCurrent && isUpgrade) return "#8E24AA";
+    if (isCurrent) return "#8E24AA";
     if (isUpgrade) return "#FBC02D";
     return "#222";
   }
@@ -908,12 +1347,11 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
       >
         <span>Uber Arena – Konzert Layout</span>
         <span style={{ fontSize: 11, opacity: 0.8 }}>
-          Mitte: Bühne · Ringe = Ränge
+          Innenraum + Ränge schematisch
         </span>
       </div>
 
       <svg viewBox="0 0 220 160" style={{ width: "100%", display: "block" }}>
-        {/* Outer bowl */}
         <ellipse
           cx="110"
           cy="80"
@@ -923,8 +1361,6 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
           stroke="#444"
           strokeWidth="2"
         />
-
-        {/* Upper tier */}
         <ellipse
           cx="110"
           cy="80"
@@ -934,8 +1370,6 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
           stroke="#333"
           strokeWidth="1"
         />
-
-        {/* Lower bowl */}
         <ellipse
           cx="110"
           cy="80"
@@ -946,7 +1380,6 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
           strokeWidth="1"
         />
 
-        {/* Floor / Innenraum */}
         <ellipse
           cx="110"
           cy="80"
@@ -966,7 +1399,6 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
           Innenraum
         </text>
 
-        {/* Stage rectangle at one side */}
         <rect
           x="85"
           y="45"
@@ -987,7 +1419,6 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
           Bühne
         </text>
 
-        {/* A few labeled sections */}
         <text
           x="110"
           y="22"
@@ -1029,7 +1460,7 @@ function ConcertArenaMap({ currentBlock, offers, themeColor }) {
   );
 }
 
-function HockeyArenaMap({ currentBlock, offers, themeColor }) {
+function HockeyArenaMap({ currentBlock, offers }) {
   const trimmed = (currentBlock || "").trim().toUpperCase();
   const currentId = trimmed;
   const upgradeTargets = Array.from(
@@ -1044,8 +1475,8 @@ function HockeyArenaMap({ currentBlock, offers, themeColor }) {
     const isCurrent = currentId === id;
     const isUpgrade = upgradeTargets.includes(id);
 
-    if (isCurrent && isUpgrade) return themeColor;
-    if (isCurrent) return themeColor;
+    if (isCurrent && isUpgrade) return "#1565C0";
+    if (isCurrent) return "#1565C0";
     if (isUpgrade) return "#FBC02D";
     return "#222";
   }
@@ -1069,12 +1500,11 @@ function HockeyArenaMap({ currentBlock, offers, themeColor }) {
       >
         <span>Uber Arena – Eishockey Layout</span>
         <span style={{ fontSize: 11, opacity: 0.8 }}>
-          Mitte: Eis · Blöcke = Sektionen
+          Neutral · Zentrum · Torbereiche
         </span>
       </div>
 
       <svg viewBox="0 0 230 160" style={{ width: "100%", display: "block" }}>
-        {/* Rink */}
         <rect
           x="55"
           y="40"
@@ -1087,7 +1517,6 @@ function HockeyArenaMap({ currentBlock, offers, themeColor }) {
           strokeWidth="2"
         />
 
-        {/* Center line */}
         <line
           x1="115"
           y1="40"
@@ -1096,8 +1525,6 @@ function HockeyArenaMap({ currentBlock, offers, themeColor }) {
           stroke="#f44336"
           strokeWidth="1"
         />
-
-        {/* Blue lines */}
         <line
           x1="85"
           y1="40"
@@ -1115,7 +1542,6 @@ function HockeyArenaMap({ currentBlock, offers, themeColor }) {
           strokeWidth="1"
         />
 
-        {/* Few key sections */}
         <text
           x="115"
           y="25"
