@@ -4,6 +4,7 @@ import pictureDrakeHero from "./assets/picture_drake_hero.jpg";
 import pictureEisbaerenHero from "./assets/picture_eisbaeren_hero.jpg";
 import pictureReco1 from "./assets/picture_reco_1.jpg";
 import pictureReco2 from "./assets/picture_reco_2.jpg";
+import AppLogo from "./assets/app_logo.png";
 
 const EVENTS = [
   {
@@ -11,21 +12,66 @@ const EVENTS = [
     name: "1. FC Köln vs Hertha BSC",
     venue: "RheinEnergieSTADION",
     primaryColor: "#C8102E",
-    seatLabel: "Block (z.B. S3, N2, O3, W1)",
+    seatLabel: "Block (z. B. S3, N2, O3, W1)",
+    type: "football",
+    dateUtc: "2025-12-01T18:30:00Z",
+    demandLevel: "high",
   },
   {
     id: "drake-uber",
     name: "Drake – World Tour",
     venue: "Uber Arena Berlin",
     primaryColor: "#8E24AA",
-    seatLabel: "Bereich (z.B. 211, 103, Innenraum)",
+    seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
+    type: "concert",
+    dateUtc: "2025-11-28T20:00:00Z",
+    demandLevel: "high",
   },
   {
     id: "eisbaeren-adler",
     name: "Eisbären Berlin vs Adler Mannheim",
     venue: "Uber Arena Berlin",
     primaryColor: "#1565C0",
-    seatLabel: "Sektion (z.B. 106, 204, 119)",
+    seatLabel: "Sektion (z. B. 106, 204, 119)",
+    type: "hockey",
+    dateUtc: "2025-12-05T19:30:00Z",
+    demandLevel: "medium",
+  },
+
+  // 🔴 NEW: Bayern vs Dortmund
+  {
+    id: "bayern-dortmund",
+    name: "FC Bayern München vs Borussia Dortmund",
+    venue: "Allianz Arena",
+    primaryColor: "#DC052D",
+    seatLabel: "Block (z. B. 116, 132, 240)",
+    type: "football",
+    dateUtc: "2025-12-10T17:30:00Z",
+    demandLevel: "high",
+  },
+
+  // 🟡 NEW: ALBA vs Bonn in Bonn
+  {
+    id: "alba-bonn",
+    name: "ALBA Berlin vs Bonner Baskets",
+    venue: "Telekom Dome Bonn",
+    primaryColor: "#FBC02D",
+    seatLabel: "Block (z. B. 104, 210)",
+    type: "football", // läuft unter „Fußball“-Filter, du kannst später eine Basketball-Kategorie ergänzen
+    dateUtc: "2025-12-03T19:00:00Z",
+    demandLevel: "medium",
+  },
+
+  // 🔵 NEW: Red Bull München vs Straubing in SAP Arena
+  {
+    id: "redbull-straubing",
+    name: "Red Bull München vs Straubing",
+    venue: "SAP Arena",
+    primaryColor: "#1976D2",
+    seatLabel: "Sektion (z. B. 104, 203, 119)",
+    type: "hockey",
+    dateUtc: "2025-12-08T19:15:00Z",
+    demandLevel: "medium",
   },
 ];
 
@@ -255,7 +301,7 @@ function App() {
 function PremiumHeader({ activeTab, currentEvent }) {
   const subtitle =
     activeTab === "events"
-      ? "Wähle dein Event, wir kümmern uns um den Rest"
+      ? "Wähle dein Event – Echtzeit-Seat-Upgrades"
       : activeTab === "upgrades" && currentEvent
       ? currentEvent.name
       : activeTab === "saved"
@@ -270,7 +316,7 @@ function PremiumHeader({ activeTab, currentEvent }) {
         width: "100%",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        background: "rgba(15, 15, 15, 0.85)",
+        background: "rgba(10, 10, 10, 0.65)",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
         zIndex: 100,
       }}
@@ -279,57 +325,68 @@ function PremiumHeader({ activeTab, currentEvent }) {
         style={{
           maxWidth: 480,
           margin: "0 auto",
-          padding: "14px 16px 10px",
+          padding: "16px 0 10px",
           textAlign: "center",
         }}
       >
-        <div
-          style={{
-            width: 14,
-            height: 14,
-            margin: "0 auto 6px",
-            background: "linear-gradient(135deg, #fff, #888)",
-            transform: "rotate(45deg)",
-            borderRadius: 3,
-            opacity: 0.85,
-          }}
-        />
+        {/* LOGO + GLOW */}
+        <div style={{ position: "relative", display: "inline-block" }}>
+          {/* Glow */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: 110,
+              height: 110,
+              transform: "translate(-50%, -50%)",
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)",
+              filter: "blur(8px)",
+            }}
+          />
 
-        <div
-          style={{
-            fontWeight: "700",
-            fontSize: 19,
-            letterSpacing: 0.5,
-          }}
-        >
-          SeatUpgrade
+          {/* Logo image */}
+          <img
+            src={AppLogo}
+            alt="SeatUpgrade Logo"
+            style={{
+              height: 60,
+              width: "auto",
+              position: "relative",
+              zIndex: 2,
+              userSelect: "none",
+            }}
+          />
         </div>
 
+        {/* Slogan */}
         <div
           style={{
-            fontSize: 12,
-            color: "#bbb",
-            marginTop: 4,
+            marginTop: 8,
+            fontSize: 13,
+            color: "#ccc",
+            letterSpacing: 0.3,
+            textShadow: "0 0 4px rgba(0,0,0,0.4)",
             minHeight: 16,
           }}
         >
           {subtitle}
         </div>
 
+        {/* Divider line */}
         <div
           style={{
-            marginTop: 8,
+            marginTop: 10,
             height: 2,
-            width: "60%",
+            width: "65%",
             marginLeft: "auto",
             marginRight: "auto",
-            background: `linear-gradient(90deg,
-              rgba(255,255,255,0) 0%,
-              rgba(255,255,255,0.25) 50%,
-              rgba(255,255,255,0) 100%
-            )`,
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)",
+            opacity: 0.5,
             borderRadius: 2,
-            opacity: 0.6,
           }}
         />
       </div>
