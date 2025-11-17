@@ -1,4 +1,9 @@
 import { useState, useEffect } from "react";
+import pictureKoelnHero from "./assets/picture_koeln_hero.jpg";
+import pictureDrakeHero from "./assets/picture_drake_hero.jpg";
+import pictureEisbaerenHero from "./assets/picture_eisbaeren_hero.jpg";
+import pictureReco1 from "./assets/picture_reco_1.jpg";
+import pictureReco2 from "./assets/picture_reco_2.jpg";
 
 const EVENTS = [
   {
@@ -335,9 +340,131 @@ function PremiumHeader({ activeTab, currentEvent }) {
 /* ---------- EVENTS TAB ---------- */
 
 function EventsTab({ events, selectedEventId, onSelectEvent }) {
+  const [categoryFilter, setCategoryFilter] = useState("all"); // all | football | concert | hockey
+  const [dateFilter, setDateFilter] = useState("all"); // all | today | week | month
+
+  const now = new Date();
+
+  function formatDate(ev) {
+    if (!ev.dateUtc) return "";
+    const d = new Date(ev.dateUtc);
+    return d.toLocaleString("de-DE", {
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function isLive(ev) {
+    if (!ev.dateUtc) return false;
+    const d = new Date(ev.dateUtc);
+    const diffMinutes = (d.getTime() - now.getTime()) / 60000;
+    // "Live" = from 30 min before start until 90 min after start
+    return diffMinutes > -90 && diffMinutes < 30;
+  }
+
+  function matchesCategory(ev) {
+    if (categoryFilter === "all") return true;
+    return ev.type === categoryFilter;
+  }
+
+  function matchesDate(ev) {
+    if (!ev.dateUtc || dateFilter === "all") return true;
+    const d = new Date(ev.dateUtc);
+
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const startOfTomorrow = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1
+    );
+
+    if (dateFilter === "today") {
+      return d >= startOfToday && d < startOfTomorrow;
+    }
+
+    if (dateFilter === "week") {
+      const endOfWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 7
+      );
+      return d >= startOfToday && d < endOfWeek;
+    }
+
+    if (dateFilter === "month") {
+      const endOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate()
+      );
+      return d >= startOfToday && d < endOfMonth;
+    }
+
+    return true;
+  }
+
+  // 🔁 Attach live info
+  const enrichedEvents = events.map((ev) => ({
+    ...ev,
+    isLive: isLive(ev),
+  }));
+
+  const liveEvents = enrichedEvents.filter((ev) => ev.isLive);
+
+  // 🔁 Top event = first high demand or first event
+  const topEvent =
+    enrichedEvents.find((ev) => ev.demandLevel === "high") ||
+    enrichedEvents[0];
+
+  // 🔁 Hero image based on event id
+  function getHeroImage(ev) {
+    if (!ev) return null;
+    if (ev.id === "koeln-hertha") return pictureKoelnHero;
+    if (ev.id === "drake-uber") return pictureDrakeHero;
+    if (ev.id === "eisbaeren-adler") return pictureEisbaerenHero;
+    return pictureKoelnHero; // fallback
+  }
+
+  const filteredEvents = enrichedEvents.filter(
+    (ev) => matchesCategory(ev) && matchesDate(ev)
+  );
+
+  const recommendedEvents = filteredEvents.slice(0, 2);
+
+  const comingSoonEvents = enrichedEvents
+    .filter((ev) => {
+      if (!ev.dateUtc) return false;
+      const d = new Date(ev.dateUtc);
+      return d > now && !ev.isLive;
+    })
+    .sort((a, b) => new Date(a.dateUtc) - new Date(b.dateUtc))
+    .slice(0, 3);
+
+  const categoryOptions = [
+    { id: "all", label: "Alle" },
+    { id: "football", label: "⚽ Fußball" },
+    { id: "concert", label: "🎤 Konzerte" },
+    { id: "hockey", label: "🏒 Eishockey" },
+  ];
+
+  const dateOptions = [
+    { id: "all", label: "Alle Daten" },
+    { id: "today", label: "Heute" },
+    { id: "week", label: "Diese Woche" },
+    { id: "month", label: "Dieser Monat" },
+  ];
+
   return (
     <div>
-      <h2 style={{ fontSize: 18, marginBottom: 8 }}>Event auswählen</h2>
+      {/* TITLE */}
+      <h2 style={{ fontSize: 18, marginBottom: 4 }}>Events entdecken</h2>
       <p
         style={{
           fontSize: 13,
@@ -345,36 +472,527 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           marginBottom: 12,
         }}
       >
-        Wähle dein Spiel oder Konzert, gib deinen Sitzplatz ein und prüfe
-        mögliche Upgrades in Echtzeit.
+        Wähle Spiel oder Konzert, gib deinen Sitzplatz ein und hol dir das
+        perfekte Upgrade – in Echtzeit simuliert.
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {events.map((ev) => {
-          const isActive = ev.id === selectedEventId;
-          return (
-            <button
-              key={ev.id}
-              onClick={() => onSelectEvent(ev.id)}
+      {/* LIVE NOW PILL (if any live events) */}
+      {liveEvents.length > 0 && (
+        <div
+          style={{
+            marginBottom: 10,
+            padding: 8,
+            borderRadius: 999,
+            background:
+              "linear-gradient(90deg, rgba(76,175,80,0.3), rgba(0,0,0,0))",
+            border: "1px solid rgba(76,175,80,0.6)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: "#4CAF50",
+              boxShadow: "0 0 8px rgba(76,175,80,0.8)",
+            }}
+          />
+          <span>
+            <strong>Live jetzt:</strong>{" "}
+            {liveEvents.map((ev) => ev.name).join(" · ")}
+          </span>
+        </div>
+      )}
+
+      {/* HERO TOP EVENT */}
+      {topEvent && (
+        <div
+          onClick={() => onSelectEvent(topEvent.id)}
+          style={{
+            marginBottom: 18,
+            padding: 14,
+            borderRadius: 16,
+            background: `linear-gradient(135deg, ${
+              topEvent.primaryColor
+            }, rgba(0,0,0,0.85))`,
+            cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
+            <span
               style={{
-                padding: 10,
-                borderRadius: 10,
-                border: `1px solid ${
-                  isActive ? ev.primaryColor : "#333"
-                }`,
-                backgroundColor: isActive ? "#1f1f1f" : "#141414",
-                color: "white",
-                textAlign: "left",
-                cursor: "pointer",
-                fontSize: 14,
+                padding: "2px 8px",
+                borderRadius: 999,
+                border: "1px solid rgba(255,255,255,0.8)",
+                backgroundColor: "rgba(0,0,0,0.25)",
               }}
             >
-              <div style={{ fontWeight: "bold" }}>{ev.name}</div>
-              <div style={{ fontSize: 12, color: "#bbb" }}>{ev.venue}</div>
-            </button>
-          );
-        })}
+              🔥 Top Event
+            </span>
+            <span style={{ opacity: 0.9 }}>
+              {topEvent.type === "football"
+                ? "⚽ Fußball"
+                : topEvent.type === "concert"
+                ? "🎤 Konzert"
+                : "🏒 Eishockey"}
+            </span>
+          </div>
+
+          {/* HERO IMAGE */}
+          <div
+            style={{
+              borderRadius: 12,
+              overflow: "hidden",
+              height: 80,
+              border: "1px solid rgba(255,255,255,0.25)",
+            }}
+          >
+            <img
+              src={getHeroImage(topEvent)}
+              alt={topEvent.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                fontSize: 16,
+                marginBottom: 2,
+              }}
+            >
+              {topEvent.name}
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#f5f5f5",
+              }}
+            >
+              {topEvent.venue}
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#f5f5f5",
+                marginTop: 4,
+                opacity: 0.9,
+              }}
+            >
+              {formatDate(topEvent)}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 12,
+            }}
+          >
+            <span style={{ color: "#f1f8e9" }}>
+              Hohe Nachfrage · ideale Upgrade-Chancen
+            </span>
+            <span
+              style={{
+                padding: "4px 8px",
+                borderRadius: 999,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                border: "1px solid rgba(255,255,255,0.4)",
+              }}
+            >
+              Jetzt Sitz eingeben
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* FILTERS */}
+      <div
+        style={{
+          marginBottom: 12,
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        {/* Category filter */}
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            overflowX: "auto",
+            paddingBottom: 2,
+          }}
+        >
+          {categoryOptions.map((opt) => {
+            const isActive = opt.id === categoryFilter;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setCategoryFilter(opt.id)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  border: isActive ? "1px solid #ffffff" : "1px solid #444",
+                  backgroundColor: isActive ? "#ffffff" : "#1a1a1a",
+                  color: isActive ? "#111" : "#eee",
+                  fontSize: 11,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Date filter */}
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            overflowX: "auto",
+            paddingBottom: 2,
+          }}
+        >
+          {dateOptions.map((opt) => {
+            const isActive = opt.id === dateFilter;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setDateFilter(opt.id)}
+                style={{
+                  padding: "5px 9px",
+                  borderRadius: 999,
+                  border: isActive ? "1px solid #90caf9" : "1px solid #333",
+                  backgroundColor: isActive ? "#0d47a1" : "#141414",
+                  color: isActive ? "#e3f2fd" : "#ddd",
+                  fontSize: 11,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {/* RECOMMENDED SECTION */}
+      {recommendedEvents.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: "bold",
+              marginBottom: 6,
+            }}
+          >
+            Empfohlen für dich
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {recommendedEvents.map((ev, idx) => (
+              <button
+                key={ev.id}
+                onClick={() => onSelectEvent(ev.id)}
+                style={{
+                  textAlign: "left",
+                  padding: 10,
+                  borderRadius: 12,
+                  border:
+                    ev.id === selectedEventId
+                      ? "1px solid #ffffff"
+                      : "1px solid #333",
+                  background:
+                    "linear-gradient(135deg, #202020, #121212)",
+                  color: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "center",
+                }}
+              >
+                {/* RECOMMENDED IMAGES */}
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    border: "1px solid #444",
+                    backgroundColor: "#222",
+                  }}
+                >
+                  <img
+                    src={idx === 0 ? pictureReco1 : pictureReco2}
+                    alt={ev.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 13,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {ev.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#bbb",
+                    }}
+                  >
+                    {ev.venue}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#888",
+                      marginTop: 2,
+                    }}
+                  >
+                    {formatDate(ev)}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#a5d6a7",
+                    textAlign: "right",
+                  }}
+                >
+                  Gute Upgrade-Chancen
+                  <br />
+                  <span style={{ fontSize: 10, color: "#81c784" }}>
+                    Beliebt bei Fans
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* MAIN EVENT LIST */}
+      <div style={{ marginTop: 8, marginBottom: 12 }}>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: "bold",
+            marginBottom: 6,
+          }}
+        >
+          Alle passenden Events
+        </div>
+
+        {filteredEvents.length === 0 && (
+          <p style={{ fontSize: 12, color: "#999" }}>
+            Keine Events für diese Filter gefunden. Ändere Kategorie oder
+            Zeitraum.
+          </p>
+        )}
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          {filteredEvents.map((ev) => {
+            const isActive = ev.id === selectedEventId;
+            return (
+              <button
+                key={ev.id}
+                onClick={() => onSelectEvent(ev.id)}
+                style={{
+                  padding: 10,
+                  borderRadius: 10,
+                  border: `1px solid ${
+                    isActive ? ev.primaryColor : "#333"
+                  }`,
+                  backgroundColor: isActive ? "#1f1f1f" : "#141414",
+                  color: "white",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      marginBottom: 2,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {ev.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#bbb",
+                    }}
+                  >
+                    {ev.venue}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#888",
+                      marginTop: 2,
+                    }}
+                  >
+                    {formatDate(ev)}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    fontSize: 11,
+                    color: "#ccc",
+                  }}
+                >
+                  {ev.isLive ? (
+                    <span
+                      style={{
+                        padding: "3px 7px",
+                        borderRadius: 999,
+                        backgroundColor: "#2e7d32",
+                        color: "#fff",
+                        fontSize: 11,
+                      }}
+                    >
+                      🟢 Live
+                    </span>
+                  ) : ev.demandLevel === "high" ? (
+                    <span
+                      style={{
+                        padding: "3px 7px",
+                        borderRadius: 999,
+                        backgroundColor: "#8B1A1A",
+                        color: "#fff",
+                        fontSize: 11,
+                      }}
+                    >
+                      🔥 Hohe Nachfrage
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        padding: "3px 7px",
+                        borderRadius: 999,
+                        backgroundColor: "#333",
+                        color: "#ccc",
+                        fontSize: 11,
+                      }}
+                    >
+                      Upgrade verfügbar
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* COMING SOON */}
+      {comingSoonEvents.length > 0 && (
+        <div
+          style={{
+            padding: 10,
+            borderRadius: 10,
+            backgroundColor: "#101010",
+            border: "1px solid #333",
+            fontSize: 12,
+          }}
+        >
+          <div
+            style={{
+              marginBottom: 6,
+              fontWeight: "bold",
+            }}
+          >
+            ⏳ Coming soon
+          </div>
+          {comingSoonEvents.map((ev, idx) => (
+            <div
+              key={ev.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom:
+                  idx === comingSoonEvents.length - 1 ? 0 : 4,
+              }}
+            >
+              <span
+                style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: 200,
+                  }
+                  }
+              >
+                {ev.name}
+              </span>
+              <span style={{ color: "#aaa", fontSize: 11 }}>
+                {formatDate(ev)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -639,7 +1257,7 @@ function UpgradesTab({
           placeholder="Ticket-Code / Barcode (Demo)"
           style={{
             ...inputStyle,
-            textAlign: "left",
+            textAlign: "center",
             fontSize: 14,
           }}
         />
