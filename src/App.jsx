@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import pictureKoelnHero from "./assets/picture_koeln_hero.jpg";
 import pictureDrakeHero from "./assets/picture_drake_hero.jpg";
 import pictureEisbaerenHero from "./assets/picture_eisbaeren_hero.jpg";
+import pictureBayernHero from "./assets/picture_bayern_hero.jpg";
+import pictureAlbaHero from "./assets/picture_alba_hero.jpg";
+import pictureRedBullHero from "./assets/picture_redbull_hero.jpg";
 import pictureReco1 from "./assets/picture_reco_1.jpg";
 import pictureReco2 from "./assets/picture_reco_2.jpg";
 import AppLogo from "./assets/app_logo.png";
@@ -16,8 +19,8 @@ const EVENTS = [
     seatLabel: "Block (z. B. S3, N2, O3, W1)",
     type: "football",
     dateUtc: "2025-12-01T18:30:00Z",
-    demandLevel: "high",
-    isUpgradable: true,
+    demandLevel: "medium",
+    isUpgradable: false,
   },
   {
     id: "drake-uber",
@@ -27,8 +30,8 @@ const EVENTS = [
     primaryColor: "#8E24AA",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
-    dateUtc: "2025-11-28T20:00:00Z",
-    demandLevel: "medium",
+    dateUtc: "2025-11-18T13:55:00Z",
+    demandLevel: "high",
     isUpgradable: true,
   },
   {
@@ -61,7 +64,7 @@ const EVENTS = [
   // 🟡 NEW: ALBA vs Bonn in Bonn
   {
     id: "alba-bonn",
-    name: "ALBA Berlin vs Bonner Baskets",
+    name: "Bonner Baskets vs ALBA Berlin",
     venue: "Telekom Dome Bonn",
     city: "Bonn",
     primaryColor: "#FBC02D",
@@ -547,40 +550,18 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   ];
 
   return (
-    <div>
-      {/* TITLE */}
-    <h2
+    <div
       style={{
-        fontSize: 22,
-        fontWeight: 700,
-        marginBottom: 6,
-        letterSpacing: 0.3,
-        textAlign: "center",
+        maxWidth: 400,         // <– narrower than full app
+        margin: "0 auto",      // <– centered on the screen
       }}
     >
-      Events entdecken
-    </h2>
-
-    <p
-      style={{
-        fontSize: 13,
-        color: "#aaa",
-        marginBottom: 14,
-        textAlign: "center",
-        lineHeight: 1.45,
-      }}
-    >
-        Alle Veranstaltungen – eine App. Deine Upgrades – in Sekunden.
-
-    </p>
-
-
-      {/* LIVE NOW PILL (if any live events) */}
+    {/* LIVE NOW PILL (if any live events) */}
       {liveEvents.length > 0 && (
         <div
           style={{
             marginBottom: 10,
-            padding: 8,
+            padding: 10,
             borderRadius: 999,
             background:
               "linear-gradient(90deg, rgba(76,175,80,0.3), rgba(0,0,0,0))",
@@ -605,9 +586,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             {liveEvents.map((ev) => ev.name).join(" · ")}
           </span>
         </div>
-      )}
+    )}
 
-      {/* HERO TOP EVENT */}
+    {/* HERO TOP EVENT */}
       {topEvent && (
         <div
           onClick={() => onSelectEvent(topEvent.id)}
@@ -658,7 +639,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             style={{
               borderRadius: 12,
               overflow: "hidden",
-              height: 80,
+              height: 100,
               border: "1px solid rgba(255,255,255,0.25)",
             }}
           >
@@ -710,7 +691,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              fontSize: 12,
+              fontSize: 10,
             }}
           >
             <span style={{ color: "#f1f8e9" }}>
@@ -803,116 +784,6 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           })}
         </div>
       </div>
-
-      {/* RECOMMENDED SECTION */}
-      {recommendedEvents.length > 0 && (
-        <div style={{ marginBottom: 14 }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: "bold",
-              marginBottom: 6,
-            }}
-          >
-            Empfohlen für dich
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
-          >
-            {recommendedEvents.map((ev, idx) => (
-              <button
-                key={ev.id}
-                onClick={() => onSelectEvent(ev.id)}
-                style={{
-                  textAlign: "left",
-                  padding: 10,
-                  borderRadius: 12,
-                  border:
-                    ev.id === selectedEventId
-                      ? "1px solid #ffffff"
-                      : "1px solid #333",
-                  background:
-                    "linear-gradient(135deg, #202020, #121212)",
-                  color: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "center",
-                }}
-              >
-                {/* RECOMMENDED IMAGES */}
-                <div
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 10,
-                    overflow: "hidden",
-                    flexShrink: 0,
-                    border: "1px solid #444",
-                    backgroundColor: "#222",
-                  }}
-                >
-                  <img
-                    src={idx === 0 ? pictureReco1 : pictureReco2}
-                    alt={ev.name}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: 13,
-                      marginBottom: 2,
-                    }}
-                  >
-                    {ev.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#bbb",
-                    }}
-                  >
-                    {ev.venue}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#888",
-                      marginTop: 2,
-                    }}
-                  >
-                    {formatDate(ev)}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "#a5d6a7",
-                    textAlign: "right",
-                  }}
-                >
-                  Gute Upgrade-Chancen
-                  <br />
-                  <span style={{ fontSize: 10, color: "#81c784" }}>
-                    Beliebt bei Fans
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* MAIN EVENT LIST */}
         <div
@@ -1044,8 +915,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   </div>
                 </div>
 
-                {/* BADGE: Live / High demand / Default */}
-                                {/* BADGE AREA */}
+                {/* BADGE AREA */}
                 <div
                   style={{
                     marginLeft: 6,
@@ -1181,11 +1051,13 @@ function getEventHeroImage(ev) {
       return pictureDrakeHero;
     case "eisbaeren-adler":
       return pictureEisbaerenHero;
+    case "bayern-dortmund":
+      return pictureBayernHero;
+    case "alba-bonn":
+      return pictureAlbaHero;
+    case "redbull-straubing":
+      return pictureRedBullHero;
 
-    // You can later add dedicated images:
-    // case "bayern-dortmund": return pictureBayernHero;
-    // case "alba-bonn": return pictureAlbaHero;
-    // case "redbull-straubing": return pictureRedBullHero;
 
     default:
       // Fallback hero if no specific image exists yet
@@ -2253,10 +2125,10 @@ function AccountTab() {
 
 function BottomNav({ activeTab, onChange }) {
   const items = [
-    { id: "events", label: "Events", icon: "🏟️" },
-    { id: "upgrades", label: "Upgrades", icon: "⬆️" },
-    { id: "saved", label: "Gemerkt", icon: "⭐" },
-    { id: "account", label: "Konto", icon: "👤" },
+    { id: "events", label: "Events"},
+    { id: "upgrades", label: "Upgrades"},
+    { id: "saved", label: "Gemerkt"},
+    { id: "account", label: "Konto"},
   ];
 
   return (
@@ -2300,7 +2172,7 @@ function BottomNav({ activeTab, onChange }) {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 10,
+                fontSize: 12,
                 cursor: "pointer",
                 padding: 0,
               }}
