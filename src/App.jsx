@@ -17,17 +17,19 @@ const EVENTS = [
     type: "football",
     dateUtc: "2025-12-01T18:30:00Z",
     demandLevel: "high",
+    isUpgradable: true,
   },
   {
     id: "drake-uber",
-    name: "Drake – World Tour",
+    name: "Drake – Boy Meets World Tour",
     venue: "Uber Arena Berlin",
     city: "Berlin",
     primaryColor: "#8E24AA",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
     dateUtc: "2025-11-28T20:00:00Z",
-    demandLevel: "high",
+    demandLevel: "medium",
+    isUpgradable: true,
   },
   {
     id: "eisbaeren-adler",
@@ -39,6 +41,7 @@ const EVENTS = [
     type: "hockey",
     dateUtc: "2025-12-05T19:30:00Z",
     demandLevel: "medium",
+    isUpgradable: false,
   },
 
   // 🔴 NEW: Bayern vs Dortmund
@@ -52,6 +55,7 @@ const EVENTS = [
     type: "football",
     dateUtc: "2025-12-10T17:30:00Z",
     demandLevel: "high",
+    isUpgradable: false,
   },
 
   // 🟡 NEW: ALBA vs Bonn in Bonn
@@ -65,6 +69,7 @@ const EVENTS = [
     type: "football", // läuft unter „Fußball“-Filter, du kannst später eine Basketball-Kategorie ergänzen
     dateUtc: "2025-12-03T19:00:00Z",
     demandLevel: "medium",
+    isUpgradable: false,
   },
 
   // 🔵 NEW: Red Bull München vs Straubing in SAP Arena
@@ -78,6 +83,7 @@ const EVENTS = [
     type: "hockey",
     dateUtc: "2025-12-08T19:15:00Z",
     demandLevel: "medium",
+    isUpgradable: false,
   },
 ];
 
@@ -105,7 +111,7 @@ function App() {
 
   const pageStyles = {
     minHeight: "100vh",
-    backgroundColor: "#0b0b0b",
+    backgroundColor: "#2c3b37",
     color: "white",
     fontFamily:
       "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
@@ -494,10 +500,11 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     isLive: isLive(ev),
   }));
 
-  const liveEvents = enrichedEvents.filter((ev) => ev.isLive);
+  const liveEvents = enrichedEvents.filter((ev) => ev.isLive);      
 
   // 🔁 Top event = first high demand or first event
   const topEvent =
+    enrichedEvents.find((ev) => ev.isUpgradable === "true") ||
     enrichedEvents.find((ev) => ev.demandLevel === "high") ||
     enrichedEvents[0];
 
@@ -542,17 +549,31 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   return (
     <div>
       {/* TITLE */}
-      <h2 style={{ fontSize: 18, marginBottom: 4 }}>Events entdecken</h2>
-      <p
-        style={{
-          fontSize: 13,
-          color: "#b3b3b3",
-          marginBottom: 12,
-        }}
-      >
-        Wähle Spiel oder Konzert, gib deinen Sitzplatz ein und hol dir das
-        perfekte Upgrade – in Echtzeit simuliert.
-      </p>
+    <h2
+      style={{
+        fontSize: 22,
+        fontWeight: 700,
+        marginBottom: 6,
+        letterSpacing: 0.3,
+        textAlign: "center",
+      }}
+    >
+      Events entdecken
+    </h2>
+
+    <p
+      style={{
+        fontSize: 13,
+        color: "#aaa",
+        marginBottom: 14,
+        textAlign: "center",
+        lineHeight: 1.45,
+      }}
+    >
+        Alle Veranstaltungen – eine App. Deine Upgrades – in Sekunden.
+
+    </p>
+
 
       {/* LIVE NOW PILL (if any live events) */}
       {liveEvents.length > 0 && (
@@ -1024,6 +1045,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 </div>
 
                 {/* BADGE: Live / High demand / Default */}
+                                {/* BADGE AREA */}
                 <div
                   style={{
                     marginLeft: 6,
@@ -1031,38 +1053,59 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                     textAlign: "right",
                   }}
                 >
-                  {ev.isLive ? (
+                  {/* If NOT upgradable yet → Bald verfügbar */}
+                  {!ev.isUpgradable ? (
+                    <span
+                      style={{
+                        padding: "3px 7px",
+                        borderRadius: 999,
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                        border: "1px solid rgba(255,255,255,0.3)",
+                        color: "#fff",
+                        fontSize: 9,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      🕒 Bald verfügbar
+                    </span>
+                  ) : ev.isLive ? (
+                    // If upgradable + live
                     <span
                       style={{
                         padding: "3px 7px",
                         borderRadius: 999,
                         backgroundColor: "#2e7d32",
                         color: "#fff",
-                        fontSize: 11,
+                        fontSize: 9,
+                        whiteSpace: "nowrap",
                       }}
                     >
                       🟢 Live
                     </span>
                   ) : ev.demandLevel === "high" ? (
+                    // If upgradable + high demand
                     <span
                       style={{
                         padding: "3px 7px",
                         borderRadius: 999,
                         backgroundColor: "#8B1A1A",
                         color: "#fff",
-                        fontSize: 11,
+                        fontSize: 9,
+                        whiteSpace: "nowrap",
                       }}
                     >
                       🔥 Hohe Nachfrage
                     </span>
                   ) : (
+                    // Upgradable + normal
                     <span
                       style={{
                         padding: "3px 7px",
                         borderRadius: 999,
                         backgroundColor: "#333",
                         color: "#ccc",
-                        fontSize: 11,
+                        fontSize: 9,
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Upgrade verfügbar
@@ -1073,6 +1116,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             );
           })}
         </div>
+
 
 
       {/* COMING SOON */}
@@ -1126,6 +1170,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     </div>
   );
 }
+
 function getEventHeroImage(ev) {
   if (!ev) return null;
 
@@ -1379,35 +1424,61 @@ function UpgradesTab({
         </div>
       )}
 
-      {/* Event info (unchanged) */}
+      {/* Event Info – Premium Style Under Hero */}
       <div
         style={{
-          padding: 12,
-          marginBottom: 16,
-          borderRadius: 12,
-          background:
-            "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-          border: "1px solid rgba(255,255,255,0.08)",
-          fontSize: 13,
+          textAlign: "center",
+          marginTop: -10,
+          marginBottom: 20,
+          padding: "12px 10px",
         }}
       >
-        <div style={{ fontWeight: "bold", marginBottom: 4 }}>
+        {/* Event Title */}
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            letterSpacing: 0.4,
+            marginBottom: 6,
+          }}
+        >
           {currentEvent.name}
         </div>
-        <div style={{ color: "#ccc" }}>{currentEvent.venue}</div>
-        <div style={{ marginTop: 6, color: "#aaa", fontSize: 12 }}>
+
+        {/* Location Line */}
+        <div
+          style={{
+            fontSize: 13,
+            color: "#bfbfbf",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 6,
+          }}
+        >
+          <span style={{ fontSize: 14 }}>📍</span>
+          <span>
+            {currentEvent.city} · {currentEvent.venue}
+          </span>
+        </div>
+
+        {/* Small description */}
+        <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>
           Demo: Sitzplatz eingeben, mögliche Upgrades werden simuliert.
         </div>
       </div>
 
+
       {/* Seat input */}
       <h3 style={{ textAlign: "center", marginTop: 0 }}>Sitzplatz eingeben</h3>
+
       <p
         style={{
           textAlign: "center",
           color: "#b3b3b3",
           fontSize: 13,
-          marginBottom: 16,
+          marginBottom: 8,
         }}
       >
         {currentEvent.id === "koeln-hertha" &&
@@ -1419,38 +1490,98 @@ function UpgradesTab({
       </p>
 
       <form onSubmit={onSubmit}>
-        <input
-          value={block}
-          onChange={(e) => setBlock(e.target.value)}
-          placeholder={currentEvent.seatLabel}
-          style={inputStyle}
-        />
-        <input
-          value={row}
-          onChange={(e) => setRow(e.target.value)}
-          placeholder="Reihe (z. B. 12)"
-          style={inputStyle}
-        />
-        <input
-          value={seat}
-          onChange={(e) => setSeat(e.target.value)}
-          placeholder="Sitz (z. B. 27)"
-          style={inputStyle}
-        />
+        {/* 🔥 Three Input Bubbles in One Row */}
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          {/* Block */}
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <input
+              value={block}
+              onChange={(e) => setBlock(e.target.value)}
+              placeholder={currentEvent.seatLabel}
+              style={{
+                width: "50%",
+                padding: "12px",
+                borderRadius: 12,
+                border: "1px solid #333",
+                backgroundColor: "#1a1a1a",
+                color: "#fff",
+                fontSize: 14,
+                textAlign: "center",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              }}
+            />
+            <div style={{ marginTop: 4, fontSize: 11, color: "#999" }}>Block</div>
+          </div>
 
-        {/* Ticket-Code field */}
+          {/* Row */}
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <input
+              value={row}
+              onChange={(e) => setRow(e.target.value)}
+              placeholder="Reihe"
+              style={{
+                width: "50%",
+                padding: "12px",
+                borderRadius: 12,
+                border: "1px solid #333",
+                backgroundColor: "#1a1a1a",
+                color: "#fff",
+                fontSize: 14,
+                textAlign: "center",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              }}
+            />
+            <div style={{ marginTop: 4, fontSize: 11, color: "#999" }}>Reihe</div>
+          </div>
+
+          {/* Seat */}
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <input
+              value={seat}
+              onChange={(e) => setSeat(e.target.value)}
+              placeholder="Sitz"
+              style={{
+                width: "50%",
+                padding: "12px",
+                borderRadius: 12,
+                border: "1px solid #333",
+                backgroundColor: "#1a1a1a",
+                color: "#fff",
+                fontSize: 14,
+                textAlign: "center",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              }}
+            />
+            <div style={{ marginTop: 4, fontSize: 11, color: "#999" }}>Sitz</div>
+          </div>
+        </div>
+
+        {/* Ticket-Code field (unchanged, but matches new style) */}
         <input
           value={ticketCode}
           onChange={(e) => handleChangeTicketCode(e.target.value)}
           placeholder="Ticket-Code / Barcode (Demo)"
           style={{
-            ...inputStyle,
-            textAlign: "center",
+            width: "75%",
+            padding: "12px",
+            borderRadius: 12,
+            border: "1px solid #333",
+            backgroundColor: "#1a1a1a",
+            color: "#fff",
             fontSize: 14,
+            textAlign: "center",
+            marginBottom: 12,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
           }}
         />
 
-        {/* Ticket verify button + status */}
+        {/* Ticket verify */}
         <div
           style={{
             display: "flex",
@@ -1481,12 +1612,9 @@ function UpgradesTab({
 
           <div style={{ fontSize: 11, color: "#bbb" }}>
             {ticketStatus === "idle" && "Ticket wird nur lokal simuliert."}
-            {ticketStatus === "checking" &&
-              "Abgleich mit Ticket-System (Demo)..."}
+            {ticketStatus === "checking" && "Abgleich mit Ticket-System (Demo)..."}
             {ticketStatus === "ok" && (
-              <span style={{ color: "#81C784" }}>
-                ✅ Ticket verifiziert (Demo)
-              </span>
+              <span style={{ color: "#81C784" }}>✅ Ticket verifiziert (Demo)</span>
             )}
             {ticketStatus === "error" && (
               <span style={{ color: "#ef9a9a" }}>
@@ -1495,6 +1623,7 @@ function UpgradesTab({
             )}
           </div>
         </div>
+
 
         <button type="submit" style={buttonStyle} disabled={isLoading}>
           {isLoading ? "Lade Upgrade-Angebote..." : "Upgrade-Angebote anzeigen"}
@@ -2140,7 +2269,7 @@ function BottomNav({ activeTab, onChange }) {
         height: 52,
         backdropFilter: "blur(14px)",
         WebkitBackdropFilter: "blur(14px)",
-        background: "rgba(5, 5, 5, 0.95)",
+        background: "rgba(53, 76, 70, 1.0)",
         borderTop: "1px solid rgba(255,255,255,0.08)",
         display: "flex",
         justifyContent: "center",
