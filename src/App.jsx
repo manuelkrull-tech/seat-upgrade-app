@@ -11,6 +11,7 @@ const EVENTS = [
     id: "koeln-hertha",
     name: "1. FC Köln vs Hertha BSC",
     venue: "RheinEnergieSTADION",
+    city: "Köln",
     primaryColor: "#C8102E",
     seatLabel: "Block (z. B. S3, N2, O3, W1)",
     type: "football",
@@ -21,6 +22,7 @@ const EVENTS = [
     id: "drake-uber",
     name: "Drake – World Tour",
     venue: "Uber Arena Berlin",
+    city: "Berlin",
     primaryColor: "#8E24AA",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
@@ -31,6 +33,7 @@ const EVENTS = [
     id: "eisbaeren-adler",
     name: "Eisbären Berlin vs Adler Mannheim",
     venue: "Uber Arena Berlin",
+    city: "Berlin",
     primaryColor: "#1565C0",
     seatLabel: "Sektion (z. B. 106, 204, 119)",
     type: "hockey",
@@ -43,6 +46,7 @@ const EVENTS = [
     id: "bayern-dortmund",
     name: "FC Bayern München vs Borussia Dortmund",
     venue: "Allianz Arena",
+    city: "München",
     primaryColor: "#DC052D",
     seatLabel: "Block (z. B. 116, 132, 240)",
     type: "football",
@@ -55,6 +59,7 @@ const EVENTS = [
     id: "alba-bonn",
     name: "ALBA Berlin vs Bonner Baskets",
     venue: "Telekom Dome Bonn",
+    city: "Bonn",
     primaryColor: "#FBC02D",
     seatLabel: "Block (z. B. 104, 210)",
     type: "football", // läuft unter „Fußball“-Filter, du kannst später eine Basketball-Kategorie ergänzen
@@ -67,6 +72,7 @@ const EVENTS = [
     id: "redbull-straubing",
     name: "Red Bull München vs Straubing",
     venue: "SAP Arena",
+    city: "München",
     primaryColor: "#1976D2",
     seatLabel: "Sektion (z. B. 104, 203, 119)",
     type: "hockey",
@@ -316,7 +322,7 @@ function PremiumHeader({ activeTab, currentEvent }) {
         width: "100%",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        background: "rgba(10, 10, 10, 0.65)",
+        background: "rgba(53, 76, 70, 1.0)",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
         zIndex: 100,
       }}
@@ -412,6 +418,21 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       hour: "2-digit",
       minute: "2-digit",
     });
+  }
+  
+  function getDateParts(ev) {
+    if (!ev.dateUtc) return { weekday: "", day: "", month: "", time: "" };
+    const d = new Date(ev.dateUtc);
+
+    const weekday = d.toLocaleString("de-DE", { weekday: "short" }); // Mo, Di, Mi...
+    const day = d.toLocaleString("de-DE", { day: "2-digit" });       // 01, 02...
+    const month = d.toLocaleString("de-DE", { month: "short" });     // Dez, Nov...
+    const time = d.toLocaleTimeString("de-DE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }); // 18:30
+
+    return { weekday, day, month, time };
   }
 
   function isLive(ev) {
@@ -873,24 +894,6 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       )}
 
       {/* MAIN EVENT LIST */}
-      <div style={{ marginTop: 8, marginBottom: 12 }}>
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: "bold",
-            marginBottom: 6,
-          }}
-        >
-          Alle passenden Events
-        </div>
-
-        {filteredEvents.length === 0 && (
-          <p style={{ fontSize: 12, color: "#999" }}>
-            Keine Events für diese Filter gefunden. Ändere Kategorie oder
-            Zeitraum.
-          </p>
-        )}
-
         <div
           style={{
             display: "flex",
@@ -900,6 +903,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         >
           {filteredEvents.map((ev) => {
             const isActive = ev.id === selectedEventId;
+            const { weekday, day, month, time } = getDateParts(ev);
+
             return (
               <button
                 key={ev.id}
@@ -916,12 +921,73 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   cursor: "pointer",
                   fontSize: 14,
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  alignItems: "stretch",
                   gap: 10,
                 }}
               >
-                <div style={{ flex: 1, minWidth: 0 }}>
+                {/* LEFT: date column */}
+                <div
+                  style={{
+                    width: 56,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "4px 0",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 10,
+                      textTransform: "uppercase",
+                      color: "#bbb",
+                      marginBottom: 2,
+                    }}
+                  >
+                    {weekday}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "bold",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {day}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#aaa",
+                      marginTop: 2,
+                    }}
+                  >
+                    {month}
+                  </div>
+                </div>
+
+                {/* MIDDLE: vertical separator */}
+                <div
+                  style={{
+                    width: 1,
+                    background:
+                      "linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0))",
+                    alignSelf: "stretch",
+                    opacity: 0.8,
+                  }}
+                />
+
+                {/* RIGHT: event info */}
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    gap: 2,
+                  }}
+                >
                   <div
                     style={{
                       fontWeight: "bold",
@@ -937,9 +1003,14 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                     style={{
                       fontSize: 12,
                       color: "#bbb",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}
                   >
-                    {ev.venue}
+                    {(ev.city || "").trim()
+                      ? `${ev.city} | ${ev.venue}`
+                      : ev.venue}
                   </div>
                   <div
                     style={{
@@ -948,14 +1019,16 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                       marginTop: 2,
                     }}
                   >
-                    {formatDate(ev)}
+                    {time} Uhr
                   </div>
                 </div>
+
+                {/* BADGE: Live / High demand / Default */}
                 <div
                   style={{
+                    marginLeft: 6,
+                    alignSelf: "center",
                     textAlign: "right",
-                    fontSize: 11,
-                    color: "#ccc",
                   }}
                 >
                   {ev.isLive ? (
@@ -1000,7 +1073,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             );
           })}
         </div>
-      </div>
+
 
       {/* COMING SOON */}
       {comingSoonEvents.length > 0 && (
@@ -1053,6 +1126,28 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     </div>
   );
 }
+function getEventHeroImage(ev) {
+  if (!ev) return null;
+
+  switch (ev.id) {
+    case "koeln-hertha":
+      return pictureKoelnHero;
+    case "drake-uber":
+      return pictureDrakeHero;
+    case "eisbaeren-adler":
+      return pictureEisbaerenHero;
+
+    // You can later add dedicated images:
+    // case "bayern-dortmund": return pictureBayernHero;
+    // case "alba-bonn": return pictureAlbaHero;
+    // case "redbull-straubing": return pictureRedBullHero;
+
+    default:
+      // Fallback hero if no specific image exists yet
+      return pictureKoelnHero;
+  }
+}
+
 
 /* ---------- UPGRADES TAB + GUEST CHECKOUT ---------- */
 
@@ -1245,9 +1340,46 @@ function UpgradesTab({
     return Math.round(base * factor * 100) / 100;
   }
 
-  return (
+    return (
     <div>
-      {/* Event info */}
+      {/* HERO IMAGE FOR EVENT DETAIL */}
+      {currentEvent && (
+        <div
+          style={{
+            marginBottom: 16,
+            borderRadius: 16,
+            overflow: "hidden",
+            position: "relative",
+            height: 160,
+            backgroundColor: "#000",
+          }}
+        >
+          <img
+            src={getEventHeroImage(currentEvent)}
+            alt={currentEvent.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+          {/* Black gradient fade at bottom */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              top: "40%",
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,0.95) 100%)",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Event info (unchanged) */}
       <div
         style={{
           padding: 12,
@@ -1264,8 +1396,7 @@ function UpgradesTab({
         </div>
         <div style={{ color: "#ccc" }}>{currentEvent.venue}</div>
         <div style={{ marginTop: 6, color: "#aaa", fontSize: 12 }}>
-          Demo: Sitzplatz + Ticket-Code eingeben, Ticket prüfen und mögliche
-          Upgrades simulieren. Verfügbarkeit & Preis reagieren dynamisch.
+          Demo: Sitzplatz eingeben, mögliche Upgrades werden simuliert.
         </div>
       </div>
 
