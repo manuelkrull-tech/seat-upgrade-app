@@ -639,7 +639,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             style={{
               borderRadius: 12,
               overflow: "hidden",
-              height: 100,
+              height: 180,
               border: "1px solid rgba(255,255,255,0.25)",
             }}
           >
@@ -1066,8 +1066,6 @@ function getEventHeroImage(ev) {
 }
 
 
-/* ---------- UPGRADES TAB + GUEST CHECKOUT ---------- */
-
 function UpgradesTab({
   currentEvent,
   block,
@@ -1093,23 +1091,39 @@ function UpgradesTab({
 }) {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("card"); // "card" | "paypal" | "apple"
+  const [paymentMethod, setPaymentMethod] = useState("card");
 
-  // Ticket-code state (local, demo)
   const [ticketCode, setTicketCode] = useState("");
   const [ticketStatus, setTicketStatus] = useState("idle"); // "idle" | "checking" | "ok" | "error"
 
-  // Real-time availability per offer (offer.id -> remaining seats)
-  const [availability, setAvailability] = useState({}); // { [offerId]: number }
+  // Simple availability + dynamic price demo (you can adjust)
+  const [availability] = useState({
+    // offerId: remaining seats (demo)
+    1: 5,
+    2: 3,
+    3: 10,
+    4: 2,
+    5: 8,
+    6: 12,
+    10: 4,
+    11: 9,
+    12: 6,
+    13: 2,
+    20: 5,
+    21: 3,
+    22: 7,
+    23: 10,
+  });
 
   if (!currentEvent) {
     return <p style={{ color: "#ccc" }}>Kein Event ausgewählt.</p>;
   }
 
-  const hasSeatEntered = block && row && seat;
-  const canCheckoutWithTicket = hasSeatEntered && ticketStatus === "ok";
+  const hasSeatEntered = !!(block && row && seat);
+  const canCheckoutWithTicket = ticketStatus === "ok" && hasSeatEntered;
 
-  // Compute price breakdown for checkout (uses dynamic price stored in checkoutOffer)
+  // --- PRICE + FEES FOR CHECKOUT ---
+
   const serviceFee = checkoutOffer
     ? Math.round(checkoutOffer.priceEuro * 0.08 * 100) / 100
     : 0;
@@ -1117,11 +1131,47 @@ function UpgradesTab({
     ? Math.round((checkoutOffer.priceEuro + serviceFee) * 100) / 100
     : 0;
 
-  function handleSubmitCheckout(e) {
-    e.preventDefault();
-    if (!guestEmail) {
+  // --- HELPERS ---
+
+  function handleChangeTicketCode(value) {
+    setTicketCode(value);
+    if (ticketStatus !== "idle") {
+      setTicketStatus("idle");
+    }
+  }
+
+  function handleVerifyTicket() {
+    const trimmed = (ticketCode || "").trim();
+
+    if (!trimmed) {
+      setTicketStatus("error");
       return;
     }
+
+    setTicketStatus("checking");
+
+    setTimeout(() => {
+      const normalized = trimmed.toUpperCase();
+      const seatInfo = lookupSeatFromTicket(currentEvent.id, normalized);
+
+      if (!seatInfo) {
+        setTicketStatus("error");
+        return;
+      }
+
+      // ✅ Seat comes ONLY from ticket now
+      setBlock(seatInfo.block);
+      setRow(String(seatInfo.row));
+      setSeat(String(seatInfo.seat));
+
+      setTicketStatus("ok");
+    }, 700);
+  }
+
+  function handleSubmitCheckout(e) {
+    e.preventDefault();
+    if (!guestEmail || !checkoutOffer) return;
+
     onConfirmCheckout(checkoutOffer, {
       name: guestName || "Gast",
       email: guestEmail,
@@ -1129,329 +1179,190 @@ function UpgradesTab({
     });
   }
 
-  // Fake ticket validation (demo)
-  function handleVerifyTicket(e) {
-    e.preventDefault();
-    const trimmed = (ticketCode || "").trim();
-
-    if (!trimmed || trimmed.length < 6) {
-      setTicketStatus("error");
-      return;
-    }
-
-    setTicketStatus("checking");
-
-    // Simulate API call delay
-    setTimeout(() => {
-      // In real life this would be an API response from the club
-      setTicketStatus("ok");
-    }, 700);
-  }
-
-  // Reset status when user changes ticket code
-  function handleChangeTicketCode(value) {
-    setTicketCode(value);
-    setTicketStatus("idle");
-  }
-
-  // --- availability initialisation based on offers + urgency ---
-
-  // Helper to pick a starting availability based on urgency
-  function initialAvailabilityForOffer(offer) {
-    const level = offer.urgency?.level;
-    if (level === "high") {
-      // very few seats
-      return 1 + Math.floor(Math.random() * 3); // 1–3
-    }
-    if (level === "medium") {
-      return 3 + Math.floor(Math.random() * 5); // 3–7
-    }
-    // low / unknown
-    return 6 + Math.floor(Math.random() * 7); // 6–12
-  }
-
-  // Whenever offers change, (re)initialise availability for new ones
-  useEffect(() => {
-    if (!offers || offers.length === 0) {
-      setAvailability({});
-      return;
-    }
-
-    setAvailability((prev) => {
-      const next = { ...prev };
-
-      // ensure each offer has a starting value
-      offers.forEach((o) => {
-        const key = String(o.id);
-        if (next[key] == null) {
-          next[key] = initialAvailabilityForOffer(o);
-        }
-      });
-
-      // remove entries for offers that no longer exist
-      Object.keys(next).forEach((key) => {
-        const stillExists = offers.some((o) => String(o.id) === key);
-        if (!stillExists) {
-          delete next[key];
-        }
-      });
-
-      return next;
-    });
-  }, [offers]);
-
-  // interval to simulate real-time availability drop
-  useEffect(() => {
-    if (!offers || offers.length === 0) return;
-
-    const interval = setInterval(() => {
-      setAvailability((prev) => {
-        const keys = Object.keys(prev);
-        if (keys.length === 0) return prev;
-
-        // Pick a random offer to update
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        const current = prev[randomKey];
-
-        // If already 0 or 1, we sometimes leave it; don't always go to 0
-        if (current == null || current <= 0) {
-          return prev;
-        }
-
-        // Copy and decrement
-        const next = { ...prev };
-        // 50% chance to decrement by 1
-        if (Math.random() < 0.5) {
-          next[randomKey] = current - 1;
-        }
-        return next;
-      });
-    }, 10000); // every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [offers]);
-
-  // --- helper: compute dynamic price based on availability ---
-
   function getDynamicPrice(offer) {
-    const base = offer.priceEuro;
     const remaining =
       availability[String(offer.id)] != null
         ? availability[String(offer.id)]
         : null;
 
-    if (remaining === null) {
-      return base;
+    if (remaining === null || remaining <= 0) {
+      return offer.priceEuro;
     }
-    if (remaining <= 0) {
-      return base; // sold out, price irrelevant
-    }
-    let factor;
-    if (remaining <= 3) {
-      factor = 1.35; // high scarcity
-    } else if (remaining <= 6) {
-      factor = 1.2; // medium scarcity
-    } else {
-      factor = 0.9; // plenty left → small discount
-    }
-    return Math.round(base * factor * 100) / 100;
+
+    let factor = 1;
+    if (remaining <= 3) factor = 1.25;
+    else if (remaining <= 5) factor = 1.15;
+    else if (remaining <= 10) factor = 1.08;
+
+    return Math.round(offer.priceEuro * factor * 100) / 100;
   }
 
-    return (
-    <div>
-      {/* HERO IMAGE FOR EVENT DETAIL */}
+  const hasVerifiedSeat = ticketStatus === "ok" && hasSeatEntered;
+
+  return (
+    <div
+      style={{
+        maxWidth: 400,
+        margin: "0 auto",
+      }}
+    >
+      {/* Event hero bubble – same style as Top Event card */}
       {currentEvent && (
         <div
           style={{
-            marginBottom: 16,
+            marginBottom: 20,
+            padding: 14,
             borderRadius: 16,
-            overflow: "hidden",
-            position: "relative",
-            height: 160,
-            backgroundColor: "#000",
+            background: `linear-gradient(135deg, ${
+              currentEvent.primaryColor || "#444"
+            }, rgba(0,0,0,0.9))`,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
           }}
         >
-          <img
-            src={getEventHeroImage(currentEvent)}
-            alt={currentEvent.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-          {/* Black gradient fade at bottom */}
+          {/* Hero image */}
           <div
             style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              top: "40%",
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,0.95) 100%)",
+              borderRadius: 12,
+              overflow: "hidden",
+              height: 170,
+              border: "1px solid rgba(255,255,255,0.25)",
             }}
-          />
+          >
+            <img
+              src={getEventHeroImage(currentEvent)}
+              alt={currentEvent.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          </div>
+
+          {/* Text */}
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                fontSize: 16,
+                marginBottom: 2,
+              }}
+            >
+              {currentEvent.name}
+            </div>
+
+            <div
+              style={{
+                fontSize: 12,
+                color: "#f5f5f5",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 14 }}>📍</span>
+              <span>
+                {currentEvent.city
+                  ? `${currentEvent.city} · ${currentEvent.venue}`
+                  : currentEvent.venue}
+              </span>
+            </div>
+
+            <div
+              style={{
+                fontSize: 11,
+                color: "#ddd",
+                marginTop: 6,
+                opacity: 0.9,
+              }}
+            >
+              Demo: Ticket-ID eingeben – wir erkennen deinen Sitzplatz
+              automatisch.
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Event Info – Premium Style Under Hero */}
+      {/* Ticket / Seat section */}
       <div
         style={{
           textAlign: "center",
-          marginTop: -10,
-          marginBottom: 20,
-          padding: "12px 10px",
+          marginTop: 4,
+          marginBottom: 10,
         }}
       >
-        {/* Event Title */}
+        {/* Small label chip */}
         <div
           style={{
-            fontSize: 22,
-            fontWeight: 700,
-            letterSpacing: 0.4,
-            marginBottom: 6,
-          }}
-        >
-          {currentEvent.name}
-        </div>
-
-        {/* Location Line */}
-        <div
-          style={{
-            fontSize: 13,
-            color: "#bfbfbf",
-            display: "flex",
-            justifyContent: "center",
+            display: "inline-flex",
             alignItems: "center",
             gap: 6,
+            padding: "3px 10px",
+            borderRadius: 999,
+            backgroundColor: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            fontSize: 11,
+            color: "#ddd",
             marginBottom: 6,
           }}
         >
-          <span style={{ fontSize: 14 }}>📍</span>
-          <span>
-            {currentEvent.city} · {currentEvent.venue}
-          </span>
+          <span>🎫</span>
+          <span>Ticket-ID prüfen</span>
         </div>
 
-        {/* Small description */}
-        <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>
-          Demo: Sitzplatz eingeben, mögliche Upgrades werden simuliert.
-        </div>
-      </div>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: 18,
+            fontWeight: 600,
+            letterSpacing: 0.3,
+          }}
+        >
+          Ticket scannen / eingeben
+        </h3>
 
+        <p
+          style={{
+            marginTop: 6,
+            marginBottom: 8,
+            fontSize: 12,
+            color: "#b3b3b3",
+            lineHeight: 1.4,
+          }}
+        >
+          Gib deine Ticket-ID oder einen Demo-Code ein, wir lesen Block, Reihe
+          und Sitz aus dem System.
+        </p>
 
-      {/* Seat input */}
-      <h3 style={{ textAlign: "center", marginTop: 0 }}>Sitzplatz eingeben</h3>
-
-      <p
-        style={{
-          textAlign: "center",
-          color: "#b3b3b3",
-          fontSize: 13,
-          marginBottom: 8,
-        }}
-      >
-        {currentEvent.id === "koeln-hertha" &&
-          "Nutze z. B. S3, N2, O3 oder W1 als Block-Bezeichnung."}
-        {currentEvent.id === "drake-uber" &&
-          "Nutze typische Arena-Blöcke (z. B. 211, 103) oder 'Innenraum'."}
-        {currentEvent.id === "eisbaeren-adler" &&
-          "Nutze z. B. 106, 119, 204 als Sektion im Hockey-Setup."}
-      </p>
-
-      <form onSubmit={onSubmit}>
-        {/* 🔥 Three Input Bubbles in One Row */}
+        {/* Ticket-ID field – centered bubble */}
         <div
           style={{
             display: "flex",
-            gap: 10,
-            marginBottom: 16,
+            justifyContent: "center",
+            marginBottom: 12,
           }}
         >
-          {/* Block */}
-          <div style={{ flex: 1, textAlign: "center" }}>
-            <input
-              value={block}
-              onChange={(e) => setBlock(e.target.value)}
-              placeholder={currentEvent.seatLabel}
-              style={{
-                width: "50%",
-                padding: "12px",
-                borderRadius: 12,
-                border: "1px solid #333",
-                backgroundColor: "#1a1a1a",
-                color: "#fff",
-                fontSize: 14,
-                textAlign: "center",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-              }}
-            />
-            <div style={{ marginTop: 4, fontSize: 11, color: "#999" }}>Block</div>
-          </div>
-
-          {/* Row */}
-          <div style={{ flex: 1, textAlign: "center" }}>
-            <input
-              value={row}
-              onChange={(e) => setRow(e.target.value)}
-              placeholder="Reihe"
-              style={{
-                width: "50%",
-                padding: "12px",
-                borderRadius: 12,
-                border: "1px solid #333",
-                backgroundColor: "#1a1a1a",
-                color: "#fff",
-                fontSize: 14,
-                textAlign: "center",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-              }}
-            />
-            <div style={{ marginTop: 4, fontSize: 11, color: "#999" }}>Reihe</div>
-          </div>
-
-          {/* Seat */}
-          <div style={{ flex: 1, textAlign: "center" }}>
-            <input
-              value={seat}
-              onChange={(e) => setSeat(e.target.value)}
-              placeholder="Sitz"
-              style={{
-                width: "50%",
-                padding: "12px",
-                borderRadius: 12,
-                border: "1px solid #333",
-                backgroundColor: "#1a1a1a",
-                color: "#fff",
-                fontSize: 14,
-                textAlign: "center",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-              }}
-            />
-            <div style={{ marginTop: 4, fontSize: 11, color: "#999" }}>Sitz</div>
-          </div>
+          <input
+            value={ticketCode}
+            onChange={(e) => handleChangeTicketCode(e.target.value)}
+            placeholder="Ticket-ID / Barcode (Demo)"
+            style={{
+              width: "75%",
+              padding: "12px",
+              borderRadius: 12,
+              border: "1px solid #333",
+              backgroundColor: "#1a1a1a",
+              color: "#fff",
+              fontSize: 14,
+              textAlign: "center",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            }}
+          />
         </div>
-
-        {/* Ticket-Code field (unchanged, but matches new style) */}
-        <input
-          value={ticketCode}
-          onChange={(e) => handleChangeTicketCode(e.target.value)}
-          placeholder="Ticket-Code / Barcode (Demo)"
-          style={{
-            width: "75%",
-            padding: "12px",
-            borderRadius: 12,
-            border: "1px solid #333",
-            backgroundColor: "#1a1a1a",
-            color: "#fff",
-            fontSize: 14,
-            textAlign: "center",
-            marginBottom: 12,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-          }}
-        />
 
         {/* Ticket verify */}
         <div
@@ -1459,6 +1370,7 @@ function UpgradesTab({
             display: "flex",
             gap: 8,
             alignItems: "center",
+            justifyContent: "center",
             marginBottom: 10,
           }}
         >
@@ -1470,10 +1382,12 @@ function UpgradesTab({
               padding: "8px 12px",
               borderRadius: 999,
               border: "none",
-              backgroundColor: "#444",
+              backgroundColor:
+                ticketStatus === "checking" ? "#555" : "#444",
               color: "#fff",
               fontSize: 12,
-              cursor: "pointer",
+              cursor:
+                ticketStatus === "checking" ? "default" : "pointer",
               fontWeight: "bold",
             }}
           >
@@ -1484,9 +1398,12 @@ function UpgradesTab({
 
           <div style={{ fontSize: 11, color: "#bbb" }}>
             {ticketStatus === "idle" && "Ticket wird nur lokal simuliert."}
-            {ticketStatus === "checking" && "Abgleich mit Ticket-System (Demo)..."}
+            {ticketStatus === "checking" &&
+              "Abgleich mit Ticket-System (Demo)..."}
             {ticketStatus === "ok" && (
-              <span style={{ color: "#81C784" }}>✅ Ticket verifiziert (Demo)</span>
+              <span style={{ color: "#81C784" }}>
+                ✅ Ticket verifiziert (Demo)
+              </span>
             )}
             {ticketStatus === "error" && (
               <span style={{ color: "#ef9a9a" }}>
@@ -1496,13 +1413,44 @@ function UpgradesTab({
           </div>
         </div>
 
+        {/* Recognized seat after successful verification */}
+        {hasVerifiedSeat && (
+          <div
+            style={{
+              marginBottom: 12,
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: "#111",
+              border: "1px solid #333",
+              fontSize: 12,
+              color: "#ddd",
+            }}
+          >
+            Erkannter Sitzplatz:
+            <br />
+            <span style={{ fontWeight: "bold" }}>
+              Block {block} · Reihe {row} · Sitz {seat}
+            </span>
+          </div>
+        )}
+      </div>
 
-        <button type="submit" style={buttonStyle} disabled={isLoading}>
-          {isLoading ? "Lade Upgrade-Angebote..." : "Upgrade-Angebote anzeigen"}
+      {/* Request offers */}
+      <form onSubmit={onSubmit}>
+        <button
+          type="submit"
+          style={buttonStyle}
+          disabled={isLoading || ticketStatus !== "ok" || !hasSeatEntered}
+        >
+          {ticketStatus !== "ok"
+            ? "Ticket zuerst verifizieren"
+            : isLoading
+            ? "Lade Upgrade-Angebote..."
+            : "Upgrade-Angebote anzeigen"}
         </button>
       </form>
 
-      {/* Error */}
+      {/* Error from offer loading */}
       {error && (
         <div
           style={{
@@ -1531,7 +1479,7 @@ function UpgradesTab({
         )}
       </div>
 
-      {/* If checkoutOffer exists -> show guest checkout page */}
+      {/* Checkout for a selected offer */}
       {checkoutOffer && hasSeatEntered && (
         <div
           style={{
@@ -1542,10 +1490,12 @@ function UpgradesTab({
             border: "1px solid #333",
           }}
         >
-          <h3 style={{ marginTop: 0, marginBottom: 8 }}>Checkout als Gast</h3>
+          <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+            Checkout als Gast
+          </h3>
           <p style={{ fontSize: 13, color: "#ccc", marginBottom: 10 }}>
-            Bestätige dein Upgrade ohne Konto. Deine Tickets würden in einer
-            echten Version per E-Mail verschickt.
+            Bestätige dein Upgrade ohne Konto. Deine Tickets würden in
+            einer echten Version per E-Mail verschickt.
           </p>
 
           {/* Seat comparison */}
@@ -1585,7 +1535,8 @@ function UpgradesTab({
             </div>
             <div style={{ color: "#fff" }}>
               Block{" "}
-              {checkoutOffer.comparison?.toBlock || checkoutOffer.targetBlock}
+              {checkoutOffer.comparison?.toBlock ||
+                checkoutOffer.targetBlock}
             </div>
             <div
               style={{ marginTop: 10, fontSize: 12, color: "#bbb" }}
@@ -1707,7 +1658,9 @@ function UpgradesTab({
                         border: isActive
                           ? "1px solid #fff"
                           : "1px solid #444",
-                        backgroundColor: isActive ? "#2E7D32" : "#1a1a1a",
+                        backgroundColor: isActive
+                          ? "#2E7D32"
+                          : "#1a1a1a",
                         color: "#fff",
                         fontSize: 12,
                         cursor: "pointer",
@@ -1941,7 +1894,7 @@ function UpgradesTab({
                     !isSoldOut &&
                     onStartCheckout({
                       ...offer,
-                      priceEuro: dynamicPrice, // pass dynamic price into checkout
+                      priceEuro: dynamicPrice,
                     })
                   }
                   style={{
@@ -1962,9 +1915,7 @@ function UpgradesTab({
                     width: "100%",
                   }}
                 >
-                  {!hasSeatEntered
-                    ? "Zuerst Sitzplatz eingeben"
-                    : ticketStatus !== "ok"
+                  {ticketStatus !== "ok"
                     ? "Ticket zuerst verifizieren"
                     : isSoldOut
                     ? "Kontingent erschöpft"
@@ -2035,6 +1986,27 @@ function UpgradesTab({
       )}
     </div>
   );
+}
+
+function lookupSeatFromTicket(eventId, ticketCode) {
+  // Demo mapping: in a real app this would call the ticketing system.
+  const demoMap = {
+    "koeln-hertha": {
+      "KOELN-S3-12-27": { block: "S3", row: 12, seat: 27 },
+      "KOELN-N2-18-14": { block: "N2", row: 18, seat: 14 },
+    },
+    "drake-uber": {
+      "DRAKE-211-5-18": { block: "211", row: 5, seat: 18 },
+      "DRAKE-INNEN-1-99": { block: "INNENRAUM", row: 1, seat: 99 },
+    },
+    "eisbaeren-adler": {
+      "HOCKEY-204-8-11": { block: "204", row: 8, seat: 11 },
+      "HOCKEY-106-16-4": { block: "106", row: 16, seat: 4 },
+    },
+  };
+
+  const byEvent = demoMap[eventId] || {};
+  return byEvent[ticketCode] || null;
 }
 
 /* ---------- SAVED TAB ---------- */
