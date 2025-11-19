@@ -5,6 +5,7 @@ import pictureEisbaerenHero from "./assets/picture_eisbaeren_hero.jpg";
 import pictureBayernHero from "./assets/picture_bayern_hero.jpg";
 import pictureAlbaHero from "./assets/picture_alba_hero.jpg";
 import pictureRedBullHero from "./assets/picture_redbull_hero.jpg";
+import picture_ad_event from "./assets/picture_ad_event.png";
 import pictureReco1 from "./assets/picture_reco_1.jpg";
 import pictureReco2 from "./assets/picture_reco_2.jpg";
 import AppLogo from "./assets/app_logo.png";
@@ -30,7 +31,7 @@ const EVENTS = [
     primaryColor: "#8E24AA",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
-    dateUtc: "2025-11-18T13:55:00Z",
+    dateUtc: "2025-11-19T14:35:00Z",
     demandLevel: "high",
     isUpgradable: true,
   },
@@ -530,9 +531,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
 
   const categoryOptions = [
     { id: "all", label: "Alle" },
-    { id: "football", label: "⚽ Fußball" },
-    { id: "concert", label: "🎤 Konzerte" },
-    { id: "hockey", label: "🏒 Eishockey" },
+    { id: "football", label: "Fußball" },
+    { id: "concert", label: "Konzerte" },
+    { id: "hockey", label: "Eishockey" },
   ];
 
   const dateOptions = [
@@ -593,189 +594,227 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       )}
 
       {/* HERO TOP EVENT */}
-      {topEvent && (
-        <div
-          onClick={() => onSelectEvent(topEvent.id)}
-          style={{
-            marginBottom: 20,
-            padding: 14,
-            borderRadius: 16,
-            background: `linear-gradient(135deg, ${
-              topEvent.primaryColor
-            }, rgba(0,0,0,0.85))`,
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            boxSizing: "border-box",
-          }}
-        >
-          <div
-            style={{
-              borderRadius: 12,
-              overflow: "hidden",
-              height: 180,
-              border: "1px solid rgba(255,255,255,0.25)",
-            }}
-          >
-            <img
-              src={getEventHeroImage(topEvent)}
-              alt={topEvent.name}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </div>
+{topEvent && (
+  <div
+    onClick={() => onSelectEvent(topEvent.id)}
+    style={{
+      marginBottom: 18,
+      padding: 14,
+      borderRadius: 16,
 
-          <div>
-            <div
-              style={{
-                fontWeight: "bold",
-                fontSize: 16,
-                marginBottom: 2,
-              }}
-            >
-              {topEvent.name}
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: "#f5f5f5",
-                marginBottom: 2,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {(topEvent.city || "").trim()
-                ? `${topEvent.city} · ${topEvent.venue}`
-                : topEvent.venue}
-            </div>
-            <div
-              style={{
-                fontSize: 11,
-                color: "#f5f5f5",
-                opacity: 0.9,
-              }}
-            >
-              {formatDate(topEvent)}
-            </div>
-          </div>
+      // always dark transparent background
+      background:"rgba(45, 45, 45, 0.85)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
 
-          <div
-            style={{
-              marginTop: 8,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              fontSize: 10,
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <span
-              style={{
-                color: "#f1f8e9",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              Hohe Nachfrage · ideale Upgrade-Chancen
-            </span>
-            <span
-              style={{
-                padding: "4px 8px",
-                borderRadius: 999,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                border: "1px solid rgba(255,255,255,0.4)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Jetzt Sitz prüfen
-            </span>
-          </div>
-        </div>
-      )}
+      // clean black border
+      border: "1px solid #000",
 
-      {/* FILTERS */}
-      <div
+      cursor: "pointer",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      boxSizing: "border-box",
+    }}
+  >
+    {/* small top row */}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontSize: 11,
+        textTransform: "uppercase",
+        letterSpacing: 1,
+      }}
+    >
+      <span
         style={{
-          marginBottom: 14,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
+          padding: "2px 8px",
+          borderRadius: 999,
+          border: "1px solid rgba(255,255,255,0.3)",
+          backgroundColor: "rgba(0,0,0,0.4)",
         }}
       >
-        {/* Category filter */}
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            overflowX: "auto",
-            paddingBottom: 2,
-          }}
-        >
-          {categoryOptions.map((opt) => {
-            const isActive = opt.id === categoryFilter;
-            return (
-              <button
-                key={opt.id}
-                onClick={() => setCategoryFilter(opt.id)}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: isActive ? "1px solid #ffffff" : "1px solid #444",
-                  backgroundColor: isActive ? "#ffffff" : "#1a1a1a",
-                  color: isActive ? "#111" : "#eee",
-                  fontSize: 11,
-                  whiteSpace: "nowrap",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+        🔥 Top Event
+      </span>
 
-        {/* Date filter */}
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            overflowX: "auto",
-            paddingBottom: 2,
-          }}
-        >
-          {dateOptions.map((opt) => {
-            const isActive = opt.id === dateFilter;
-            return (
-              <button
-                key={opt.id}
-                onClick={() => setDateFilter(opt.id)}
-                style={{
-                  padding: "5px 9px",
-                  borderRadius: 999,
-                  border: isActive ? "1px solid #90caf9" : "1px solid #333",
-                  backgroundColor: isActive ? "#0d47a1" : "#141414",
-                  color: isActive ? "#e3f2fd" : "#ddd",
-                  fontSize: 11,
-                  whiteSpace: "nowrap",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+      <span style={{ opacity: 0.8 }}>
+        {topEvent.type === "football"
+          ? "Fußball"
+          : topEvent.type === "concert"
+          ? "Konzert"
+          : "Eishockey"}
+      </span>
+    </div>
+
+    {/* hero image */}
+    <div
+      style={{
+        borderRadius: 12,
+        overflow: "hidden",
+        height: 180,
+        border: "1px solid #000",
+      }}
+    >
+      <img
+        src={getEventHeroImage(topEvent)}
+        alt={topEvent.name}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+        }}
+      />
+    </div>
+
+    {/* text below */}
+    <div>
+      <div
+        style={{
+          fontWeight: "bold",
+          fontSize: 17,
+          marginBottom: 2,
+          color: "#fff",
+        }}
+      >
+        {topEvent.name}
       </div>
+      <div style={{ fontSize: 12, color: "#ccc" }}>
+        {(topEvent.city || "").trim()
+          ? `${topEvent.city} · ${topEvent.venue}`
+          : topEvent.venue}
+      </div>
+      <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>
+        {formatDate(topEvent)}
+      </div>
+    </div>
+
+    {/* bottom row */}
+    <div
+      style={{
+        marginTop: 8,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontSize: 10,
+        color: "#ccc",
+      }}
+    >
+      <span>Hohe Nachfrage · ideale Upgrade-Chancen</span>
+      <span
+        style={{
+          padding: "4px 8px",
+          borderRadius: 999,
+          backgroundColor: "rgba(255,255,255,0.1)",
+          border: "1px solid #000",
+          color: "#fff",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Sitz eingeben
+      </span>
+    </div>
+  </div>
+)}
+
+
+{/* FILTERS */}
+<div
+  style={{
+    marginBottom: 14,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    alignItems: "center",   // ← centers the rows
+  }}
+>
+  {/* Category filter */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center", // ← center pills
+      width: "100%",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        gap: 6,
+        overflowX: "auto",
+        paddingBottom: 2,
+        justifyContent: "center",
+      }}
+    >
+      {categoryOptions.map((opt) => {
+        const isActive = opt.id === categoryFilter;
+        return (
+          <button
+            key={opt.id}
+            onClick={() => setCategoryFilter(opt.id)}
+            style={{
+              padding: "4px 8px",
+              borderRadius: 999,
+              border: isActive ? "1px solid #ffffff" : "1px solid #444",
+              backgroundColor: isActive ? "#ffffff" : "#1a1a1a",
+              color: isActive ? "#111" : "#eee",
+              fontSize: 11,
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+  {/* Date filter */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center", // ← center pills
+      width: "100%",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        gap: 6,
+        overflowX: "auto",
+        paddingBottom: 2,
+        justifyContent: "center",
+      }}
+    >
+      {dateOptions.map((opt) => {
+        const isActive = opt.id === dateFilter;
+        return (
+          <button
+            key={opt.id}
+            onClick={() => setDateFilter(opt.id)}
+            style={{
+              padding: "4px 8px",
+              borderRadius: 999,
+              border: isActive ? "1px solid #90caf9" : "1px solid #333",
+              backgroundColor: isActive ? "#0d47a1" : "#141414",
+              color: isActive ? "#e3f2fd" : "#ddd",
+              fontSize: 11,
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
 
       {/* TITLE */}
       <h2
@@ -1000,97 +1039,90 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         })}
       </div>
 
-      {/* COMING SOON SECTION */}
-      {comingSoonEvents.length > 0 && (
+      {/* AD / PARTNER SECTION */}
+<div
+  style={{
+    marginTop: 32,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: "#101010",
+    border: "1px solid #333",
+    boxSizing: "border-box",
+  }}
+>
+  <h3
+    style={{
+      fontSize: 14,
+      marginBottom: 10,
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+    }}
+  >
+    <span>Partner-Angebot</span>
+  </h3>
+
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    }}
+  >
+    <div
+      style={{
+        borderRadius: 10,
+        overflow: "hidden",
+        backgroundColor: "#151515",
+        border: "1px solid #222",
+      }}
+    >
+      <img
+        src={picture_ad_event}
+        alt="Sponsored Event Ad"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+        }}
+      />
+      <div
+        style={{
+          padding: 10,
+          fontSize: 12,
+        }}
+      >
         <div
           style={{
-            marginTop: 32,
-            padding: 14,
-            borderRadius: 14,
-            backgroundColor: "#101010",
-            border: "1px solid #333",
-            boxSizing: "border-box",
+            fontWeight: 600,
+            marginBottom: 4,
           }}
         >
-          <h3
-            style={{
-              fontSize: 14,
-              marginBottom: 8,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <span>⏳</span>
-            <span>Bald verfügbare Events</span>
-          </h3>
-
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
-          >
-            {comingSoonEvents.map((ev) => (
-              <div
-                key={ev.id}
-                style={{
-                  padding: 8,
-                  borderRadius: 10,
-                  backgroundColor: "#151515",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 500,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {ev.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#aaa",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {(ev.city || "").trim()
-                      ? `${ev.city} · ${ev.venue}`
-                      : ev.venue}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "#ccc",
-                    textAlign: "right",
-                    flexShrink: 0,
-                  }}
-                >
-                  {formatDate(ev)}
-                </div>
-              </div>
-            ))}
-          </div>
+          Exklusives Erfrischungs-Upgrade
         </div>
-      )}
+        <div
+          style={{
+            color: "#bbb",
+            marginBottom: 6,
+          }}
+        >
+          Sichere dir mit jedem Upgrade ein 10% Rabatt für alle Coca Cola Produkte.
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: "#888",
+          }}
+        >
+          Hinweis: Dieses Feld kann später für echte Club-Partner, Marken oder
+          Special Promotions genutzt werden.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
       {/* FOOTER */}
       <div
