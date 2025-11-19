@@ -113,21 +113,21 @@ function App() {
   const themeColor = currentEvent?.primaryColor ?? "#C8102E";
 
   const pageStyles = {
-    minHeight: "100vh",
-    backgroundColor: "#2c3b37",
-    color: "white",
-    fontFamily:
-      "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    overflowX: "hidden",
-    paddingBottom: 60, // space for bottom nav
-  };
+  minHeight: "100vh",
+  backgroundColor: "#0b0b0b",
+  color: "white",
+  fontFamily:
+    "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",   // was "center"
+  paddingBottom: 60,       // space for bottom nav
+  overflowX: "hidden",     // 🔒 no horizontal scroll
+};
 
   const mainContainer = {
     width: "100%",
-    maxWidth: 480,
+    maxWidth: "100%",
     padding: 16,
     boxSizing: "border-box",
   };
@@ -339,7 +339,7 @@ function PremiumHeader({ activeTab, currentEvent }) {
     >
       <div
         style={{
-          maxWidth: 480,
+          maxWidth: "100%",
           margin: "0 auto",
           padding: "16px 0 10px",
           textAlign: "center",
@@ -498,7 +498,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     return true;
   }
 
-  // Enrich with "live"
+  // Enrich events with "live"
   const enrichedEvents = events.map((ev) => ({
     ...ev,
     isLive: isLive(ev),
@@ -545,12 +545,13 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     <div
       style={{
         width: "100%",
+        maxWidth: "100%",   // 🔒 never wider than container
         boxSizing: "border-box",
         paddingBottom: 24,
-        overflowX: "hidden", // prevent horizontal overflow on mobile
+        overflowX: "hidden", // extra safety
       }}
     >
-      {/* LIVE NOW PILL (if any live events) */}
+      {/* LIVE NOW PILL */}
       {liveEvents.length > 0 && (
         <div
           style={{
@@ -608,7 +609,6 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             boxSizing: "border-box",
           }}
         >
-          {/* Hero image */}
           <div
             style={{
               borderRadius: 12,
@@ -899,9 +899,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   style={{
                     fontWeight: "bold",
                     marginBottom: 2,
-                    whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {ev.name}
@@ -910,9 +910,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   style={{
                     fontSize: 12,
                     color: "#bbb",
-                    whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {(ev.city || "").trim()
@@ -999,7 +999,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         })}
       </div>
 
-      {/* BIG SPACE + COMING SOON SECTION */}
+      {/* COMING SOON SECTION */}
       {comingSoonEvents.length > 0 && (
         <div
           style={{
@@ -1091,7 +1091,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         </div>
       )}
 
-      {/* SIMPLE FOOTER */}
+      {/* FOOTER */}
       <div
         style={{
           marginTop: 20,
@@ -2190,7 +2190,7 @@ function BottomNav({ activeTab, onChange }) {
       <div
         style={{
           width: "100%",
-          maxWidth: 480,
+          maxWidth: "100%",
           display: "flex",
           justifyContent: "space-around",
           alignItems: "stretch",
