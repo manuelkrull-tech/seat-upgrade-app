@@ -428,18 +428,18 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       minute: "2-digit",
     });
   }
-  
+
   function getDateParts(ev) {
     if (!ev.dateUtc) return { weekday: "", day: "", month: "", time: "" };
     const d = new Date(ev.dateUtc);
 
-    const weekday = d.toLocaleString("de-DE", { weekday: "short" }); // Mo, Di, Mi...
-    const day = d.toLocaleString("de-DE", { day: "2-digit" });       // 01, 02...
-    const month = d.toLocaleString("de-DE", { month: "short" });     // Dez, Nov...
+    const weekday = d.toLocaleString("de-DE", { weekday: "short" });
+    const day = d.toLocaleString("de-DE", { day: "2-digit" });
+    const month = d.toLocaleString("de-DE", { month: "short" });
     const time = d.toLocaleTimeString("de-DE", {
       hour: "2-digit",
       minute: "2-digit",
-    }); // 18:30
+    });
 
     return { weekday, day, month, time };
   }
@@ -497,35 +497,26 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     return true;
   }
 
-  // 🔁 Attach live info
+  // 🔁 Enrich events with "live" info
   const enrichedEvents = events.map((ev) => ({
     ...ev,
     isLive: isLive(ev),
   }));
 
-  const liveEvents = enrichedEvents.filter((ev) => ev.isLive);      
+  const liveEvents = enrichedEvents.filter((ev) => ev.isLive);
 
-  // 🔁 Top event = first high demand or first event
+  // 🔁 Top event = first upgradable, then high demand, then first in list
   const topEvent =
     enrichedEvents.find((ev) => ev.isUpgradable === "true") ||
     enrichedEvents.find((ev) => ev.demandLevel === "high") ||
     enrichedEvents[0];
 
-  // 🔁 Hero image based on event id
-  function getHeroImage(ev) {
-    if (!ev) return null;
-    if (ev.id === "koeln-hertha") return pictureKoelnHero;
-    if (ev.id === "drake-uber") return pictureDrakeHero;
-    if (ev.id === "eisbaeren-adler") return pictureEisbaerenHero;
-    return pictureKoelnHero; // fallback
-  }
-
+  // Filtered events for the main list
   const filteredEvents = enrichedEvents.filter(
     (ev) => matchesCategory(ev) && matchesDate(ev)
   );
 
-  const recommendedEvents = filteredEvents.slice(0, 2);
-
+  // Coming soon: future events, not live, sorted by date
   const comingSoonEvents = enrichedEvents
     .filter((ev) => {
       if (!ev.dateUtc) return false;
@@ -533,7 +524,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       return d > now && !ev.isLive;
     })
     .sort((a, b) => new Date(a.dateUtc) - new Date(b.dateUtc))
-    .slice(0, 3);
+    .slice(0, 4);
 
   const categoryOptions = [
     { id: "all", label: "Alle" },
@@ -552,15 +543,18 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   return (
     <div
       style={{
-        maxWidth: 400,         // <– narrower than full app
-        margin: "0 auto",      // <– centered on the screen
+        width: "100%",
+        maxWidth: 420,
+        margin: "0 auto",
+        paddingBottom: 24,
+        boxSizing: "border-box",
       }}
     >
-    {/* LIVE NOW PILL (if any live events) */}
+      {/* LIVE NOW PILL (if any live events) */}
       {liveEvents.length > 0 && (
         <div
           style={{
-            marginBottom: 10,
+            marginBottom: 12,
             padding: 10,
             borderRadius: 999,
             background:
@@ -579,21 +573,28 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               borderRadius: "50%",
               backgroundColor: "#4CAF50",
               boxShadow: "0 0 8px rgba(76,175,80,0.8)",
+              flexShrink: 0,
             }}
           />
-          <span>
+          <span
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             <strong>Live jetzt:</strong>{" "}
             {liveEvents.map((ev) => ev.name).join(" · ")}
           </span>
         </div>
-    )}
+      )}
 
-    {/* HERO TOP EVENT */}
+      {/* HERO TOP EVENT */}
       {topEvent && (
         <div
           onClick={() => onSelectEvent(topEvent.id)}
           style={{
-            marginBottom: 18,
+            marginBottom: 20,
             padding: 14,
             borderRadius: 16,
             background: `linear-gradient(135deg, ${
@@ -603,38 +604,10 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             display: "flex",
             flexDirection: "column",
             gap: 10,
+            boxSizing: "border-box",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: 1,
-            }}
-          >
-            <span
-              style={{
-                padding: "2px 8px",
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.8)",
-                backgroundColor: "rgba(0,0,0,0.25)",
-              }}
-            >
-              🔥 Top Event
-            </span>
-            <span style={{ opacity: 0.9 }}>
-              {topEvent.type === "football"
-                ? "⚽ Fußball"
-                : topEvent.type === "concert"
-                ? "🎤 Konzert"
-                : "🏒 Eishockey"}
-            </span>
-          </div>
-
-          {/* HERO IMAGE */}
+          {/* Hero image */}
           <div
             style={{
               borderRadius: 12,
@@ -644,7 +617,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             }}
           >
             <img
-              src={getHeroImage(topEvent)}
+              src={getEventHeroImage(topEvent)}
               alt={topEvent.name}
               style={{
                 width: "100%",
@@ -669,15 +642,17 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               style={{
                 fontSize: 12,
                 color: "#f5f5f5",
+                marginBottom: 2,
               }}
             >
-              {topEvent.venue}
+              {(topEvent.city || "").trim()
+                ? `${topEvent.city} · ${topEvent.venue}`
+                : topEvent.venue}
             </div>
             <div
               style={{
                 fontSize: 11,
                 color: "#f5f5f5",
-                marginTop: 4,
                 opacity: 0.9,
               }}
             >
@@ -692,9 +667,18 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               justifyContent: "space-between",
               alignItems: "center",
               fontSize: 10,
+              gap: 8,
+              flexWrap: "wrap",
             }}
           >
-            <span style={{ color: "#f1f8e9" }}>
+            <span
+              style={{
+                color: "#f1f8e9",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
               Hohe Nachfrage · ideale Upgrade-Chancen
             </span>
             <span
@@ -703,9 +687,10 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 borderRadius: 999,
                 backgroundColor: "rgba(0,0,0,0.4)",
                 border: "1px solid rgba(255,255,255,0.4)",
+                whiteSpace: "nowrap",
               }}
             >
-              Jetzt Sitz eingeben
+              Jetzt Sitz prüfen
             </span>
           </div>
         </div>
@@ -714,7 +699,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       {/* FILTERS */}
       <div
         style={{
-          marginBottom: 12,
+          marginBottom: 14,
           display: "flex",
           flexDirection: "column",
           gap: 8,
@@ -744,6 +729,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   fontSize: 11,
                   whiteSpace: "nowrap",
                   cursor: "pointer",
+                  flexShrink: 0,
                 }}
               >
                 {opt.label}
@@ -776,6 +762,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   fontSize: 11,
                   whiteSpace: "nowrap",
                   cursor: "pointer",
+                  flexShrink: 0,
                 }}
               >
                 {opt.label}
@@ -785,105 +772,282 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         </div>
       </div>
 
+      {/* TITLE */}
+      <h2
+        style={{
+          fontSize: 18,
+          marginBottom: 4,
+        }}
+      >
+        Events entdecken
+      </h2>
+      <p
+        style={{
+          fontSize: 13,
+          color: "#b3b3b3",
+          marginBottom: 10,
+        }}
+      >
+        Wähle Spiel oder Konzert, gib deine Ticket-ID ein und sichere dir
+        das beste verfügbare Upgrade.
+      </p>
+
       {/* MAIN EVENT LIST */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        {filteredEvents.map((ev) => {
+          const isActive = ev.id === selectedEventId;
+          const { weekday, day, month, time } = getDateParts(ev);
+
+          return (
+            <button
+              key={ev.id}
+              onClick={() => onSelectEvent(ev.id)}
+              style={{
+                padding: 10,
+                borderRadius: 10,
+                border: `1px solid ${
+                  isActive ? ev.primaryColor : "#333"
+                }`,
+                backgroundColor: isActive ? "#1f1f1f" : "#141414",
+                color: "white",
+                textAlign: "left",
+                cursor: "pointer",
+                fontSize: 14,
+                display: "flex",
+                alignItems: "stretch",
+                gap: 10,
+                width: "100%",
+                boxSizing: "border-box",
+              }}
+            >
+              {/* LEFT: date column */}
+              <div
+                style={{
+                  width: 56,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "4px 0",
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    textTransform: "uppercase",
+                    color: "#bbb",
+                    marginBottom: 2,
+                  }}
+                >
+                  {weekday}
+                </div>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    lineHeight: 1,
+                  }}
+                >
+                  {day}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#aaa",
+                    marginTop: 2,
+                  }}
+                >
+                  {month}
+                </div>
+              </div>
+
+              {/* MIDDLE: vertical separator */}
+              <div
+                style={{
+                  width: 1,
+                  background:
+                    "linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0))",
+                  alignSelf: "stretch",
+                  opacity: 0.8,
+                  flexShrink: 0,
+                }}
+              />
+
+              {/* RIGHT: event info */}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    marginBottom: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {ev.name}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#bbb",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {(ev.city || "").trim()
+                    ? `${ev.city} | ${ev.venue}`
+                    : ev.venue}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#888",
+                    marginTop: 2,
+                  }}
+                >
+                  {time} Uhr
+                </div>
+              </div>
+
+              {/* BADGE AREA */}
+              <div
+                style={{
+                  marginLeft: 6,
+                  alignSelf: "center",
+                  textAlign: "right",
+                  flexShrink: 0,
+                }}
+              >
+                {!ev.isUpgradable ? (
+                  <span
+                    style={{
+                      padding: "3px 7px",
+                      borderRadius: 999,
+                      backgroundColor: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      color: "#fff",
+                      fontSize: 9,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    🕒 Bald verfügbar
+                  </span>
+                ) : ev.isLive ? (
+                  <span
+                    style={{
+                      padding: "3px 7px",
+                      borderRadius: 999,
+                      backgroundColor: "#2e7d32",
+                      color: "#fff",
+                      fontSize: 9,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    🟢 Live
+                  </span>
+                ) : ev.demandLevel === "high" ? (
+                  <span
+                    style={{
+                      padding: "3px 7px",
+                      borderRadius: 999,
+                      backgroundColor: "#8B1A1A",
+                      color: "#fff",
+                      fontSize: 9,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    🔥 Hohe Nachfrage
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      padding: "3px 7px",
+                      borderRadius: 999,
+                      backgroundColor: "#333",
+                      color: "#ccc",
+                      fontSize: 9,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Upgrade verfügbar
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* BIG SPACE + COMING SOON SECTION */}
+      {comingSoonEvents.length > 0 && (
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
+            marginTop: 28,
+            paddingTop: 16,
+            borderTop: "1px solid rgba(255,255,255,0.06)",
           }}
         >
-          {filteredEvents.map((ev) => {
-            const isActive = ev.id === selectedEventId;
-            const { weekday, day, month, time } = getDateParts(ev);
+          <h3
+            style={{
+              fontSize: 14,
+              marginBottom: 8,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span>⏳</span>
+            <span>Bald verfügbare Events</span>
+          </h3>
 
-            return (
-              <button
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {comingSoonEvents.map((ev) => (
+              <div
                 key={ev.id}
-                onClick={() => onSelectEvent(ev.id)}
                 style={{
                   padding: 10,
                   borderRadius: 10,
-                  border: `1px solid ${
-                    isActive ? ev.primaryColor : "#333"
-                  }`,
-                  backgroundColor: isActive ? "#1f1f1f" : "#141414",
-                  color: "white",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  fontSize: 14,
+                  backgroundColor: "#101010",
+                  border: "1px solid #333",
                   display: "flex",
-                  alignItems: "stretch",
-                  gap: 10,
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                {/* LEFT: date column */}
-                <div
-                  style={{
-                    width: 56,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "4px 0",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      textTransform: "uppercase",
-                      color: "#bbb",
-                      marginBottom: 2,
-                    }}
-                  >
-                    {weekday}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 20,
-                      fontWeight: "bold",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {day}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#aaa",
-                      marginTop: 2,
-                    }}
-                  >
-                    {month}
-                  </div>
-                </div>
-
-                {/* MIDDLE: vertical separator */}
-                <div
-                  style={{
-                    width: 1,
-                    background:
-                      "linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0))",
-                    alignSelf: "stretch",
-                    opacity: 0.8,
-                  }}
-                />
-
-                {/* RIGHT: event info */}
                 <div
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    gap: 2,
                   }}
                 >
                   <div
                     style={{
-                      fontWeight: "bold",
-                      marginBottom: 2,
+                      fontSize: 13,
+                      fontWeight: 500,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -893,150 +1057,47 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   </div>
                   <div
                     style={{
-                      fontSize: 12,
-                      color: "#bbb",
+                      fontSize: 11,
+                      color: "#aaa",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                     }}
                   >
                     {(ev.city || "").trim()
-                      ? `${ev.city} | ${ev.venue}`
+                      ? `${ev.city} · ${ev.venue}`
                       : ev.venue}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#888",
-                      marginTop: 2,
-                    }}
-                  >
-                    {time} Uhr
-                  </div>
                 </div>
-
-                {/* BADGE AREA */}
                 <div
                   style={{
-                    marginLeft: 6,
-                    alignSelf: "center",
+                    fontSize: 11,
+                    color: "#ccc",
                     textAlign: "right",
+                    flexShrink: 0,
                   }}
                 >
-                  {/* If NOT upgradable yet → Bald verfügbar */}
-                  {!ev.isUpgradable ? (
-                    <span
-                      style={{
-                        padding: "3px 7px",
-                        borderRadius: 999,
-                        backgroundColor: "rgba(255,255,255,0.08)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                        color: "#fff",
-                        fontSize: 9,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      🕒 Bald verfügbar
-                    </span>
-                  ) : ev.isLive ? (
-                    // If upgradable + live
-                    <span
-                      style={{
-                        padding: "3px 7px",
-                        borderRadius: 999,
-                        backgroundColor: "#2e7d32",
-                        color: "#fff",
-                        fontSize: 9,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      🟢 Live
-                    </span>
-                  ) : ev.demandLevel === "high" ? (
-                    // If upgradable + high demand
-                    <span
-                      style={{
-                        padding: "3px 7px",
-                        borderRadius: 999,
-                        backgroundColor: "#8B1A1A",
-                        color: "#fff",
-                        fontSize: 9,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      🔥 Hohe Nachfrage
-                    </span>
-                  ) : (
-                    // Upgradable + normal
-                    <span
-                      style={{
-                        padding: "3px 7px",
-                        borderRadius: 999,
-                        backgroundColor: "#333",
-                        color: "#ccc",
-                        fontSize: 9,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Upgrade verfügbar
-                    </span>
-                  )}
+                  {formatDate(ev)}
                 </div>
-              </button>
-            );
-          })}
-        </div>
-
-
-
-      {/* COMING SOON */}
-      {comingSoonEvents.length > 0 && (
-        <div
-          style={{
-            padding: 10,
-            borderRadius: 10,
-            backgroundColor: "#101010",
-            border: "1px solid #333",
-            fontSize: 12,
-          }}
-        >
-          <div
-            style={{
-              marginBottom: 6,
-              fontWeight: "bold",
-            }}
-          >
-            ⏳ Coming soon
+              </div>
+            ))}
           </div>
-          {comingSoonEvents.map((ev, idx) => (
-            <div
-              key={ev.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom:
-                  idx === comingSoonEvents.length - 1 ? 0 : 4,
-              }}
-            >
-              <span
-                style={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: 200,
-                  }
-                  }
-              >
-                {ev.name}
-              </span>
-              <span style={{ color: "#aaa", fontSize: 11 }}>
-                {formatDate(ev)}
-              </span>
-            </div>
-          ))}
         </div>
       )}
+
+      {/* SIMPLE FOOTER */}
+      <div
+        style={{
+          marginTop: 24,
+          paddingTop: 10,
+          borderTop: "1px solid rgba(255,255,255,0.04)",
+          fontSize: 11,
+          color: "#777",
+          textAlign: "center",
+        }}
+      >
+        SeatUpgrade · Demo · Keine echten Ticketkäufe
+      </div>
     </div>
   );
 }
@@ -1996,7 +2057,7 @@ function lookupSeatFromTicket(eventId, ticketCode) {
       "KOELN-N2-18-14": { block: "N2", row: 18, seat: 14 },
     },
     "drake-uber": {
-      "DRAKE-211-5-18": { block: "211", row: 5, seat: 18 },
+      "DRAKE-401-5-18": { block: "401", row: 5, seat: 18 },
       "DRAKE-INNEN-1-99": { block: "INNENRAUM", row: 1, seat: 99 },
     },
     "eisbaeren-adler": {
