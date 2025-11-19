@@ -22,6 +22,7 @@ const EVENTS = [
     dateUtc: "2025-12-01T18:30:00Z",
     demandLevel: "medium",
     isUpgradable: false,
+    preview: "sale",
   },
   {
     id: "drake-uber",
@@ -34,6 +35,7 @@ const EVENTS = [
     dateUtc: "2025-11-19T14:35:00Z",
     demandLevel: "high",
     isUpgradable: true,
+    preview: "false",
   },
   {
     id: "eisbaeren-adler",
@@ -46,6 +48,7 @@ const EVENTS = [
     dateUtc: "2025-12-05T19:30:00Z",
     demandLevel: "medium",
     isUpgradable: false,
+    preview: "false",
   },
 
   // 🔴 NEW: Bayern vs Dortmund
@@ -60,6 +63,7 @@ const EVENTS = [
     dateUtc: "2025-12-10T17:30:00Z",
     demandLevel: "high",
     isUpgradable: false,
+    preview: "true",
   },
 
   // 🟡 NEW: ALBA vs Bonn in Bonn
@@ -74,6 +78,7 @@ const EVENTS = [
     dateUtc: "2025-12-03T19:00:00Z",
     demandLevel: "medium",
     isUpgradable: false,
+    preview: "true",
   },
 
   // 🔵 NEW: Red Bull München vs Straubing in SAP Arena
@@ -88,6 +93,7 @@ const EVENTS = [
     dateUtc: "2025-12-08T19:15:00Z",
     demandLevel: "medium",
     isUpgradable: false,
+    preview: "true",
   },
 ];
 
@@ -516,8 +522,12 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
 
   // Filtered list
   const filteredEvents = enrichedEvents.filter(
-    (ev) => matchesCategory(ev) && matchesDate(ev)
-  );
+  (ev) =>
+    (ev.preview === "true" || ev.preview === "sale") &&
+    matchesCategory(ev) &&
+    matchesDate(ev)
+    );
+
 
   // Coming soon
   const comingSoonEvents = enrichedEvents
@@ -1039,7 +1049,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         })}
       </div>
 
-      {/* AD / PARTNER SECTION */}
+{/* AD / PARTNER SECTION */}
 <div
   style={{
     marginTop: 32,
@@ -1122,6 +1132,197 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     </div>
   </div>
 </div>
+
+      {/* ARENA-BASED UPGRADES */}
+      <div
+        style={{
+          marginTop: 20,
+          padding: 14,
+          borderRadius: 14,
+          backgroundColor: "#101010",
+          border: "1px solid #333",
+          boxSizing: "border-box",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: 14,
+            marginBottom: 6,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span>🔓 Arena-Upgrades</span>
+        </h3>
+        <p
+          style={{
+            fontSize: 11,
+            color: "#9e9e9e",
+            marginBottom: 10,
+          }}
+        >
+          Exklusive Upgrades direkt von deiner Arena – limitiert verfügbar.
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          {/* 1. Eisbären – High Five Lane */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: "#151515",
+              border: "1px solid #222",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Eisbären – High Five Lane
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#bdbdbd",
+                }}
+              >
+                Upgrade auf die High Five Lane direkt am Eis.
+              </div>
+            </div>
+            <span
+              style={{
+                padding: "4px 10px",
+                borderRadius: 999,
+                backgroundColor: "#263238",
+                border: "1px solid #455a64",
+                fontSize: 11,
+                whiteSpace: "nowrap",
+              }}
+            >
+              15&nbsp;€
+            </span>
+          </div>
+
+          {/* 2. Drake – Meet &amp; Greet */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: "#151515",
+              border: "1px solid #222",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Drake – Meet &amp; Greet
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#bdbdbd",
+                }}
+              >
+                Persönliches Meet &amp; Greet inklusive Foto und Early Entry.
+              </div>
+            </div>
+            <span
+              style={{
+                padding: "4px 10px",
+                borderRadius: 999,
+                backgroundColor: "#263238",
+                border: "1px solid #455a64",
+                fontSize: 11,
+                whiteSpace: "nowrap",
+              }}
+            >
+              299&nbsp;€
+            </span>
+          </div>
+
+          {/* 3. Köln – After Match VIP Club */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: "#151515",
+              border: "1px solid #222",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Köln – After Match VIP Club
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#bdbdbd",
+                }}
+              >
+                Zugang zum After Match VIP Club inkl. Drinks &amp; Snacks.
+              </div>
+            </div>
+            <span
+              style={{
+                padding: "4px 10px",
+                borderRadius: 999,
+                backgroundColor: "#263238",
+                border: "1px solid #455a64",
+                fontSize: 11,
+                whiteSpace: "nowrap",
+              }}
+            >
+              199&nbsp;€
+            </span>
+          </div>
+        </div>
+      </div>
 
 
       {/* FOOTER */}
