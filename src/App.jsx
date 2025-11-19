@@ -121,6 +121,7 @@ function App() {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    overflowX: "hidden",
     paddingBottom: 60, // space for bottom nav
   };
 
@@ -497,7 +498,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     return true;
   }
 
-  // 🔁 Enrich events with "live" info
+  // Enrich with "live"
   const enrichedEvents = events.map((ev) => ({
     ...ev,
     isLive: isLive(ev),
@@ -505,18 +506,18 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
 
   const liveEvents = enrichedEvents.filter((ev) => ev.isLive);
 
-  // 🔁 Top event = first upgradable, then high demand, then first in list
+  // Top event
   const topEvent =
     enrichedEvents.find((ev) => ev.isUpgradable === "true") ||
     enrichedEvents.find((ev) => ev.demandLevel === "high") ||
     enrichedEvents[0];
 
-  // Filtered events for the main list
+  // Filtered list
   const filteredEvents = enrichedEvents.filter(
     (ev) => matchesCategory(ev) && matchesDate(ev)
   );
 
-  // Coming soon: future events, not live, sorted by date
+  // Coming soon
   const comingSoonEvents = enrichedEvents
     .filter((ev) => {
       if (!ev.dateUtc) return false;
@@ -544,10 +545,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     <div
       style={{
         width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-        paddingBottom: 24,
         boxSizing: "border-box",
+        paddingBottom: 24,
+        overflowX: "hidden", // prevent horizontal overflow on mobile
       }}
     >
       {/* LIVE NOW PILL (if any live events) */}
@@ -564,6 +564,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             alignItems: "center",
             gap: 8,
             fontSize: 12,
+            maxWidth: "100%",
           }}
         >
           <span
@@ -643,6 +644,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 fontSize: 12,
                 color: "#f5f5f5",
                 marginBottom: 2,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {(topEvent.city || "").trim()
@@ -788,8 +792,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           marginBottom: 10,
         }}
       >
-        Wähle Spiel oder Konzert, gib deine Ticket-ID ein und sichere dir
-        das beste verfügbare Upgrade.
+        Wähle Spiel oder Konzert, gib deine Ticket-ID ein und sichere dir das
+        beste verfügbare Upgrade.
       </p>
 
       {/* MAIN EVENT LIST */}
@@ -999,9 +1003,12 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       {comingSoonEvents.length > 0 && (
         <div
           style={{
-            marginTop: 28,
-            paddingTop: 16,
-            borderTop: "1px solid rgba(255,255,255,0.06)",
+            marginTop: 32,
+            padding: 14,
+            borderRadius: 14,
+            backgroundColor: "#101010",
+            border: "1px solid #333",
+            boxSizing: "border-box",
           }}
         >
           <h3
@@ -1028,10 +1035,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               <div
                 key={ev.id}
                 style={{
-                  padding: 10,
+                  padding: 8,
                   borderRadius: 10,
-                  backgroundColor: "#101010",
-                  border: "1px solid #333",
+                  backgroundColor: "#151515",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -1088,7 +1094,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       {/* SIMPLE FOOTER */}
       <div
         style={{
-          marginTop: 24,
+          marginTop: 20,
           paddingTop: 10,
           borderTop: "1px solid rgba(255,255,255,0.04)",
           fontSize: 11,
