@@ -1,3 +1,20 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;      /* 🚫 prevent any global sideways scroll */
+  background-color: rgb(15, 23, 22); /* matches pageStyles */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;  /* avoids layout expanding beyond 100% */
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

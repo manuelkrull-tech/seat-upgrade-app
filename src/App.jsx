@@ -114,21 +114,22 @@ function App() {
 
   const pageStyles = {
   minHeight: "100vh",
-  backgroundColor: "#0b0b0b",
+  width: "100vw",                 // 🔒 exactly viewport width
+  backgroundColor: "rgb(15, 23, 22)", // dark greenish-black to match your nav
   color: "white",
   fontFamily:
     "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
   display: "flex",
   flexDirection: "column",
-  alignItems: "stretch",   // was "center"
-  paddingBottom: 60,       // space for bottom nav
-  overflowX: "hidden",     // 🔒 no horizontal scroll
-};
+  alignItems: "center",
+  paddingBottom: 60,              // space for bottom nav
+  overflowX: "hidden",            // 🚫 no sideways scrolling
+};                                   
 
   const mainContainer = {
     width: "100%",
-    maxWidth: "100%",
-    padding: 16,
+    maxWidth: 420,
+    padding: "16px 16px 72px",
     boxSizing: "border-box",
   };
 
@@ -353,7 +354,7 @@ function PremiumHeader({ activeTab, currentEvent }) {
               position: "absolute",
               top: "50%",
               left: "50%",
-              width: 110,
+              width: 100,
               height: 110,
               transform: "translate(-50%, -50%)",
               borderRadius: "50%",
