@@ -122,7 +122,7 @@ function App() {
   const pageStyles = {
   minHeight: "100vh",
   width: "100vw",                 // 🔒 exactly viewport width
-  backgroundColor: "rgb(15, 23, 22)", // dark greenish-black to match your nav
+  backgroundColor: "rgb(255, 255, 255)", // dark greenish-black to match your nav
   color: "white",
   fontFamily:
     "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
@@ -613,7 +613,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       borderRadius: 16,
 
       // always dark transparent background
-      background:"rgba(45, 45, 45, 0.85)",
+      background:"rgba(222, 236, 221, 0.85)",
       backdropFilter: "blur(10px)",
       WebkitBackdropFilter: "blur(10px)",
 
@@ -686,17 +686,17 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           fontWeight: "bold",
           fontSize: 17,
           marginBottom: 2,
-          color: "#fff",
+          color: "#000000ff",
         }}
       >
         {topEvent.name}
       </div>
-      <div style={{ fontSize: 12, color: "#ccc" }}>
+      <div style={{ fontSize: 12, color: "#000000ff" }}>
         {(topEvent.city || "").trim()
           ? `${topEvent.city} · ${topEvent.venue}`
           : topEvent.venue}
       </div>
-      <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>
+      <div style={{ fontSize: 11, color: "#000000ff", marginTop: 4 }}>
         {formatDate(topEvent)}
       </div>
     </div>
@@ -729,6 +729,52 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   </div>
 )}
 
+
+{/* SECTION HEADER */}
+<div
+  style={{
+    marginBottom: 18,
+    paddingBottom: 10,
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    textAlign: "center",
+  }}
+>
+  <div
+    style={{
+      fontSize: 12,
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+      color: "rgba(53, 76, 70, 1.0)",
+      marginBottom: 4,
+    }}
+  >
+    Übersicht
+  </div>
+
+  <h2
+    style={{
+      fontSize: 20,
+      fontWeight: 600,
+      margin: 0,
+      padding: 0,
+      color: "rgba(53, 76, 70, 1.0)",
+    }}
+  >
+    Events entdecken
+  </h2>
+
+  <p
+    style={{
+      fontSize: 13,
+      color: "rgba(53, 76, 70, 1.0)",
+      marginTop: 6,
+      lineHeight: 1.45,
+    }}
+  >
+    Finde Spiele & Konzerte, gib deine Ticket-ID ein und sichere dir die besten 
+    verfügbaren Upgrades – in Echtzeit.
+  </p>
+</div>
 
 {/* FILTERS */}
 <div
@@ -781,70 +827,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       })}
     </div>
   </div>
-
-  {/* Date filter */}
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center", // ← center pills
-      width: "100%",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        gap: 6,
-        overflowX: "auto",
-        paddingBottom: 2,
-        justifyContent: "center",
-      }}
-    >
-      {dateOptions.map((opt) => {
-        const isActive = opt.id === dateFilter;
-        return (
-          <button
-            key={opt.id}
-            onClick={() => setDateFilter(opt.id)}
-            style={{
-              padding: "4px 8px",
-              borderRadius: 999,
-              border: isActive ? "1px solid #90caf9" : "1px solid #333",
-              backgroundColor: isActive ? "#0d47a1" : "#141414",
-              color: isActive ? "#e3f2fd" : "#ddd",
-              fontSize: 11,
-              whiteSpace: "nowrap",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
-  </div>
 </div>
-
-
-      {/* TITLE */}
-      <h2
-        style={{
-          fontSize: 18,
-          marginBottom: 4,
-        }}
-      >
-        Events entdecken
-      </h2>
-      <p
-        style={{
-          fontSize: 13,
-          color: "#b3b3b3",
-          marginBottom: 10,
-        }}
-      >
-        Wähle Spiel oder Konzert, gib deine Ticket-ID ein und sichere dir das
-        beste verfügbare Upgrade.
-      </p>
 
       {/* MAIN EVENT LIST */}
       <div
@@ -1133,196 +1116,188 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   </div>
 </div>
 
-      {/* ARENA-BASED UPGRADES */}
+{/* ARENA-BASED UPGRADES */}
+<div
+  style={{
+    marginTop: 24,
+    padding: 18,
+    borderRadius: 18,
+    background:
+      "radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 55%), #181818",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 18px 45px rgba(0,0,0,0.55)",
+    boxSizing: "border-box",
+  }}
+>
+  {/* Header */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "baseline",
+      marginBottom: 10,
+      gap: 8,
+    }}
+  >
+    <div>
       <div
         style={{
-          marginTop: 20,
-          padding: 14,
-          borderRadius: 14,
-          backgroundColor: "#101010",
-          border: "1px solid #333",
-          boxSizing: "border-box",
+          fontSize: 10,
+          textTransform: "uppercase",
+          letterSpacing: 1.2,
+          color: "#8f9ba8",
+          marginBottom: 4,
         }}
       >
-        <h3
-          style={{
-            fontSize: 14,
-            marginBottom: 6,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <span>🔓 Arena-Upgrades</span>
-        </h3>
-        <p
-          style={{
-            fontSize: 11,
-            color: "#9e9e9e",
-            marginBottom: 10,
-          }}
-        >
-          Exklusive Upgrades direkt von deiner Arena – limitiert verfügbar.
-        </p>
+        Arena Specials
+      </div>
+      <h3
+        style={{
+          fontSize: 16,
+          fontWeight: 600,
+          margin: 0,
+        }}
+      >
+        Kuratierte Erlebnisse
+      </h3>
+    </div>
+  </div>
 
+  <p
+    style={{
+      fontSize: 12,
+      color: "#9ca3af",
+      marginBottom: 14,
+      lineHeight: 1.4,
+    }}
+  >
+    Wähle exklusive Erlebnisse für Spielerlebnisse vor, während oder nach dem Event.
+  </p>
+
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    }}
+  >
+    {[
+      {
+        title: "Eisbären – High Five Lane",
+        arena: "UBER Arena · Berlin",
+        desc: "Begleite das Team beim Einlauf und erlebe High Fives direkt am Eis.",
+        price: "15 €",
+      },
+      {
+        title: "Drake – Meet & Greet",
+        arena: "UBER Arena · Berlin",
+        desc: "Exklusives Meet & Greet inklusive Foto, Early Entry und Merch-Desk Fast Lane.",
+        price: "299 €",
+      },
+      {
+        title: "Köln – After Match VIP Club",
+        arena: "RheinEnergieSTADION · Köln",
+        desc: "Zugang zum After Match VIP Club mit Drinks, Snacks und Spieler-Interviews.",
+        price: "199 €",
+      },
+    ].map((u) => (
+      <div
+        key={u.title}
+        style={{
+          padding: 12,
+          borderRadius: 14,
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.6))",
+          border: "1px solid rgba(255,255,255,0.12)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+        }}
+      >
+        {/* Title + meta */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 8,
+            gap: 4,
           }}
         >
-          {/* 1. Eisbären – High Five Lane */}
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 10,
-              borderRadius: 10,
-              backgroundColor: "#151515",
-              border: "1px solid #222",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#f9fafb",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                Eisbären – High Five Lane
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#bdbdbd",
-                }}
-              >
-                Upgrade auf die High Five Lane direkt am Eis.
-              </div>
-            </div>
-            <span
-              style={{
-                padding: "4px 10px",
-                borderRadius: 999,
-                backgroundColor: "#263238",
-                border: "1px solid #455a64",
-                fontSize: 11,
-                whiteSpace: "nowrap",
-              }}
-            >
-              15&nbsp;€
-            </span>
+            {u.title}
           </div>
 
-          {/* 2. Drake – Meet &amp; Greet */}
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 10,
-              borderRadius: 10,
-              backgroundColor: "#151515",
-              border: "1px solid #222",
+              flexWrap: "wrap",
+              gap: 6,
+              rowGap: 4,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                Drake – Meet &amp; Greet
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#bdbdbd",
-                }}
-              >
-                Persönliches Meet &amp; Greet inklusive Foto und Early Entry.
-              </div>
-            </div>
             <span
               style={{
-                padding: "4px 10px",
+                fontSize: 10,
+                padding: "2px 8px",
                 borderRadius: 999,
-                backgroundColor: "#263238",
-                border: "1px solid #455a64",
-                fontSize: 11,
-                whiteSpace: "nowrap",
+                border: "1px solid rgba(148,163,184,0.6)",
+                backgroundColor: "rgba(15,23,42,0.6)",
+                color: "#e5e7eb",
+                textTransform: "uppercase",
+                letterSpacing: 0.8,
               }}
             >
-              299&nbsp;€
-            </span>
-          </div>
-
-          {/* 3. Köln – After Match VIP Club */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 10,
-              borderRadius: 10,
-              backgroundColor: "#151515",
-              border: "1px solid #222",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                Köln – After Match VIP Club
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#bdbdbd",
-                }}
-              >
-                Zugang zum After Match VIP Club inkl. Drinks &amp; Snacks.
-              </div>
-            </div>
-            <span
-              style={{
-                padding: "4px 10px",
-                borderRadius: 999,
-                backgroundColor: "#263238",
-                border: "1px solid #455a64",
-                fontSize: 11,
-                whiteSpace: "nowrap",
-              }}
-            >
-              199&nbsp;€
+              {u.arena}
             </span>
           </div>
         </div>
+
+        {/* Description */}
+        <div
+          style={{
+            fontSize: 12,
+            color: "#d1d5db",
+            lineHeight: 1.4,
+          }}
+        >
+          {u.desc}
+        </div>
+
+        {/* Price line under text */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 4,
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              padding: "4px 12px",
+              borderRadius: 999,
+              background:
+                "linear-gradient(90deg, rgba(56,189,248,0.24), rgba(37,99,235,0.32))",
+              border: "1px solid rgba(191,219,254,0.7)",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#f9fafb",
+              boxShadow: "0 0 0 1px rgba(15,23,42,0.6)",
+            }}
+          >
+            {u.price} · pro Ticket
+          </div>
+        </div>
       </div>
+    ))}
+  </div>
+</div>
 
 
       {/* FOOTER */}
