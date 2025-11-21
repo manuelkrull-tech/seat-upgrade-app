@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import './App.css';
 import pictureKoelnHero from "./assets/picture_koeln_hero.jpg";
 import pictureDrakeHero from "./assets/picture_drake_hero.jpg";
 import pictureEisbaerenHero from "./assets/picture_eisbaeren_hero.jpg";
@@ -19,7 +20,7 @@ const EVENTS = [
     primaryColor: "#C8102E",
     seatLabel: "Block (z. B. S3, N2, O3, W1)",
     type: "football",
-    dateUtc: "2025-11-21T13:07:00Z",
+    dateUtc: "2025-11-21T15:15:00Z",
     demandLevel: "medium",
     isUpgradable: true,
     preview: "true",
@@ -29,10 +30,10 @@ const EVENTS = [
     name: "Drake – Boy Meets World Tour",
     venue: "Uber Arena Berlin",
     city: "Berlin",
-    primaryColor: "rgba(222, 236, 221, 0.85)",
+    primaryColor: "#555D61)",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
-    dateUtc: "2025-11-26T20:00:00Z",
+    dateUtc: "2025-11-21T15:15:00Z",
     demandLevel: "high",
     isUpgradable: true,
     preview: "true",
@@ -585,82 +586,37 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       }}
     >
 
-
-      {/* LIVE NOW PILL */}
+      {/* LIVE NOW TICKER – simple + visible */}
       {liveEvents.length > 0 && (
         <div
           style={{
-            marginBottom: 12,
-            padding: "8px 12px",
-            borderRadius: 12,
-            border: "1px solid rgba(34,197,94,0.5)",
-            background:
-              "linear-gradient(90deg, rgba(21,128,61,0.35), rgba(15,23,42,0.75))",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            fontSize: 11,
-            maxWidth: "100%",
-            color: "#e5fbe9",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            width: "100%",
+            marginBottom: 10,
+            borderRadius: 8,
+            backgroundColor: "rgba(22,163,74,0.12)",
+            border: "1px solid rgba(34,197,94,0.4)",
+            padding: "4px 8px",
           }}
         >
-          {/* Left: icon + label */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              minWidth: 0,
-              flex: 1,
+              display: "inline-block",
+              whiteSpace: "nowrap",
+              color: "#050505ff",
+              fontSize: 12,
+              animation: "tickerScroll 15s linear infinite",
             }}
           >
-            {/* Live dot */}
-            <span
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                backgroundColor: "#22c55e",
-                boxShadow: "0 0 10px rgba(34,197,94,0.95)",
-                flexShrink: 0,
-              }}
-            />
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                minWidth: 0,
-              }}
-            >
-              <span
-                style={{
-                  fontWeight: 600,
-                  letterSpacing: 0.5,
-                  textTransform: "uppercase",
-                  fontSize: 10,
-                  opacity: 0.9,
-                }}
-              >
-                Live jetzt
-              </span>
-
-              <span
-                style={{
-                  fontSize: 11,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  opacity: 0.95,
-                }}
-              >
-                {liveEvents.map((ev) => ev.name).join(" · ")}
-              </span>
-            </div>
+            🟢 Live jetzt: {liveEvents.map((ev) => ev.name).join(" | ")} &nbsp;
+            🟢 Live jetzt: {liveEvents.map((ev) => ev.name).join(" | ")} &nbsp;
+            🟢 Live jetzt: {liveEvents.map((ev) => ev.name).join(" | ")}
           </div>
         </div>
       )}
+
+
 
 {/* HERO TOP EVENT */}
 {topEvent && (
@@ -1211,7 +1167,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           padding: 20,
           borderRadius: 18,
           background:
-            "radial-gradient(circle at top left, rgba(248,113,113,0.16), transparent 55%) #080808",
+            "radial-gradient(circle at top left, rgba(148,27,27,0.6), transparent 55%) #080808",
           border: "1px solid rgba(148,27,27,0.6)",
           boxSizing: "border-box",
         }}
@@ -1412,10 +1368,10 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
   {[
     {
       id: "hf",
-      code: "UPG-HF15",
+      code: "EHC-301125",
       headerColor: "#A9C7A6",
       title: "Eisbären – High Five Lane",
-      subtitle: "On-Ice Experience · UBER Arena",
+      subtitle: "Spielertunnel · UBER Arena",
       price: "ab 15 €",
       statusLabel: "Verfügbar",
       statusBg: "rgba(191,219,254,0.6)",
@@ -1424,7 +1380,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     },
     {
       id: "drake",
-      code: "UPG-MG299",
+      code: "DRAKE-MG299",
       headerColor: "#606E8C",
       title: "Drake – Meet & Greet",
       subtitle: "Backstage Access · UBER Arena",
@@ -1435,16 +1391,16 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       cta: "Upgrade ansehen",
     },
     {
-      id: "koeln",
-      code: "UPG-VIP199",
+      id: "gasag",
+      code: "GASAG-EHC25",
       headerColor: "#5D6970",
-      title: "Köln – After Match VIP Club",
-      subtitle: "Hospitality · RheinEnergieSTADION",
-      price: "ab 199 €",
-      statusLabel: "Limited",
+      title: "GASAG Energy Shot - Pausenspiel",
+      subtitle: "On-Ice Experience · UBER Arena",
+      price: "Kostenlos",
+      statusLabel: "Fans",
       statusBg: "rgba(96,165,250,0.25)",
       statusColor: "#1D4ED8",
-      cta: "Upgrade ansehen",
+      cta: "Anmelden",
     },
   ].map((u) => (
     <div
@@ -1890,6 +1846,7 @@ function UpgradesTab({
           paddingBottom: 24,
           boxSizing: "border-box",
           zIndex: 5,
+          boxShadow: "0 -4px 16px rgba(0,0,0,0.12)",
         }}
       >
         <div
@@ -1900,6 +1857,16 @@ function UpgradesTab({
             boxSizing:"border-box",
           }}
         >
+            {/* little handle bar at the top */}
+          <div
+            style={{
+              width: 40,
+              height: 4,
+              borderRadius: 999,
+              backgroundColor: "rgba(15,23,42,0.12)",
+              margin: "0 auto 14px auto",
+            }}
+          />
           {/* Ticket / Seat section */}
           <div
             style={{
@@ -1936,7 +1903,7 @@ function UpgradesTab({
                 color: "#040404ff",
               }}
             >
-              Ticket scannen / eingeben
+              Ticket-ID eingeben
             </h3>
 
             <p
@@ -1948,8 +1915,7 @@ function UpgradesTab({
                 lineHeight: 1.4,
               }}
             >
-              Gib deine Ticket-ID oder einen Demo-Code ein, wir lesen Block, Reihe
-              und Sitz aus dem System und zeigen dir verfügbare Upgrades.
+              Gib deine Ticket-ID und endecke alle verfügbaren Upgrades.
             </p>
 
             {/* Ticket-ID field – centered bubble */}
@@ -1981,8 +1947,8 @@ function UpgradesTab({
               type="button"
               onClick={handleVerifyAndLoadOffers}
               style={{
-                width: "75%",
-                padding: 12,
+                width: "40%",
+                padding: 8,
                 borderRadius: 999,
                 border: "none",
                 background:
@@ -1990,7 +1956,7 @@ function UpgradesTab({
                     ? "#555"
                     : "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
                 color: "#fff",
-                fontSize: 11,
+                fontSize: 8,
                 fontWeight: 600,
                 cursor:
                   ticketStatus === "checking" || isLoading ? "default" : "pointer",
@@ -2002,7 +1968,7 @@ function UpgradesTab({
                 ? "Ticket wird geprüft..."
                 : isLoading
                 ? "Lade Upgrade-Angebote..."
-                : "Ticket prüfen & Upgrades anzeigen"}
+                : "Upgrades anzeigen"}
             </button>
 
             {/* Status text */}
@@ -2012,7 +1978,7 @@ function UpgradesTab({
                 "Abgleich mit Ticket-System (Demo)..."}
               {ticketStatus === "ok" && (
                 <span style={{ color: "#81C784" }}>
-                  ✅ Ticket verifiziert – Angebote werden geladen.
+                  Ticket verifiziert – Angebote werden geladen.
                 </span>
               )}
               {ticketStatus === "error" && (
@@ -2026,22 +1992,41 @@ function UpgradesTab({
             {hasVerifiedSeat && (
               <div
                 style={{
-                  marginBottom: 12,
-                  padding: 10,
-                  borderRadius: 10,
-                  backgroundColor: "#111",
-                  border: "1px solid #333",
-                  fontSize: 12,
-                  color: "#ddd",
+                  marginBottom: 16,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  backgroundColor: "#ffffff",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  fontSize: 10,
+                  color: "#111",
+                  textAlign: "center",
                 }}
               >
-                Erkannter Sitzplatz:
-                <br />
-                <span style={{ fontWeight: "bold" }}>
-                  Block {block} · Reihe {row} · Sitz {seat}
-                </span>
+                <div
+                  style={{
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    fontWeight: 600,
+                    color: "#6b7280",
+                    marginBottom: 4,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Erkannter Sitzplatz
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: "#111827",
+                  }}
+                >
+                  Block {block} &nbsp;·&nbsp; Reihe {row} &nbsp;·&nbsp; Sitz {seat}
+                </div>
               </div>
             )}
+
           </div>
 
 
@@ -2315,19 +2300,33 @@ function UpgradesTab({
                     : remaining <= 0
                     ? "Ausverkauft (Demo)"
                     : remaining <= 3
-                    ? `Nur noch ${remaining} Plätze verfügbar`
-                    : `${remaining} Plätze verfügbar`;
+                    ? `Nur ${remaining} Plätze`
+                    : `${remaining} Plätze frei`;
 
                 const availabilityColor =
                   remaining === null
-                    ? "#bbb"
+                    ? "#6b7280"
                     : remaining <= 0
-                    ? "#ef9a9a"
+                    ? "#b91c1c"
                     : remaining <= 3
-                    ? "#ffcc80"
-                    : "#a5d6a7";
+                    ? "#b45309"
+                    : "#15803d";
 
                 const isSoldOut = remaining !== null && remaining <= 0;
+
+                // small urgency label
+                let urgencyLabel = null;
+
+                if (offer.urgence && offer.urgency.text) {
+                  urgencyLabel = offer.urgency.text;
+                } else if (offer.urgency) {
+                  urgencyLabel =
+                    offer.urgency.level === "high"
+                      ? "Hohe Nachfrage"
+                      : offer.urgency.level === "medium"
+                      ? "Beliebt"
+                      : "Entspannt verfügbar";
+                }
 
                 return (
                   <div
@@ -2335,14 +2334,17 @@ function UpgradesTab({
                     style={{
                       width: "100%",
                       boxSizing: "border-box",
-                      backgroundColor: "#1a1a1a",
-                      borderLeft: `6px solid ${offer.color}`,
-                      padding: 16,
-                      borderRadius: 12,
-                      marginBottom: 14,
-                      opacity: isSoldOut ? 0.6 : 1,
+                      backgroundColor: "#ffffff",
+                      borderRadius: 14,
+                      border: "1px solid #e5e7eb",
+                      borderLeft: `4px solid ${offer.color}`,
+                      padding: 12,
+                      marginBottom: 12,
+                      opacity: isSoldOut ? 0.55 : 1,
+                      boxShadow: "0 6px 18px rgba(15,23,42,0.06)",
                     }}
                   >
+                    {/* top row: title + save icon */}
                     <div
                       style={{
                         display: "flex",
@@ -2351,20 +2353,63 @@ function UpgradesTab({
                         gap: 8,
                       }}
                     >
-                      <div>
-                        <h3 style={{ marginTop: 0, marginBottom: 4 }}>
-                          {offer.title}
-                        </h3>
+                      <div
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            marginBottom: 2,
+                          }}
+                        >
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color:"#111",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {offer.title}
+                          </h3>
+                          {urgencyLabel && (
+                            <span
+                              style={{
+                                fontSize: 9,
+                                padding: "2px 6px",
+                                borderRadius: 999,
+                                backgroundColor: "rgba(248, 250, 252, 1)",
+                                border: "1px solid rgba(148,163,184,0.6)",
+                                color: "#374151",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {urgencyLabel}
+                            </span>
+                          )}
+                        </div>
                         <p
                           style={{
-                            color: "#ccc",
-                            marginTop: 0,
-                            fontSize: 13,
+                            color: "#4b5563",
+                            margin: 0,
+                            fontSize: 12,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                           }}
                         >
                           {offer.description}
                         </p>
                       </div>
+
                       <button
                         onClick={() => onToggleSave(offer)}
                         style={{
@@ -2372,6 +2417,7 @@ function UpgradesTab({
                           background: "transparent",
                           cursor: "pointer",
                           fontSize: 18,
+                          lineHeight: 1,
                         }}
                         aria-label="Merken"
                       >
@@ -2379,110 +2425,89 @@ function UpgradesTab({
                       </button>
                     </div>
 
-                    {/* Dynamic price */}
-                    <p style={{ fontWeight: "bold", marginTop: 8 }}>
-                      Preis (dynamisch): {dynamicPrice.toFixed(2)} €
-                    </p>
-                    {priceChanged && (
-                      <p
-                        style={{
-                          marginTop: 2,
-                          fontSize: 11,
-                          color: "#aaa",
-                        }}
-                      >
-                        Basispreis: {basePrice.toFixed(2)} €
-                      </p>
-                    )}
-
-                    {/* Availability line */}
-                    {availabilityText && (
-                      <p
-                        style={{
-                          marginTop: 4,
-                          fontSize: 12,
-                          color: availabilityColor,
-                        }}
-                      >
-                        {availabilityText}
-                      </p>
-                    )}
-
-                    {/* Urgency */}
-                    {offer.urgency && (
+                    {/* middle row: price + availability */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginTop: 8,
+                        gap: 8,
+                      }}
+                    >
+                      {/* price pill */}
                       <div
                         style={{
-                          marginTop: 10,
-                          padding: "6px 10px",
-                          borderRadius: 8,
-                          backgroundColor:
-                            offer.urgency.level === "high"
-                              ? "#8B1A1A"
-                              : offer.urgency.level === "medium"
-                              ? "#7A4F00"
-                              : "#1b3a1b",
-                          color: "#fff",
-                          fontSize: 13,
-                          fontWeight: "bold",
+                          display: "inline-flex",
+                          alignItems: "baseline",
+                          gap: 6,
+                          padding: "4px 10px",
+                          borderRadius: 999,
+                          backgroundColor: "#0f172a",
+                          color: "#f9fafb",
+                          fontSize: 12,
                         }}
                       >
-                        {offer.urgency.text}
+                        <span style={{ fontWeight: 600 }}>
+                          {dynamicPrice.toFixed(2)} €
+                        </span>
+                        {priceChanged && (
+                          <span
+                            style={{
+                              fontSize: 10,
+                              textDecoration: "line-through",
+                              opacity: 0.65,
+                            }}
+                          >
+                            {basePrice.toFixed(2)} €
+                          </span>
+                        )}
+                        <span
+                          style={{
+                            fontSize: 10,
+                            opacity: 0.8,
+                          }}
+                        >
+                          / Ticket
+                        </span>
                       </div>
-                    )}
 
-                    {/* Comparison */}
+                      {/* availability */}
+                      {availabilityText && (
+                        <span
+                          style={{
+                            fontSize: 11,
+                            color: availabilityColor,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {availabilityText}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* compact seat comparison line */}
                     {offer.comparison && (
                       <div
                         style={{
-                          marginTop: 14,
-                          padding: 12,
-                          borderRadius: 10,
-                          backgroundColor: "#111",
-                          border: "1px solid #333",
-                          fontSize: 13,
-                          color: "#ccc",
+                          marginTop: 8,
+                          fontSize: 11,
+                          color: "#6b7280",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
                         }}
                       >
-                        <div
-                          style={{
-                            marginBottom: 6,
-                            color: "#999",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          Vorher:
-                        </div>
-                        <div>
-                          Block {offer.comparison.fromBlock}, Reihe{" "}
-                          {offer.comparison.fromRow}, Sitz{" "}
-                          {offer.comparison.fromSeat}
-                        </div>
-
-                        <div
-                          style={{
-                            marginTop: 10,
-                            marginBottom: 6,
-                            color: "#999",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          Nachher (Upgrade):
-                        </div>
-                        <div style={{ color: "#fff" }}>
-                          Block {offer.comparison.toBlock}
-                        </div>
-                        <div
-                          style={{
-                            marginTop: 10,
-                            fontSize: 12,
-                            color: "#bbb",
-                          }}
-                        >
-                          Höhere Kategorie · bessere Sicht · beliebter Bereich
-                        </div>
+                        <span style={{ fontSize: 12 }}>⬆️</span>
+                        <span>
+                          Von Block {offer.comparison.fromBlock} nach{" "}
+                          <strong>Block {offer.comparison.toBlock}</strong> – bessere
+                          Sicht & Kategorie.
+                        </span>
                       </div>
                     )}
 
+                    {/* CTA button */}
                     <button
                       onClick={() =>
                         canCheckoutWithTicket &&
@@ -2493,34 +2518,37 @@ function UpgradesTab({
                         })
                       }
                       style={{
-                        marginTop: 12,
-                        padding: "10px 16px",
-                        borderRadius: 8,
+                        marginTop: 10,
+                        padding: "9px 12px",
+                        borderRadius: 10,
                         backgroundColor:
                           canCheckoutWithTicket && !isSoldOut
                             ? offer.color
-                            : "#444",
+                            : "#e5e7eb",
                         border: "none",
-                        color: "#111",
-                        fontWeight: "bold",
+                        color:
+                          canCheckoutWithTicket && !isSoldOut ? "#111827" : "#9ca3af",
+                        fontWeight: 600,
                         cursor:
                           canCheckoutWithTicket && !isSoldOut
                             ? "pointer"
                             : "not-allowed",
                         width: "100%",
+                        fontSize: 13,
                       }}
                     >
                       {ticketStatus !== "ok"
                         ? "Ticket zuerst verifizieren"
                         : isSoldOut
                         ? "Kontingent erschöpft"
-                        : "Weiter zum Checkout"}
+                        : "Upgrade auswählen"}
                     </button>
                   </div>
                 );
               })}
             </div>
           )}
+
 
           {/* Confirmation after checkout */}
           {selectedOffer && checkoutGuest && (
@@ -2919,7 +2947,7 @@ function fetchDrakeOffers({ block, row, seat }) {
           title: "Front of Stage Upgrade",
           description: "Direkt vor der Bühne – maximale Nähe.",
           priceEuro: 120,
-          color: "#AB47BC",
+          color: "#a9c7a6",
           targetBlock: "INNER CIRCLE",
         });
       } else {
@@ -2929,7 +2957,7 @@ function fetchDrakeOffers({ block, row, seat }) {
           description:
             "Vom Sitzplatz in den Innenraum – dichter an der Bühne.",
           priceEuro: 89,
-          color: "#8E24AA",
+          color: "#a9c7a6",
           targetBlock: "INNENRAUM",
         });
       }
@@ -2940,7 +2968,7 @@ function fetchDrakeOffers({ block, row, seat }) {
           title: "Unterrang Frontview",
           description: "Besserer Blickwinkel und geringere Distanz.",
           priceEuro: 49,
-          color: "#EC407A",
+          color: "#5D6970",
           targetBlock: "101",
         });
       }
@@ -2951,7 +2979,7 @@ function fetchDrakeOffers({ block, row, seat }) {
         description:
           "Separater Eingang, Lounge-Zugang, eigene Bar, entspanntes Ankommen.",
         priceEuro: 159,
-        color: "#FFA726",
+        color: "#606E8C",
         targetBlock: "VIP LOUNGE",
       });
 
@@ -3468,7 +3496,7 @@ function ConcertArenaMap({ currentBlock, offers }) {
   return (
     <div
       style={{
-        backgroundColor: "#151515",
+        backgroundColor: "#111",
         borderRadius: 12,
         padding: 14,
       }}
