@@ -50,7 +50,7 @@ const EVENTS = [
     dateUtc: "2025-12-05T19:30:00Z",
     demandLevel: "medium",
     isUpgradable: false,
-    preview: "false",
+    preview: "true",
   },
 
   // 🔴 NEW: Bayern vs Dortmund
@@ -65,7 +65,7 @@ const EVENTS = [
     dateUtc: "2025-12-10T17:30:00Z",
     demandLevel: "high",
     isUpgradable: false,
-    preview: "true",
+    preview: "false",
   },
 
   // 🟡 NEW: ALBA vs Bonn in Bonn
@@ -80,7 +80,7 @@ const EVENTS = [
     dateUtc: "2025-12-03T19:00:00Z",
     demandLevel: "low",
     isUpgradable: true,
-    preview: "true",
+    preview: "false",
   },
 
   // 🔵 NEW: Red Bull München vs Straubing in SAP Arena
@@ -1043,8 +1043,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                       padding: "3px 7px",
                       borderRadius: 999,
                       backgroundColor: "rgba(255,255,255,0.08)",
-                      border: "1px solid rgba(255,255,255,0.3)",
-                      color: "#fff",
+                      border: "1px solid rgba(0, 0, 0, 0.3)",
+                      color: "#000000ff",
                       fontSize: 9,
                       whiteSpace: "nowrap",
                     }}
@@ -1083,7 +1083,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                       padding: "3px 7px",
                       borderRadius: 999,
                       backgroundColor: "#333",
-                      color: "#ccc",
+                      color: "#ffffffff",
                       fontSize: 9,
                       whiteSpace: "nowrap",
                     }}
@@ -1880,7 +1880,7 @@ function UpgradesTab({
                 onChange={(e) => handleChangeTicketCode(e.target.value)}
                 placeholder="Ticket-ID / Barcode (Demo)"
                 style={{
-                  width: "75%",
+                  width: "100%",
                   padding: "8px",
                   borderRadius: 12,
                   border: "1px solid #d1d5db",
@@ -1897,16 +1897,16 @@ function UpgradesTab({
               type="button"
               onClick={handleVerifyAndLoadOffers}
               style={{
-                width: "60%",
+                width: "50%",
                 padding: 10,
-                borderRadius: 999,
+                borderRadius: 10,
                 border: "none",
                 background:
                   ticketStatus === "checking" || isLoading
                     ? "#9ca3af"
                     : "linear-gradient(135deg, #111827, #1f2937)",
                 color: "#fff",
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: 600,
                 cursor:
                   ticketStatus === "checking" || isLoading
@@ -1922,7 +1922,7 @@ function UpgradesTab({
                 ? "Ticket wird geprüft..."
                 : isLoading
                 ? "Lade Upgrade-Angebote..."
-                : "Ticket prüfen & Upgrades anzeigen"}
+                : "Upgrades anzeigen"}
             </button>
 
             {/* Status text */}
