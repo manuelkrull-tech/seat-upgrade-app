@@ -21,8 +21,8 @@ const EVENTS = [
     type: "football",
     dateUtc: "2025-11-21T13:07:00Z",
     demandLevel: "medium",
-    isUpgradable: false,
-    preview: "sale",
+    isUpgradable: true,
+    preview: "true",
   },
   {
     id: "drake-uber",
@@ -35,7 +35,7 @@ const EVENTS = [
     dateUtc: "2025-11-26T20:00:00Z",
     demandLevel: "high",
     isUpgradable: true,
-    preview: "false",
+    preview: "true",
   },
   {
     id: "eisbaeren-adler",
@@ -76,8 +76,8 @@ const EVENTS = [
     seatLabel: "Block (z. B. 104, 210)",
     type: "football", // läuft unter „Fußball“-Filter, du kannst später eine Basketball-Kategorie ergänzen
     dateUtc: "2025-12-03T19:00:00Z",
-    demandLevel: "medium",
-    isUpgradable: false,
+    demandLevel: "low",
+    isUpgradable: true,
     preview: "true",
   },
 
@@ -584,6 +584,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         overflowX: "hidden", // extra safety
       }}
     >
+
+
       {/* LIVE NOW PILL */}
       {liveEvents.length > 0 && (
         <div
@@ -660,159 +662,199 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         </div>
       )}
 
-
-      {/* SEARCH BAR */}
-      <div
-        style={{
-          width: "100%",
-          margin: "0 auto 16px auto",
-          position: "sticky",
-          top: 0,
-          zIndex: 20,
-        }}
-      >
-        <input
-          type="text"
-          placeholder="🔍 Suche nach Events..."
-          onChange={(e) => {
-            const q = e.target.value.toLowerCase();
-            // You can adjust this logic or extract to a dedicated state
-            const filtered = events.filter((ev) =>
-              ev.name.toLowerCase().includes(q)
-            );
-            // Store it in state (create a state: const [searchResults, setSearchResults] = useState([]))
-            setSearchResults(filtered);
-          }}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: 12,
-            border: "1px solid #333",
-            color: "#000000ff",
-            fontSize: 14,
-          }}
-        />
-      </div>
-
-      {/* HERO TOP EVENT */}
+{/* HERO TOP EVENT */}
 {topEvent && (
   <div
     onClick={() => onSelectEvent(topEvent.id)}
     style={{
       marginBottom: 18,
-      padding: 14,
       borderRadius: 16,
-
-      // always dark transparent background
-      background:"rgba(222, 236, 221, 0.85)",
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-
-      // clean black border
-      border: "1px solid #000",
-
+      overflow: "hidden",
+      position: "relative",
       cursor: "pointer",
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-      boxSizing: "border-box",
+      height: 210,
+
+      // full card as image
+      backgroundImage: `url(${getEventHeroImage(topEvent)})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center center",
+      backgroundRepeat: "no-repeat",
     }}
   >
-    {/* small top row */}
+    {/* dark gradient overlay for readability */}
     <div
       style={{
+        position: "absolute",
+        inset: 0,
+        background:
+          "linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.8))",
+      }}
+    />
+
+    {/* content over image */}
+    <div
+      style={{
+        position: "relative",
+        zIndex: 1,
+        height: "100%",
+        padding: 12,
         display: "flex",
+        flexDirection: "column",
         justifyContent: "space-between",
-        alignItems: "center",
-        fontSize: 11,
-        textTransform: "uppercase",
-        letterSpacing: 1,
+        boxSizing: "border-box",
       }}
     >
-      <span
-        style={{
-          padding: "2px 8px",
-          borderRadius: 999,
-          border: "1px solid rgba(255,255,255,0.3)",
-          backgroundColor: "rgba(0,0,0,0.4)",
-        }}
-      >
-        🔥 Top Event
-      </span>
-
-      <span style={{ opacity: 0.8 }}>
-        {topEvent.type === "football"
-          ? "Fußball"
-          : topEvent.type === "concert"
-          ? "Konzert"
-          : "Eishockey"}
-      </span>
-    </div>
-
-    {/* hero image */}
-    <div
-      style={{
-        borderRadius: 12,
-        overflow: "hidden",
-        height: 180,
-        border: "1px solid #000",
-      }}
-    >
-      <img
-        src={getEventHeroImage(topEvent)}
-        alt={topEvent.name}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
-    </div>
-
-    {/* text below */}
-    <div>
+      {/* top row: Top Event + type + live */}
       <div
         style={{
-          fontWeight: "bold",
-          fontSize: 17,
-          marginBottom: 2,
-          color: "#000000ff",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontSize: 11,
         }}
       >
-        {topEvent.name}
-      </div>
-      <div style={{ fontSize: 12, color: "#000000ff" }}>
-        {(topEvent.city || "").trim()
-          ? `${topEvent.city} · ${topEvent.venue}`
-          : topEvent.venue}
-      </div>
-      <div style={{ fontSize: 11, color: "#000000ff", marginTop: 4 }}>
-        {formatDate(topEvent)}
-      </div>
-    </div>
+        {/* Top Event chip */}
+        <span
+          style={{
+            padding: "3px 9px",
+            borderRadius: 999,
+            border: "1px solid rgba(255,255,255,0.45)",
+            backgroundColor: "rgba(0,0,0,0.45)",
+            color: "#f9fafb",
+            textTransform: "uppercase",
+            letterSpacing: 0.8,
+            fontWeight: 600,
+          }}
+        >
+          🔥 Top Event
+        </span>
 
-    {/* bottom row */}
-    <div
-      style={{
-        marginTop: 8,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        fontSize: 10,
-        color: "#2e2e2eff",
-      }}
-    >
-      <span>Hohe Nachfrage · Last-Minute</span>
+        {/* type + optional live pill */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          {topEvent.isLive && (
+            <span
+              style={{
+                padding: "2px 7px",
+                borderRadius: 999,
+                backgroundColor: "rgba(22,163,74,0.95)",
+                color: "#ecfdf5",
+                fontSize: 10,
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: "#bbf7d0",
+                }}
+              />
+              Live
+            </span>
+          )}
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "rgba(249,250,251,0.85)",
+              textTransform: "uppercase",
+              letterSpacing: 0.8,
+            }}
+          >
+            {topEvent.type === "football"
+              ? "Fußball"
+              : topEvent.type === "concert"
+              ? "Konzert"
+              : "Eishockey"}
+          </span>
+        </div>
+      </div>
+
+      {/* bottom text block */}
+      <div>
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 17,
+            marginBottom: 2,
+            color: "#ffffff",
+            textShadow: "0 6px 18px rgba(0,0,0,0.9)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {topEvent.name}
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: "rgba(229,231,235,0.9)",
+            marginBottom: 2,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {(topEvent.city || "").trim()
+            ? `${topEvent.city} · ${topEvent.venue}`
+            : topEvent.venue}
+        </div>
+
+        <div
+          style={{
+            fontSize: 11,
+            color: "rgba(209,213,219,0.9)",
+          }}
+        >
+          {formatDate(topEvent)}
+        </div>
+
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 10,
+            color: "rgba(243,244,246,0.9)",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>⬆</span>
+          <span>Hohe Nachfrage · Last-Minute</span>
+        </div>
+      </div>
     </div>
   </div>
 )}
 
+<div
+  style={{
+    height: 1,
+    width: "100%",
+    margin: "8px 0",
+    background:
+      "linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.25), rgba(0,0,0,0))",
+  }}
+/>
 
 {/* SECTION HEADER */}
 <div
   style={{
-    marginBottom: 18,
+    marginBottom: 0,
+    paddingTop: 18,
     paddingBottom: 10,
     borderBottom: "1px solid rgba(255,255,255,0.06)",
     textAlign: "center",
@@ -891,7 +933,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             style={{
               padding: "4px 8px",
               borderRadius: 999,
-              border: isActive ? "1px solid #ffffff" : "1px solid #444",
+              border: isActive ? "1px solid #000000ff" : "1px solid #444",
               backgroundColor: isActive ? "#ffffff" : "#1a1a1a",
               color: isActive ? "#111" : "#eee",
               fontSize: 11,
@@ -906,6 +948,38 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       })}
     </div>
   </div>
+        {/* SEARCH BAR */}
+      <div
+        style={{
+          width: "100%",
+          margin: "0 auto 16px auto",
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+        }}
+      >
+        <input
+          type="text"
+          placeholder="🔍 Suche nach Events..."
+          onChange={(e) => {
+            const q = e.target.value.toLowerCase();
+            // You can adjust this logic or extract to a dedicated state
+            const filtered = events.filter((ev) =>
+              ev.name.toLowerCase().includes(q)
+            );
+            // Store it in state (create a state: const [searchResults, setSearchResults] = useState([]))
+            setSearchResults(filtered);
+          }}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 12,
+            border: "1px solid #333",
+            color: "#000000ff",
+            fontSize: 14,
+          }}
+        />
+      </div>
 </div>
 
       {/* MAIN EVENT LIST */}
@@ -925,7 +999,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               key={ev.id}
               onClick={() => onSelectEvent(ev.id)}
               style={{
-                padding: 10,
+                padding: 8,
                 borderRadius: 10,
                 border: `1px solid ${
                   isActive ? ev.primaryColor : "#333"
@@ -1109,13 +1183,32 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
             </button>
           );
         })}
+        <button
+          style={{
+            width: "50%",
+            margin: "20px auto 0",
+            padding: "8px 0",
+            color: "rgba(53, 76, 70, 1.0)",
+            border: "1px solid #333",
+            borderRadius: 12,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            // your navigation function here
+            console.log("Go to: Alle Events Entdecken");
+          }}
+        >
+          Alle Events Entdecken
+        </button>
       </div>
 
       {/* BRAND PARTNER AD – COCA-COLA */}
       <div
         style={{
           marginTop: 32,
-          padding: 16,
+          padding: 20,
           borderRadius: 18,
           background:
             "radial-gradient(circle at top left, rgba(248,113,113,0.16), transparent 55%) #080808",
@@ -1255,6 +1348,16 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         </button>
       </div>
 
+<div
+  style={{
+    height: 1,
+    width: "100%",
+    margin: "15px 0",
+    background:
+      "linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.25), rgba(0,0,0,0))",
+  }}
+/>      
+
 {/* ARENA-BASED UPGRADES — standalone cards */}
 <div
   style={{
@@ -1313,7 +1416,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       headerColor: "#A9C7A6",
       title: "Eisbären – High Five Lane",
       subtitle: "On-Ice Experience · UBER Arena",
-      price: "15 €",
+      price: "ab 15 €",
       statusLabel: "Verfügbar",
       statusBg: "rgba(191,219,254,0.6)",
       statusColor: "#1F2937",
@@ -1325,7 +1428,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       headerColor: "#606E8C",
       title: "Drake – Meet & Greet",
       subtitle: "Backstage Access · UBER Arena",
-      price: "299 €",
+      price: "ab 299 €",
       statusLabel: "Premium",
       statusBg: "rgba(244,114,182,0.28)",
       statusColor: "#9D174D",
@@ -1337,7 +1440,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       headerColor: "#5D6970",
       title: "Köln – After Match VIP Club",
       subtitle: "Hospitality · RheinEnergieSTADION",
-      price: "199 €",
+      price: "ab 199 €",
       statusLabel: "Limited",
       statusBg: "rgba(96,165,250,0.25)",
       statusColor: "#1D4ED8",
@@ -1583,7 +1686,7 @@ function UpgradesTab({
     if (ticketStatus !== "idle") setTicketStatus("idle");
   }
 
-    function handleVerifyAndLoadOffers() {
+  function handleVerifyAndLoadOffers() {
     const trimmed = (ticketCode || "").trim();
 
     if (!trimmed) {
@@ -1603,33 +1706,52 @@ function UpgradesTab({
         return;
       }
 
-      // ✅ Sitz aus Ticket übernehmen
-      setBlock(seatInfo.block);
-      setRow(String(seatInfo.row));
-      setSeat(String(seatInfo.seat));
+      const newBlock = seatInfo.block;
+      const newRow   = String(seatInfo.row);
+      const newSeat  = String(seatInfo.seat);
+
+      // ✅ update parent state for UI
+      setBlock(newBlock);
+      setRow(newRow);
+      setSeat(newSeat);
       setTicketStatus("ok");
 
-      // ⏱ WICHTIG: erst im nächsten Tick onSubmit aufrufen,
-      // damit der Parent die aktualisierten block/row/seat-Werte sieht.
-      setTimeout(() => {
-        if (typeof onSubmit === "function") {
-          onSubmit({ preventDefault: () => {} });
-        }
-      }, 0);
+      // ✅ now call parent submit WITH the decoded seat
+      if (typeof onSubmit === "function") {
+        onSubmit(
+          { preventDefault: () => {} },
+          {
+            block: newBlock,
+            row: newRow,
+            seat: newSeat,
+            fromTicket: true,
+          }
+        );
+      }
     }, 700);
   }
 
+  function handleSubmit(e, seatOverride) {
+    if (e && typeof e.preventDefault === "function") {
+      e.preventDefault();
+    }
 
-  function handleSubmitCheckout(e) {
-    e.preventDefault();
-    if (!guestEmail || !checkoutOffer) return;
+    const usedBlock = seatOverride?.block ?? block;
+    const usedRow   = seatOverride?.row   ?? row;
+    const usedSeat  = seatOverride?.seat  ?? seat;
 
-    onConfirmCheckout(checkoutOffer, {
-      name: guestName || "Gast",
-      email: guestEmail,
-      paymentMethod,
-    });
+    if (!usedBlock || !usedRow || !usedSeat) {
+      setError("Bitte Block, Reihe und Sitz ausfüllen.");
+      return;
+    }
+
+    // ✅ clear old error
+    setError("");
+
+    // use usedBlock/usedRow/usedSeat to load offers
+    loadOffersForSeat(usedBlock, usedRow, usedSeat);
   }
+
 
   function getDynamicPrice(offer) {
     const remaining =
@@ -1693,23 +1815,29 @@ function UpgradesTab({
             position: "absolute",
             left: 16,
             right: 16,
-            bottom: 24,
+            bottom: 40,
             zIndex: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
           }}
         >
+          {/* TITLE */}
           <div
             style={{
               fontSize: 20,
               fontWeight: 700,
               color: "#ffffff",
-              marginBottom: 4,
+              marginBottom: 1,
             }}
           >
             {currentEvent.name}
           </div>
+
+          {/* CITY + VENUE */}
           <div
             style={{
-              fontSize: 13,
+              fontSize: 12,
               color: "rgba(249,250,251,0.85)",
             }}
           >
@@ -1717,20 +1845,59 @@ function UpgradesTab({
               ? `${currentEvent.city} · ${currentEvent.venue}`
               : currentEvent.venue}
           </div>
+
+          {/* DATE + TIME */}
+          <div
+            style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.85)",
+              marginTop: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span>
+              {new Date(currentEvent.dateUtc).toLocaleString("de-DE", {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+              })}
+              {" · "}
+              {new Date(currentEvent.dateUtc).toLocaleTimeString("de-DE", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              {" Uhr"}
+            </span>
+          </div>
         </div>
+
       </div>
 
-      {/* CONTENT BELOW – NO BIG BUBBLE, JUST NORMAL PAGE */}
+
+  {/* CONTENT BELOW – NO BIG BUBBLE, JUST NORMAL PAGE */}
       <div
         style={{
-          padding: "16px 16px 24px",
+          position: "relative",
+          width: "100vw",
+          marginLeft: "calc(50% - 50vw)", // stretch to screen edges
+          backgroundColor: "#ffffff",
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          marginTop: -30,                 // overlap the hero
+          paddingTop: 20,
+          paddingBottom: 24,
           boxSizing: "border-box",
+          zIndex: 5,
         }}
       >
         <div
           style={{
             maxWidth: 480,
             margin: "0 auto",
+            padding: "0 16px",
+            boxSizing:"border-box",
           }}
         >
           {/* Ticket / Seat section */}
@@ -1799,13 +1966,12 @@ function UpgradesTab({
                 placeholder="Ticket-ID / Barcode (Demo)"
                 style={{
                   width: "75%",
-                  padding: "12px",
+                  padding: "8px",
                   borderRadius: 12,
                   border: "1px solid #333",
-                  color: "#fff",
+                  color: "#000000ff",
                   fontSize: 14,
                   textAlign: "center",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
                 }}
               />
             </div>
@@ -1815,20 +1981,19 @@ function UpgradesTab({
               type="button"
               onClick={handleVerifyAndLoadOffers}
               style={{
-                width: "100%",
+                width: "75%",
                 padding: 12,
                 borderRadius: 999,
                 border: "none",
                 background:
                   ticketStatus === "checking" || isLoading
                     ? "#555"
-                    : "linear-gradient(90deg,#38bdf8,#a855f7,#f97316)",
+                    : "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
                 color: "#fff",
-                fontSize: 14,
+                fontSize: 11,
                 fontWeight: 600,
                 cursor:
                   ticketStatus === "checking" || isLoading ? "default" : "pointer",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.45)",
                 marginBottom: 6,
               }}
               disabled={ticketStatus === "checking" || isLoading || !ticketCode.trim()}
@@ -2449,7 +2614,7 @@ function SavedTab({ savedOffers, onSelectOffer }) {
     return (
       <div>
         <h2 style={{ fontSize: 18, marginBottom: 8 }}>Gemerkte Upgrades</h2>
-        <p style={{ fontSize: 13, color: "#bbb" }}>
+        <p style={{ fontSize: 13, color: "#000000ff" }}>
           Du hast noch keine Upgrades gemerkt. Tippe auf ☆ bei einem Angebot,
           um es hier zu speichern.
         </p>
@@ -2460,7 +2625,7 @@ function SavedTab({ savedOffers, onSelectOffer }) {
   return (
     <div>
       <h2 style={{ fontSize: 18, marginBottom: 8 }}>Gemerkte Upgrades</h2>
-      <p style={{ fontSize: 13, color: "#bbb", marginBottom: 12 }}>
+      <p style={{ fontSize: 13, color: "#000000ff", marginBottom: 12 }}>
         Diese Upgrades hast du dir gemerkt. Du kannst sie später auswählen.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -2474,7 +2639,7 @@ function SavedTab({ savedOffers, onSelectOffer }) {
               borderRadius: 10,
               border: "1px solid #333",
               backgroundColor: "#171717",
-              color: "#fff",
+              color: "#000000ff",
               cursor: "pointer",
               fontSize: 13,
             }}
@@ -2482,7 +2647,7 @@ function SavedTab({ savedOffers, onSelectOffer }) {
             <div style={{ fontWeight: "bold", marginBottom: 4 }}>
               {offer.title}
             </div>
-            <div style={{ color: "#ccc", marginBottom: 4 }}>
+            <div style={{ color: "#000000ff", marginBottom: 4 }}>
               {offer.description}
             </div>
             <div style={{ fontWeight: "bold" }}>
@@ -2501,7 +2666,7 @@ function AccountTab() {
   return (
     <div>
       <h2 style={{ fontSize: 18, marginBottom: 8 }}>Konto</h2>
-      <p style={{ fontSize: 13, color: "#bbb", marginBottom: 12 }}>
+      <p style={{ fontSize: 13, color: "#000000ff", marginBottom: 12 }}>
         In einer echten Version könntest du hier dein Fanprofil, bevorzugte
         Teams, Zahlungsarten und Benachrichtigungen verwalten.
       </p>
