@@ -303,9 +303,8 @@ function App() {
         />
       )}
 
-      {activeTab === "saved" && (
-        <SavedTab
-          savedOffers={savedOffers}
+      {activeTab === "bidding" && (
+        <BiddingTab
           onSelectOffer={(offer) => {
             setActiveTab("upgrades");
             setCheckoutOffer(offer);
@@ -331,7 +330,7 @@ function PremiumHeader({ activeTab, currentEvent }) {
       ? "Wähle dein Event – Echtzeit-Seat-Upgrades"
       : activeTab === "upgrades" && currentEvent
       ? currentEvent.name
-      : activeTab === "saved"
+      : activeTab === "bidding"
       ? "Gemerkte Upgrades"
       : "Dein Profil & Einstellungen";
 
@@ -340,8 +339,8 @@ function PremiumHeader({ activeTab, currentEvent }) {
       ? "Events"
       : activeTab === "upgrades"
       ? "Upgrades"
-      : activeTab === "saved"
-      ? "Gemerkt"
+      : activeTab === "bidding"
+      ? "Auction"
       : "Account";
 
   return (
@@ -960,8 +959,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 border: `1px solid ${
                   isActive ? ev.primaryColor : "#333"
                 }`,
-                backgroundColor:"rgba(53, 76, 70, 1.0)",
-                color: "white",
+                backgroundColor:"#E0E0DA",
+                color: "#111",
                 textAlign: "left",
                 cursor: "pointer",
                 fontSize: 14,
@@ -988,7 +987,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                   style={{
                     fontSize: 10,
                     textTransform: "uppercase",
-                    color: "#bbb",
+                    color: "#4a4a4aff",
                     marginBottom: 2,
                   }}
                 >
@@ -1006,7 +1005,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 <div
                   style={{
                     fontSize: 11,
-                    color: "#aaa",
+                    color: "#4a4a4aff",
                     marginTop: 2,
                   }}
                 >
@@ -1018,8 +1017,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               <div
                 style={{
                   width: 1,
-                  background:
-                    "linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0))",
+                  background: "rgba(0, 0, 0, 0.73",
                   alignSelf: "stretch",
                   opacity: 0.8,
                   flexShrink: 0,
@@ -1051,7 +1049,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 <div
                   style={{
                     fontSize: 12,
-                    color: "#bbb",
+                    color: "#000000ff",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -1064,7 +1062,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 <div
                   style={{
                     fontSize: 11,
-                    color: "#888",
+                    color: "#525252ff",
                     marginTop: 2,
                   }}
                 >
@@ -1583,7 +1581,7 @@ function UpgradesTab({
   setRow,
   setSeat,
   inputStyle,
-  buttonStyle,
+  buttonStyle, // still passed, but not really used here now
   error,
   isLoading,
   offers,
@@ -1591,7 +1589,7 @@ function UpgradesTab({
   selectedOffer,
   checkoutGuest,
   savedIds,
-  onSubmit,
+  onSubmit,           // parent "load offers" handler
   onStartCheckout,
   onConfirmCheckout,
   onToggleSave,
@@ -1630,6 +1628,7 @@ function UpgradesTab({
   const hasVerifiedSeat = ticketStatus === "ok" && hasSeatEntered;
   const canCheckoutWithTicket = ticketStatus === "ok" && hasSeatEntered;
 
+  // --- PRICE + FEES FOR CHECKOUT ---
   const serviceFee = checkoutOffer
     ? Math.round(checkoutOffer.priceEuro * 0.08 * 100) / 100
     : 0;
@@ -1637,11 +1636,14 @@ function UpgradesTab({
     ? Math.round((checkoutOffer.priceEuro + serviceFee) * 100) / 100
     : 0;
 
+  // --- HELPERS ---
+
   function handleChangeTicketCode(value) {
     setTicketCode(value);
     if (ticketStatus !== "idle") setTicketStatus("idle");
   }
 
+  // ✅ One big button: verify ticket AND load offers
   function handleVerifyAndLoadOffers() {
     const trimmed = (ticketCode || "").trim();
 
@@ -1663,17 +1665,18 @@ function UpgradesTab({
       }
 
       const newBlock = seatInfo.block;
-      const newRow   = String(seatInfo.row);
-      const newSeat  = String(seatInfo.seat);
+      const newRow = String(seatInfo.row);
+      const newSeat = String(seatInfo.seat);
 
-      // ✅ update parent state for UI
+      // ✅ update parent seat state
       setBlock(newBlock);
       setRow(newRow);
       setSeat(newSeat);
       setTicketStatus("ok");
 
-      // ✅ now call parent submit WITH the decoded seat
+      // ✅ trigger parent onSubmit to actually load offers
       if (typeof onSubmit === "function") {
+        // parent expects an event; fake one with preventDefault
         onSubmit(
           { preventDefault: () => {} },
           {
@@ -1687,27 +1690,16 @@ function UpgradesTab({
     }, 700);
   }
 
-  function handleSubmit(e, seatOverride) {
-    if (e && typeof e.preventDefault === "function") {
-      e.preventDefault();
-    }
+  function handleSubmitCheckout(e) {
+    e.preventDefault();
+    if (!guestEmail || !checkoutOffer) return;
 
-    const usedBlock = seatOverride?.block ?? block;
-    const usedRow   = seatOverride?.row   ?? row;
-    const usedSeat  = seatOverride?.seat  ?? seat;
-
-    if (!usedBlock || !usedRow || !usedSeat) {
-      setError("Bitte Block, Reihe und Sitz ausfüllen.");
-      return;
-    }
-
-    // ✅ clear old error
-    setError("");
-
-    // use usedBlock/usedRow/usedSeat to load offers
-    loadOffersForSeat(usedBlock, usedRow, usedSeat);
+    onConfirmCheckout(checkoutOffer, {
+      name: guestName || "Gast",
+      email: guestEmail,
+      paymentMethod,
+    });
   }
-
 
   function getDynamicPrice(offer) {
     const remaining =
@@ -1729,7 +1721,7 @@ function UpgradesTab({
     <div
       style={{
         width: "100%",
-        background: "transparent", // no big grey container
+        background: "transparent",
       }}
     >
       {/* FULL-BLEED HERO AT TOP */}
@@ -1737,7 +1729,7 @@ function UpgradesTab({
         style={{
           position: "relative",
           width: "100vw",
-          marginLeft: "calc(50% - 50vw)", // make it truly edge-to-edge
+          marginLeft: "calc(50% - 50vw)", // edge-to-edge
           height: 260,
           overflow: "hidden",
           backgroundColor: "#000",
@@ -1765,7 +1757,7 @@ function UpgradesTab({
           }}
         />
 
-        {/* text over the image, always visible */}
+        {/* text over the image */}
         <div
           style={{
             position: "absolute",
@@ -1828,20 +1820,18 @@ function UpgradesTab({
             </span>
           </div>
         </div>
-
       </div>
 
-
-  {/* CONTENT BELOW – NO BIG BUBBLE, JUST NORMAL PAGE */}
+      {/* CONTENT BELOW – WHITE SHEET */}
       <div
         style={{
           position: "relative",
           width: "100vw",
-          marginLeft: "calc(50% - 50vw)", // stretch to screen edges
+          marginLeft: "calc(50% - 50vw)",
           backgroundColor: "#ffffff",
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
-          marginTop: -30,                 // overlap the hero
+          marginTop: -30, // overlap hero
           paddingTop: 20,
           paddingBottom: 24,
           boxSizing: "border-box",
@@ -1854,10 +1844,10 @@ function UpgradesTab({
             maxWidth: 480,
             margin: "0 auto",
             padding: "0 16px",
-            boxSizing:"border-box",
+            boxSizing: "border-box",
           }}
         >
-            {/* little handle bar at the top */}
+          {/* little handle bar at the top */}
           <div
             style={{
               width: 40,
@@ -1867,6 +1857,7 @@ function UpgradesTab({
               margin: "0 auto 14px auto",
             }}
           />
+
           {/* Ticket / Seat section */}
           <div
             style={{
@@ -1915,7 +1906,7 @@ function UpgradesTab({
                 lineHeight: 1.4,
               }}
             >
-              Gib deine Ticket-ID und endecke alle verfügbaren Upgrades.
+              Gib deine Ticket-ID ein und entdecke alle verfügbaren Upgrades.
             </p>
 
             {/* Ticket-ID field – centered bubble */}
@@ -1934,7 +1925,8 @@ function UpgradesTab({
                   width: "75%",
                   padding: "8px",
                   borderRadius: 12,
-                  border: "1px solid #333",
+                  border: "1px solid #d1d5db",
+                  backgroundColor: "#f9fafb",
                   color: "#000000ff",
                   fontSize: 14,
                   textAlign: "center",
@@ -1942,47 +1934,51 @@ function UpgradesTab({
               />
             </div>
 
-            {/* ✅ SINGLE BIG BUTTON: Ticket prüfen + Upgrades laden */}
+            {/* SINGLE BIG BUTTON: Ticket prüfen + Upgrades laden */}
             <button
               type="button"
               onClick={handleVerifyAndLoadOffers}
               style={{
-                width: "40%",
-                padding: 8,
+                width: "60%",
+                padding: 10,
                 borderRadius: 999,
                 border: "none",
                 background:
                   ticketStatus === "checking" || isLoading
-                    ? "#555"
-                    : "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
+                    ? "#9ca3af"
+                    : "linear-gradient(135deg, #111827, #1f2937)",
                 color: "#fff",
-                fontSize: 8,
+                fontSize: 12,
                 fontWeight: 600,
                 cursor:
-                  ticketStatus === "checking" || isLoading ? "default" : "pointer",
+                  ticketStatus === "checking" || isLoading
+                    ? "default"
+                    : "pointer",
                 marginBottom: 6,
               }}
-              disabled={ticketStatus === "checking" || isLoading || !ticketCode.trim()}
+              disabled={
+                ticketStatus === "checking" || isLoading || !ticketCode.trim()
+              }
             >
               {ticketStatus === "checking"
                 ? "Ticket wird geprüft..."
                 : isLoading
                 ? "Lade Upgrade-Angebote..."
-                : "Upgrades anzeigen"}
+                : "Ticket prüfen & Upgrades anzeigen"}
             </button>
 
             {/* Status text */}
-            <div style={{ fontSize: 11, color: "#bbb", marginBottom: 8 }}>
+            <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 8 }}>
               {ticketStatus === "idle" && "Ticket wird nur lokal simuliert (Demo)."}
               {ticketStatus === "checking" &&
                 "Abgleich mit Ticket-System (Demo)..."}
               {ticketStatus === "ok" && (
-                <span style={{ color: "#81C784" }}>
-                  Ticket verifiziert – Angebote werden geladen.
+                <span style={{ color: "#16a34a" }}>
+                  Ticket verifiziert – Angebote geladen.
                 </span>
               )}
               {ticketStatus === "error" && (
-                <span style={{ color: "#ef9a9a" }}>
+                <span style={{ color: "#b91c1c" }}>
                   ❌ Ticket ungültig (Demo) – Code prüfen.
                 </span>
               )}
@@ -2017,18 +2013,17 @@ function UpgradesTab({
 
                 <div
                   style={{
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 600,
                     color: "#111827",
                   }}
                 >
-                  Block {block} &nbsp;·&nbsp; Reihe {row} &nbsp;·&nbsp; Sitz {seat}
+                  Block {block} &nbsp;·&nbsp; Reihe {row} &nbsp;·&nbsp; Sitz{" "}
+                  {seat}
                 </div>
               </div>
             )}
-
           </div>
-
 
           {/* Error from offer loading */}
           {error && (
@@ -2065,61 +2060,100 @@ function UpgradesTab({
               style={{
                 marginTop: 24,
                 padding: 16,
-                borderRadius: 12,
-                backgroundColor: "#151515",
-                border: "1px solid #333",
+                borderRadius: 14,
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 10px 30px rgba(15,23,42,0.09)",
               }}
             >
-              <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+              <h3
+                style={{
+                  marginTop: 0,
+                  marginBottom: 6,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: "#111827",
+                }}
+              >
                 Checkout als Gast
               </h3>
-              <p style={{ fontSize: 13, color: "#ccc", marginBottom: 10 }}>
-                Bestätige dein Upgrade ohne Konto. Deine Tickets würden in
-                einer echten Version per E-Mail verschickt.
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "#6b7280",
+                  marginBottom: 12,
+                }}
+              >
+                Bestätige dein Upgrade ohne Konto. In einer echten Version würden deine
+                Tickets per E-Mail verschickt.
               </p>
 
               {/* Seat comparison */}
               <div
                 style={{
-                  padding: 12,
+                  padding: 10,
                   borderRadius: 10,
-                  backgroundColor: "#111",
-                  border: "1px solid #333",
-                  fontSize: 13,
-                  color: "#ccc",
+                  backgroundColor: "#f9fafb",
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  color: "#374151",
                   marginBottom: 14,
                 }}
               >
                 <div
                   style={{
-                    marginBottom: 6,
-                    color: "#999",
-                    fontWeight: "bold",
+                    marginBottom: 4,
+                    color: "#6b7280",
+                    fontWeight: 600,
+                    fontSize: 11,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.4,
                   }}
                 >
-                  Vorher:
-                </div>
-                <div>
-                  Block {block}, Reihe {row}, Sitz {seat}
+                  Sitzplatz-Vergleich
                 </div>
 
                 <div
                   style={{
-                    marginTop: 10,
-                    marginBottom: 6,
-                    color: "#999",
-                    fontWeight: "bold",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    alignItems: "center",
+                    flexWrap: "wrap",
                   }}
                 >
-                  Nachher (Upgrade):
+                  <div style={{ fontSize: 12 }}>
+                    <div style={{ color: "#9ca3af", fontSize: 11 }}>Vorher</div>
+                    <div>
+                      Block {block}, Reihe {row}, Sitz {seat}
+                    </div>
+                  </div>
+
+                  <span
+                    style={{
+                      fontSize: 16,
+                      color: "#9ca3af",
+                    }}
+                  >
+                    ➜
+                  </span>
+
+                  <div style={{ fontSize: 12 }}>
+                    <div style={{ color: "#9ca3af", fontSize: 11 }}>Upgrade</div>
+                    <div style={{ fontWeight: 600, color: "#111827" }}>
+                      Block{" "}
+                      {checkoutOffer.comparison?.toBlock ||
+                        checkoutOffer.targetBlock}
+                    </div>
+                  </div>
                 </div>
-                <div style={{ color: "#fff" }}>
-                  Block{" "}
-                  {checkoutOffer.comparison?.toBlock ||
-                    checkoutOffer.targetBlock}
-                </div>
+
                 <div
-                  style={{ marginTop: 10, fontSize: 12, color: "#bbb" }}
+                  style={{
+                    marginTop: 8,
+                    fontSize: 11,
+                    color: "#6b7280",
+                  }}
                 >
                   Höhere Kategorie · bessere Sicht · beliebter Bereich
                 </div>
@@ -2128,12 +2162,12 @@ function UpgradesTab({
               {/* Price breakdown */}
               <div
                 style={{
-                  padding: 12,
+                  padding: 10,
                   borderRadius: 10,
-                  backgroundColor: "#101010",
-                  border: "1px solid #333",
-                  fontSize: 13,
-                  color: "#ddd",
+                  backgroundColor: "#f9fafb",
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  color: "#374151",
                   marginBottom: 14,
                 }}
               >
@@ -2152,8 +2186,8 @@ function UpgradesTab({
                     display: "flex",
                     justifyContent: "space-between",
                     marginBottom: 6,
-                    fontSize: 12,
-                    color: "#bbb",
+                    fontSize: 11,
+                    color: "#6b7280",
                   }}
                 >
                   <span>Servicegebühr (8%)</span>
@@ -2161,12 +2195,12 @@ function UpgradesTab({
                 </div>
                 <div
                   style={{
-                    borderTop: "1px solid #333",
+                    borderTop: "1px solid #e5e7eb",
                     marginTop: 6,
                     paddingTop: 6,
                     display: "flex",
                     justifyContent: "space-between",
-                    fontWeight: "bold",
+                    fontWeight: 600,
                   }}
                 >
                   <span>Gesamt</span>
@@ -2184,6 +2218,9 @@ function UpgradesTab({
                     ...inputStyle,
                     textAlign: "left",
                     fontSize: 14,
+                    backgroundColor: "#f9fafb",
+                    borderColor: "#e5e7eb",
+                    color: "#111827",
                   }}
                 />
                 <input
@@ -2194,6 +2231,9 @@ function UpgradesTab({
                     ...inputStyle,
                     textAlign: "left",
                     fontSize: 14,
+                    backgroundColor: "#f9fafb",
+                    borderColor: "#e5e7eb",
+                    color: "#111827",
                   }}
                 />
 
@@ -2204,13 +2244,19 @@ function UpgradesTab({
                     marginTop: 4,
                     padding: 10,
                     borderRadius: 10,
-                    backgroundColor: "#111",
-                    border: "1px solid #333",
+                    backgroundColor: "#f9fafb",
+                    border: "1px solid #e5e7eb",
                     fontSize: 13,
-                    color: "#ddd",
+                    color: "#374151",
                   }}
                 >
-                  <div style={{ marginBottom: 8, fontWeight: "bold" }}>
+                  <div
+                    style={{
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      fontSize: 12,
+                    }}
+                  >
                     Zahlungsmethode (Demo)
                   </div>
                   <div
@@ -2236,12 +2282,10 @@ function UpgradesTab({
                             padding: "6px 4px",
                             borderRadius: 8,
                             border: isActive
-                              ? "1px solid #fff"
-                              : "1px solid #444",
-                            backgroundColor: isActive
-                              ? "#2E7D32"
-                              : "#1a1a1a",
-                            color: "#fff",
+                              ? "1px solid #111827"
+                              : "1px solid #e5e7eb",
+                            backgroundColor: isActive ? "#111827" : "#ffffff",
+                            color: isActive ? "#f9fafb" : "#374151",
                             fontSize: 12,
                             cursor: "pointer",
                             display: "flex",
@@ -2267,9 +2311,9 @@ function UpgradesTab({
                     padding: 12,
                     borderRadius: 10,
                     border: "none",
-                    backgroundColor: !guestEmail ? "#444" : "#2E7D32",
-                    color: "#fff",
-                    fontWeight: "bold",
+                    backgroundColor: !guestEmail ? "#e5e7eb" : "#16a34a",
+                    color: !guestEmail ? "#9ca3af" : "#f9fafb",
+                    fontWeight: 600,
                     cursor: !guestEmail ? "not-allowed" : "pointer",
                     fontSize: 15,
                   }}
@@ -2372,7 +2416,7 @@ function UpgradesTab({
                               margin: 0,
                               fontSize: 14,
                               fontWeight: 600,
-                              color:"#111",
+                              color: "#111",
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -2527,7 +2571,9 @@ function UpgradesTab({
                             : "#e5e7eb",
                         border: "none",
                         color:
-                          canCheckoutWithTicket && !isSoldOut ? "#111827" : "#9ca3af",
+                          canCheckoutWithTicket && !isSoldOut
+                            ? "#111827"
+                            : "#9ca3af",
                         fontWeight: 600,
                         cursor:
                           canCheckoutWithTicket && !isSoldOut
@@ -2549,44 +2595,186 @@ function UpgradesTab({
             </div>
           )}
 
-
           {/* Confirmation after checkout */}
           {selectedOffer && checkoutGuest && (
             <div
               style={{
                 marginTop: 24,
-                padding: 16,
-                backgroundColor: "#2E7D32",
-                borderRadius: 12,
+                padding: 18,
+                borderRadius: 16,
+                backgroundColor: "#ecfdf5",
+                border: "1px solid #bbf7d0",
+                boxShadow: "0 8px 24px rgba(16,185,129,0.12)",
+                color: "#064e3b",
               }}
             >
-              <h3 style={{ marginTop: 0 }}>Upgrade ausgewählt 🎉</h3>
-              <p>{currentEvent.name}</p>
-              <p>
-                Platz: {block}, Reihe {row}, Sitz {seat}
-              </p>
-              <p>{selectedOffer.title}</p>
-              <p>{selectedOffer.priceEuro.toFixed(2)} €</p>
-              <p style={{ marginTop: 8, fontSize: 12 }}>
-                Bestätigung (Demo) für: {checkoutGuest.name} –{" "}
-                {checkoutGuest.email}
-              </p>
-              <p style={{ marginTop: 4, fontSize: 12 }}>
-                Zahlungsmethode (Demo):{" "}
-                {checkoutGuest.paymentMethod === "card"
-                  ? "Kreditkarte"
-                  : checkoutGuest.paymentMethod === "paypal"
-                  ? "PayPal"
-                  : "Apple Pay"}
-              </p>
+              {/* Header with success icon */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    backgroundColor: "#22c55e",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 0 4px rgba(34,197,94,0.25)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span style={{ fontSize: 20, color: "#ecfdf5" }}>✓</span>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Upgrade erfolgreich ausgewählt 🎉
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#047857",
+                      marginTop: 2,
+                    }}
+                  >
+                    In der echten Version würdest du jetzt eine E-Mail erhalten.
+                  </div>
+                </div>
+              </div>
+
+              {/* Info grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 12,
+                  fontSize: 13,
+                  marginBottom: 10,
+                }}
+              >
+                {/* Event */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      color: "#059669",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Event
+                  </div>
+                  <div style={{ fontWeight: 600 }}>{currentEvent.name}</div>
+                </div>
+
+                {/* Upgrade */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      color: "#059669",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Upgrade
+                  </div>
+                  <div style={{ fontWeight: 600 }}>{selectedOffer.title}</div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#047857",
+                      marginTop: 2,
+                    }}
+                  >
+                    {selectedOffer.priceEuro.toFixed(2)} € · pro Ticket
+                  </div>
+                </div>
+
+                {/* Seat */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      color: "#059669",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Sitzplatz
+                  </div>
+                  Block {block}, Reihe {row}, Sitz {seat}
+                </div>
+
+                {/* Guest */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      color: "#059669",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Gast (Demo)
+                  </div>
+                  {checkoutGuest.name}
+                  <div style={{ fontSize: 11, color: "#047857", marginTop: 2 }}>
+                    {checkoutGuest.email}
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment line */}
+              <div
+                style={{
+                  marginTop: 10,
+                  paddingTop: 10,
+                  borderTop: "1px solid rgba(16,185,129,0.25)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#065f46",
+                }}
+              >
+                <span>
+                  Zahlungsmethode:{" "}
+                  {checkoutGuest.paymentMethod === "card"
+                    ? "Kreditkarte"
+                    : checkoutGuest.paymentMethod === "paypal"
+                    ? "PayPal"
+                    : "Apple Pay"}
+                </span>
+
+                <span>{selectedOffer.priceEuro.toFixed(2)} €</span>
+              </div>
             </div>
           )}
+
 
           {/* History (compact) */}
           {history.length > 0 && (
             <div style={{ marginTop: 28 }}>
               <h3 style={{ fontSize: 15 }}>Session-Log</h3>
-              <ul style={{ color: "#bbb", paddingLeft: 16, fontSize: 12 }}>
+              <ul style={{ color: "#6b7280", paddingLeft: 16, fontSize: 12 }}>
                 {history.slice(0, 6).map((item, i) => (
                   <li key={i} style={{ marginBottom: 4 }}>
                     [{item.time}] {item.event} – {item.block}/{item.row}/
@@ -2635,55 +2823,664 @@ function lookupSeatFromTicket(eventId, ticketCode) {
   return byEvent[ticketCode] || null;
 }
 
-/* ---------- SAVED TAB ---------- */
+/* ---------- BIDDING TAB ---------- */
 
-function SavedTab({ savedOffers, onSelectOffer }) {
-  if (savedOffers.length === 0) {
+function BiddingTab({ onSelectOffer }) {
+  // Demo data – you can extend this or load from API later
+  const auctions = [
+    {
+      id: "auction-koeln-1",
+      eventName: "1. FC Köln vs Hertha BSC",
+      venue: "RheinEnergieSTADION · Köln",
+      block: "S3",
+      row: "12",
+      seat: "27",
+      currentBid: 89,
+      minIncrement: 10,
+      timeLeft: "23 Min",
+      color: "#C8102E",
+      tag: "Lower Bowl",
+      imageHint: "football",
+    },
+    {
+      id: "auction-drake-1",
+      eventName: "Drake – World Tour",
+      venue: "UBER Arena · Berlin",
+      block: "401",
+      row: "5",
+      seat: "18",
+      currentBid: 55,
+      minIncrement: 10,
+      timeLeft: "1 Std 12 Min",
+      color: "#7c3aed",
+      tag: "Oberrang",
+      imageHint: "concert",
+    },
+    {
+      id: "auction-eisbaeren-1",
+      eventName: "Eisbären Berlin vs Adler Mannheim",
+      venue: "UBER Arena · Berlin",
+      block: "204",
+      row: "8",
+      seat: "11",
+      currentBid: 39,
+      minIncrement: 5,
+      timeLeft: "Heute · Live",
+      color: "#0ea5e9",
+      tag: "Unterrang",
+      imageHint: "hockey",
+    },
+    {
+      id: "auction-koeln-2",
+      eventName: "1. FC Köln vs Borussia Mönchengladbach",
+      venue: "RheinEnergieSTADION · Köln",
+      block: "N2",
+      row: "18",
+      seat: "14",
+      currentBid: 72,
+      minIncrement: 5,
+      timeLeft: "Morgen",
+      color: "#C8102E",
+    },
+    {
+      id: "auction-drake-2",
+      eventName: "Drake – Zusatzshow",
+      venue: "UBER Arena · Berlin",
+      block: "305",
+      row: "9",
+      seat: "32",
+      currentBid: 190,
+      minIncrement: 10,
+      timeLeft: "2 Tage",
+      color: "#7c3aed",
+    },
+    {
+      id: "auction-eisbaeren-2",
+      eventName: "Eisbären Berlin vs Red Bull München",
+      venue: "UBER Arena · Berlin",
+      block: "106",
+      row: "16",
+      seat: "4",
+      currentBid: 49,
+      minIncrement: 5,
+      timeLeft: "Sonntag",
+      color: "#0ea5e9",
+    },
+  ];
+
+  if (!auctions || auctions.length === 0) {
     return (
-      <div>
-        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Gemerkte Upgrades</h2>
-        <p style={{ fontSize: 13, color: "#000000ff" }}>
-          Du hast noch keine Upgrades gemerkt. Tippe auf ☆ bei einem Angebot,
-          um es hier zu speichern.
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          margin: "0 auto",
+          padding: "16px 16px 24px",
+          boxSizing: "border-box",
+        }}
+      >
+        <h2
+          style={{
+            margin: "0 0 8px",
+            fontSize: 18,
+            fontWeight: 600,
+            color: "#0f172a",
+          }}
+        >
+          Live auf Tickets bieten
+        </h2>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 12,
+            color: "#6b7280",
+          }}
+        >
+          Aktuell sind keine Auktionen live.
         </p>
       </div>
     );
   }
 
+  const hero = auctions[0];
+  const featured = auctions.slice(1, 3);
+  const others = auctions.slice(3, 8);
+
+  function handleBidClick(auction) {
+    if (typeof onSelectOffer === "function") {
+      onSelectOffer({
+        id: auction.id,
+        title: `${auction.eventName} – Block ${auction.block}, Reihe ${auction.row}, Sitz ${auction.seat}`,
+        priceEuro: auction.currentBid + auction.minIncrement,
+        color: auction.color || "#0f172a",
+      });
+    } else {
+      alert(
+        `Demo: Gebot über ${(auction.currentBid + auction.minIncrement).toFixed(
+          0
+        )} € abgegeben.`
+      );
+    }
+  }
+
   return (
-    <div>
-      <h2 style={{ fontSize: 18, marginBottom: 8 }}>Gemerkte Upgrades</h2>
-      <p style={{ fontSize: 13, color: "#000000ff", marginBottom: 12 }}>
-        Diese Upgrades hast du dir gemerkt. Du kannst sie später auswählen.
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {savedOffers.map((offer) => (
-          <button
-            key={offer.id}
-            onClick={() => onSelectOffer(offer)}
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 480,
+        margin: "0 auto",
+        padding: "16px 16px 24px",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <div>
+          <div
             style={{
-              textAlign: "left",
-              padding: 12,
-              borderRadius: 10,
-              border: "1px solid #333",
-              backgroundColor: "#171717",
-              color: "#000000ff",
-              cursor: "pointer",
-              fontSize: 13,
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              color: "#6b7280",
+              marginBottom: 2,
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: 4 }}>
-              {offer.title}
+            Ticket-Auktionen
+          </div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 600,
+              color: "#0f172a",
+            }}
+          >
+            Live auf Tickets bieten
+          </h2>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: 12,
+              color: "#6b7280",
+            }}
+          >
+            Du entscheidest wie viel dir das Ticket wert ist – erhöhe dein Gebot in Echtzeit!
+          </p>
+        </div>
+      </div>
+
+      {/* Demo hint */}
+      <div
+        style={{
+          marginBottom: 16,
+          padding: 10,
+          borderRadius: 12,
+          backgroundColor: "#eff6ff",
+          border: "1px dashed #bfdbfe",
+          fontSize: 11,
+          color: "#1d4ed8",
+        }}
+      >
+        🔐 Demo: Gebote werden nur simuliert – keine echten Käufe.
+      </div>
+
+      {/* === HERO AUCTION (First) === */}
+      <div
+        style={{
+          marginBottom: 18,
+          borderRadius: 20,
+          overflow: "hidden",
+          boxShadow: "0 20px 40px rgba(15,23,42,0.25)",
+          border: "1px solid #e5e7eb",
+          backgroundColor: "#000",
+        }}
+      >
+        {/* fake hero image / gradient */}
+        <div
+          style={{
+            position: "relative",
+            height: 200,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            overflow: "hidden",
+          }}
+        >
+          {/* Hero background image */}
+          <img
+            src={pictureKoelnHero}
+            alt={hero.eventName}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+
+          {/* dark gradient for readable text */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to top, rgba(15,23,42,0.85), rgba(15,23,42,0.15))",
+            }}
+          />
+
+          {/* Content overlay */}
+          <div
+            style={{
+              position: "absolute",
+              left: 16,
+              right: 16,
+              bottom: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
+            {/* Venue */}
+            <div
+              style={{
+                fontSize: 11,
+                color: "#e5e7eb",
+                marginBottom: 2,
+              }}
+            >
+              {hero.venue}
             </div>
-            <div style={{ color: "#000000ff", marginBottom: 4 }}>
-              {offer.description}
+
+            {/* Title */}
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: "#f9fafb",
+                lineHeight: 1.2,
+              }}
+            >
+              {hero.eventName}
             </div>
-            <div style={{ fontWeight: "bold" }}>
-              {offer.priceEuro.toFixed(2)} €
+
+            {/* Seat info */}
+            <div
+              style={{
+                fontSize: 12,
+                color: "#e5e7eb",
+                marginTop: 4,
+              }}
+            >
+              Block {hero.block} · Reihe {hero.row} · Sitz {hero.seat}
             </div>
+          </div>
+
+          {/* Top-right Tag */}
+          {hero.tag && (
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                padding: "4px 10px",
+                borderRadius: 999,
+                backgroundColor: "rgba(15,23,42,0.7)",
+                border: "1px solid rgba(148,163,184,0.6)",
+                fontSize: 11,
+                color: "#f9fafb",
+              }}
+            >
+              {hero.tag}
+            </div>
+          )}
+        </div>
+
+
+        {/* hero bottom section */}
+        <div
+          style={{
+            padding: 12,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 8,
+              gap: 10,
+            }}
+          >
+            {/* Current bid */}
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#6b7280",
+                  marginBottom: 2,
+                }}
+              >
+                Aktuelles Gebot
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: "#0f172a",
+                  }}
+                >
+                  {hero.currentBid.toFixed(0)} €
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "#6b7280",
+                  }}
+                >
+                  + min. {hero.minIncrement} €
+                </span>
+              </div>
+            </div>
+
+            {/* Time left pill */}
+            <div
+              style={{
+                padding: "4px 12px",
+                borderRadius: 999,
+                backgroundColor: "#fef9c3",
+                border: "1px solid #facc15",
+                fontSize: 11,
+                color: "#854d0e",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ⏱ Endet in {hero.timeLeft}
+            </div>
+          </div>
+
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+          <button
+            type="button"
+            onClick={() => handleBidClick(hero)}
+            style={{
+              width: "75%",
+              padding: 10,
+              borderRadius: 999,
+              border: "none",
+              background:
+                "linear-gradient(135deg, #545554ff, #5d5d5dff)",
+              color: "#f9fafb",
+              fontSize: 10,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Höheres Gebot abgeben (+{hero.minIncrement} €)
           </button>
+        </div>
+        </div>
+      </div>
+
+      {/* === TWO FEATURED BIG BUBBLES === */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          marginBottom: 18,
+        }}
+      >
+        {featured.map((a) => (
+          <div
+            key={a.id}
+            style={{
+              borderRadius: 16,
+              border: "1px solid #e5e7eb",
+              backgroundColor: "#ffffff",
+              padding: 12,
+              boxShadow: "0 10px 24px rgba(15,23,42,0.06)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 8,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#0f172a",
+                    marginBottom: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {a.eventName}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#6b7280",
+                    marginBottom: 4,
+                  }}
+                >
+                  {a.venue}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#4b5563",
+                  }}
+                >
+                  Block {a.block} · Reihe {a.row} · Sitz {a.seat}
+                </div>
+              </div>
+
+              {a.tag && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    backgroundColor: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    color: "#4b5563",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {a.tag}
+                </span>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: "#0f172a",
+                  }}
+                >
+                  {a.currentBid.toFixed(0)} €
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "#6b7280",
+                  }}
+                >
+                  + {a.minIncrement} €
+                </span>
+              </div>
+
+              <div
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 999,
+                  backgroundColor: "#f3f4f6",
+                  fontSize: 11,
+                  color: "#4b5563",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ⏱ {a.timeLeft}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleBidClick(a)}
+              style={{
+                marginTop: 4,
+                padding: "9px 12px",
+                borderRadius: 10,
+                border: "none",
+                backgroundColor: a.color || "#0f172a",
+                color: "#f9fafb",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Direkt mitbieten
+            </button>
+          </div>
         ))}
       </div>
+
+      {/* === SMALL LIST BELOW (5 compact auctions) === */}
+      {others.length > 0 && (
+        <div
+          style={{
+            marginTop: 4,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              color: "#6b7280",
+              marginBottom: 6,
+            }}
+          >
+            Weitere Auktionen
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {others.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => handleBidClick(a)}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  backgroundColor: "#ffffff",
+                  padding: 10,
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#0f172a",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {a.eventName}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#6b7280",
+                    }}
+                  >
+                    {a.venue}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    textAlign: "right",
+                    fontSize: 11,
+                    color: "#4b5563",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: "#0f172a",
+                    }}
+                  >
+                    {a.currentBid.toFixed(0)} €
+                  </div>
+                  <div>{a.timeLeft}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2725,7 +3522,7 @@ function BottomNav({ activeTab, onChange }) {
   const items = [
     { id: "events", label: "Events"},
     { id: "upgrades", label: "Upgrades"},
-    { id: "saved", label: "Gemerkt"},
+    { id: "bidding", label: "Auction"},
     { id: "account", label: "Konto"},
   ];
 
