@@ -586,38 +586,6 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       }}
     >
 
-      {/* LIVE NOW TICKER – simple + visible */}
-      {liveEvents.length > 0 && (
-        <div
-          style={{
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            width: "100%",
-            marginBottom: 10,
-            borderRadius: 8,
-            backgroundColor: "rgba(22,163,74,0.12)",
-            border: "1px solid rgba(34,197,94,0.4)",
-            padding: "4px 8px",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-block",
-              whiteSpace: "nowrap",
-              color: "#050505ff",
-              fontSize: 10,
-              animation: "tickerScroll 15s linear infinite",
-            }}
-          >
-            🟢 Live jetzt: {liveEvents.map((ev) => ev.name).join(" | ")} &nbsp;
-            🟢 Live jetzt: {liveEvents.map((ev) => ev.name).join(" | ")} &nbsp;
-            🟢 Live jetzt: {liveEvents.map((ev) => ev.name).join(" | ")}
-          </div>
-        </div>
-      )}
-
-
-
 {/* HERO TOP EVENT */}
 {topEvent && (
   <div
@@ -2990,24 +2958,24 @@ function BiddingTab() {
         boxSizing: "border-box",
       }}
     >
-{/* HEADER – light trading style, no pills */}
+{/* HEADER – squared + light trading ticker */}
 <div
   style={{
     marginBottom: 18,
-    paddingBottom: 8,
+    paddingBottom: 10,
     borderBottom: "1px solid #e5e7eb",
   }}
 >
-  {/* top mini row: label + live dot */}
+  {/* Top: LIVE label */}
   <div
     style={{
       display: "flex",
       alignItems: "center",
       gap: 8,
-      marginBottom: 4,
+      marginBottom: 6,
     }}
   >
-    {/* live dot */}
+    {/* GREEN LIVE DOT (back again) */}
     <span
       style={{
         width: 8,
@@ -3015,35 +2983,35 @@ function BiddingTab() {
         borderRadius: "50%",
         background:
           "radial-gradient(circle, #22c55e 0%, #16a34a 45%, transparent 70%)",
-        boxShadow: "0 0 8px rgba(34,197,94,0.7)",
+        boxShadow: "0 0 6px rgba(34,197,94,0.6)",
         flexShrink: 0,
       }}
     />
 
-    {/* label text */}
     <span
       style={{
         fontSize: 11,
         textTransform: "uppercase",
         letterSpacing: 0.6,
         color: "#6b7280",
+        fontWeight: 600,
       }}
     >
       Ticket-Auktionen · Live
     </span>
 
-    {/* thin divider line to the right */}
+    {/* right fade line */}
     <div
       style={{
         flex: 1,
         height: 1,
         background:
-          "linear-gradient(to right, rgba(148,163,184,0.4), rgba(148,163,184,0))",
+          "linear-gradient(to right, rgba(148,163,184,0.5), rgba(148,163,184,0))",
       }}
     />
   </div>
 
-  {/* main title */}
+  {/* Title */}
   <h2
     style={{
       margin: 0,
@@ -3051,15 +3019,16 @@ function BiddingTab() {
       fontWeight: 700,
       color: "#111827",
       letterSpacing: -0.2,
+      lineHeight: 1.25,
     }}
   >
     Live auf Tickets bieten
   </h2>
 
-  {/* subtitle */}
+  {/* Subtitle */}
   <p
     style={{
-      margin: "4px 0 0",
+      margin: "4px 0 10px",
       fontSize: 12,
       color: "#6b7280",
       maxWidth: 360,
@@ -3068,13 +3037,157 @@ function BiddingTab() {
   >
     Reale Sitzplätze statt Upgrades – biete gegen andere Fans in Echtzeit.
   </p>
+
+  {/* TICKER — squared, dark-light hybrid, Wall Street style */}
+  <div
+    style={{
+      width: "100%",
+      overflow: "hidden",
+      backgroundColor: "#f3f4f6",
+      border: "1px solid #d1d5db",
+      height: 42,
+      display: "flex",
+      alignItems: "center",
+      position: "relative",
+    }}
+  >
+    <div className="recentDealsSquaredTicker">
+      {[
+        {
+          time: "20:14",
+          event: "Köln vs Hertha",
+          seat: "S3 · 12 · 27",
+          price: "89 €",
+        },
+        {
+          time: "20:11",
+          event: "Drake World Tour",
+          seat: "Floor · 5 · 18",
+          price: "145 €",
+        },
+        {
+          time: "20:07",
+          event: "Eisbären vs Adler",
+          seat: "204 · 8 · 11",
+          price: "72 €",
+        },
+        {
+          time: "20:03",
+          event: "Köln vs Gladbach",
+          seat: "N2 · 18 · 14",
+          price: "95 €",
+        },
+        {
+          time: "19:58",
+          event: "Drake Zusatzshow",
+          seat: "305 · 9 · 32",
+          price: "132 €",
+        },
+      ]
+        // duplicate for loop
+        .concat([
+          {
+            time: "20:14",
+            event: "Köln vs Hertha",
+            seat: "S3 · 12 · 27",
+            price: "89 €",
+          },
+          {
+            time: "20:11",
+            event: "Drake World Tour",
+            seat: "Floor · 5 · 18",
+            price: "145 €",
+          },
+          {
+            time: "20:07",
+            event: "Eisbären vs Adler",
+            seat: "204 · 8 · 11",
+            price: "72 €",
+          },
+          {
+            time: "20:03",
+            event: "Köln vs Gladbach",
+            seat: "N2 · 18 · 14",
+            price: "95 €",
+          },
+          {
+            time: "19:58",
+            event: "Drake Zusatzshow",
+            seat: "305 · 9 · 32",
+            price: "132 €",
+          },
+        ])
+        .map((d, idx) => (
+          <div
+            key={idx}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "0 14px",
+              borderRight: "1px solid #d1d5db",
+              whiteSpace: "nowrap",
+              height: "100%",
+            }}
+          >
+            {/* time */}
+            <span
+              style={{
+                fontSize: 11,
+                fontVariantNumeric: "tabular-nums",
+                color: "#4b5563",
+                minWidth: 40,
+              }}
+            >
+              {d.time}
+            </span>
+
+            {/* event */}
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#111827",
+                maxWidth: 130,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {d.event}
+            </span>
+
+            {/* seat */}
+            <span
+              style={{
+                fontSize: 11,
+                color: "#6b7280",
+              }}
+            >
+              {d.seat}
+            </span>
+
+            {/* price */}
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#111827",
+              }}
+            >
+              {d.price}
+            </span>
+          </div>
+        ))}
+    </div>
+  </div>
 </div>
+
 
       {/* === HERO AUCTION (First) === */}
       <div
         style={{
           marginBottom: 18,
-          borderRadius: 20,
+          borderRadius: 10,
           overflow: "hidden",
           boxShadow: "0 20px 40px rgba(15,23,42,0.25)",
           border: "1px solid #e5e7eb",
@@ -3265,7 +3378,7 @@ function BiddingTab() {
               style={{
                 width: "100%",
                 padding: 8,
-                borderRadius: 999,
+                borderRadius: 10,
                 border: "1px solid #e5e7eb",
                 backgroundColor: "#f9fafb",
                 fontSize: 12,
@@ -3298,144 +3411,6 @@ function BiddingTab() {
         </div>
       </div>
 
-{/* RECENT DEALS – dark trading-style panel */}
-<div
-  style={{
-    marginTop: 10,
-    marginBottom: 18,
-    borderRadius: 12,
-    backgroundColor: "#111",
-    border: "1px solid #1f2937",
-    overflow: "hidden",
-  }}
->
-  {/* Header line */}
-  <div
-    style={{
-      padding: "12px 12px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      borderBottom: "1px solid #1e293b",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-      }}
-    >
-      <span
-        style={{
-          width: 7,
-          height: 7,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, #22c55e 0%, #16a34a 60%, transparent 100%)",
-          boxShadow: "0 0 8px rgba(34,197,94,0.9)",
-        }}
-      />
-      <span
-        style={{
-          fontSize: 11,
-          textTransform: "uppercase",
-          letterSpacing: 0.6,
-          color: "#e5e7eb",
-        }}
-      >
-        Recent Deals (Demo)
-      </span>
-    </div>
-
-    <span
-      style={{
-        fontSize: 10,
-        color: "#9ca3af",
-      }}
-    >
-      letzte 15 Min
-    </span>
-  </div>
-
-  {/* Table-like rows */}
-  <div
-    style={{
-      padding: "10px 4px",
-    }}
-  >
-    {[
-      { time: "20:14", label: "KLN vs. BSC | S3-12-27", price: "89 €" },
-      { time: "20:11", label: "DRAKE | INNENRAUM", price: "145 €" },
-      { time: "20:07", label: "EBB vs. ERC | 204-8-11", price: "72 €" },
-      { time: "20:03", label: "KLN vs. BSC | N2-18-14", price: "95 €" },
-      { time: "19:58", label: "DRAKE | 305-9-32", price: "132 €" },
-    ].map((deal, idx) => (
-      <div
-        key={idx}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "4px 12px",
-          borderTop: idx === 0 ? "none" : "1px solid rgba(15,23,42,0.9)",
-        }}
-      >
-        {/* Time */}
-        <div
-          style={{
-            width: 48,
-            fontSize: 11,
-            color: "#6b7280",
-            fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-          }}
-        >
-          {deal.time}
-        </div>
-
-        {/* Divider bar */}
-        <div
-          style={{
-            width: 2,
-            height: 14,
-            borderRadius: 999,
-            background:
-              "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.1))",
-            marginRight: 8,
-          }}
-        />
-
-        {/* Label (event + seat condensed) */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            fontSize: 11,
-            color: "#e5e7eb",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {deal.label}
-        </div>
-
-        {/* Price */}
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#22c55e",
-            fontVariantNumeric: "tabular-nums",
-            marginLeft: 10,
-          }}
-        >
-          {deal.price}
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
       {/* === TWO FEATURED BIG BUBBLES === */}
       <div
         style={{
@@ -3449,7 +3424,7 @@ function BiddingTab() {
           <div
             key={a.id}
             style={{
-              borderRadius: 16,
+              borderRadius: 10,
               border: "1px solid #e5e7eb",
               backgroundColor: "#ffffff",
               padding: 12,

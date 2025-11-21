@@ -7,11 +7,19 @@
   }
 }
 
-.recent-sales-ticker {
-  animation: tickerMove 22s linear infinite;
+.recentDealsSquaredTicker {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: dealsScroll 22s linear infinite;
 }
 
-@keyframes tickerMove {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+@keyframes dealsScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
+
