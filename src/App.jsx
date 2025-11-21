@@ -605,7 +605,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               display: "inline-block",
               whiteSpace: "nowrap",
               color: "#050505ff",
-              fontSize: 12,
+              fontSize: 10,
               animation: "tickerScroll 15s linear infinite",
             }}
           >
@@ -2990,119 +2990,85 @@ function BiddingTab() {
         boxSizing: "border-box",
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          marginBottom: 16,
-          padding: 12,
-          borderRadius: 16,
-          background:
-            "radial-gradient(circle at top left, #eef2ff, #ffffff)",
-          border: "1px solid #e5e7eb",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 10,
-          }}
-        >
-          {/* Left: title + subtitle */}
-          <div>
-            {/* small label row */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 4,
-              }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background:
-                    "radial-gradient(circle, #22c55e 0%, #16a34a 40%, transparent 70%)",
-                  boxShadow: "0 0 8px rgba(34,197,94,0.8)",
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  letterSpacing: 0.6,
-                  color: "#6b7280",
-                }}
-              >
-                Ticket-Auktionen · Live
-              </span>
-            </div>
+{/* HEADER – light trading style, no pills */}
+<div
+  style={{
+    marginBottom: 18,
+    paddingBottom: 8,
+    borderBottom: "1px solid #e5e7eb",
+  }}
+>
+  {/* top mini row: label + live dot */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 4,
+    }}
+  >
+    {/* live dot */}
+    <span
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle, #22c55e 0%, #16a34a 45%, transparent 70%)",
+        boxShadow: "0 0 8px rgba(34,197,94,0.7)",
+        flexShrink: 0,
+      }}
+    />
 
-            {/* main title */}
-            <h2
-              style={{
-                margin: 0,
-                fontSize: 20,
-                fontWeight: 700,
-                color: "#0f172a",
-                lineHeight: 1.2,
-              }}
-            >
-              Live auf Tickets{" "}
-              <span style={{ color: "#16a34a" }}>bieten</span>
-            </h2>
+    {/* label text */}
+    <span
+      style={{
+        fontSize: 11,
+        textTransform: "uppercase",
+        letterSpacing: 0.6,
+        color: "#6b7280",
+      }}
+    >
+      Ticket-Auktionen · Live
+    </span>
 
-            {/* subtitle */}
-            <p
-              style={{
-                margin: "4px 0 0",
-                fontSize: 12,
-                color: "#6b7280",
-              }}
-            >
-              Du entscheidest den Preis – biete gegen andere Fans in Echtzeit.
-            </p>
-          </div>
+    {/* thin divider line to the right */}
+    <div
+      style={{
+        flex: 1,
+        height: 1,
+        background:
+          "linear-gradient(to right, rgba(148,163,184,0.4), rgba(148,163,184,0))",
+      }}
+    />
+  </div>
 
-          {/* Right: tiny stats column */}
-          <div
-            style={{
-              textAlign: "right",
-              fontSize: 11,
-              color: "#4b5563",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: 2,
-              minWidth: 90,
-            }}
-          >
-            <div style={{ fontWeight: 600 }}>
-              {liveCount} Auktionen
-            </div>
-            <div style={{ fontSize: 10, color: "#6b7280" }}>
-              ab ca. 30 € · Demo
-            </div>
-          </div>
-        </div>
+  {/* main title */}
+  <h2
+    style={{
+      margin: 0,
+      fontSize: 20,
+      fontWeight: 700,
+      color: "#111827",
+      letterSpacing: -0.2,
+    }}
+  >
+    Live auf Tickets bieten
+  </h2>
 
-        {/* thin gradient bar under header */}
-        <div
-          style={{
-            marginTop: 10,
-            height: 3,
-            borderRadius: 999,
-            background:
-              "linear-gradient(90deg, #22c55e, #22d3ee, #6366f1)",
-            opacity: 0.8,
-          }}
-        />
-      </div>
+  {/* subtitle */}
+  <p
+    style={{
+      margin: "4px 0 0",
+      fontSize: 12,
+      color: "#6b7280",
+      maxWidth: 360,
+      lineHeight: 1.4,
+    }}
+  >
+    Reale Sitzplätze statt Upgrades – biete gegen andere Fans in Echtzeit.
+  </p>
+</div>
 
       {/* === HERO AUCTION (First) === */}
       <div
@@ -3338,7 +3304,7 @@ function BiddingTab() {
     marginTop: 10,
     marginBottom: 18,
     borderRadius: 12,
-    backgroundColor: "#020617",
+    backgroundColor: "#111",
     border: "1px solid #1f2937",
     overflow: "hidden",
   }}
@@ -3346,7 +3312,7 @@ function BiddingTab() {
   {/* Header line */}
   <div
     style={{
-      padding: "8px 12px",
+      padding: "12px 12px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -3395,7 +3361,7 @@ function BiddingTab() {
   {/* Table-like rows */}
   <div
     style={{
-      padding: "4px 0",
+      padding: "10px 4px",
     }}
   >
     {[
