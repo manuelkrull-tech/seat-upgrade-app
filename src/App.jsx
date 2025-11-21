@@ -19,7 +19,7 @@ const EVENTS = [
     primaryColor: "#C8102E",
     seatLabel: "Block (z. B. S3, N2, O3, W1)",
     type: "football",
-    dateUtc: "2025-12-01T18:30:00Z",
+    dateUtc: "2025-11-21T13:07:00Z",
     demandLevel: "medium",
     isUpgradable: false,
     preview: "sale",
@@ -32,7 +32,7 @@ const EVENTS = [
     primaryColor: "rgba(222, 236, 221, 0.85)",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
-    dateUtc: "2025-11-19T14:35:00Z",
+    dateUtc: "2025-11-26T20:00:00Z",
     demandLevel: "high",
     isUpgradable: true,
     preview: "false",
@@ -334,6 +334,15 @@ function PremiumHeader({ activeTab, currentEvent }) {
       ? "Gemerkte Upgrades"
       : "Dein Profil & Einstellungen";
 
+  const tabLabel =
+    activeTab === "events"
+      ? "Events"
+      : activeTab === "upgrades"
+      ? "Upgrades"
+      : activeTab === "saved"
+      ? "Gemerkt"
+      : "Account";
+
   return (
     <div
       style={{
@@ -342,77 +351,85 @@ function PremiumHeader({ activeTab, currentEvent }) {
         width: "100%",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        background: "rgba(244 244, 244, 1.0)",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        background: "rgba(244, 244, 244, 0.94)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
         zIndex: 100,
       }}
-    >.     
+    >
       <div
         style={{
-          maxWidth: "100%",
+          maxWidth: 480,
           margin: "0 auto",
-          padding: "16px 0 10px",
-          textAlign: "center",
+          padding: "10px 16px 8px",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
         }}
       >
-        {/* LOGO + GLOW */}
-        <div style={{ position: "relative", display: "inline-block" }}>
-          {/* Glow */}
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: 100,
-              height: 110,
-              transform: "translate(-50%, -50%)",
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)",
-              filter: "blur(8px)",
-            }}
-          />
-
-          {/* Logo image */}
-          <img
-            src={AppLogo}
-            alt="SeatUpgrade Logo"
-            style={{
-              height: 60,
-              width: "auto",
-              position: "relative",
-              zIndex: 2,
-              userSelect: "none",
-            }}
-          />
-        </div>
-
-        {/* Slogan */}
+        {/* Top row: brand + current tab */}
         <div
           style={{
-            marginTop: 8,
-            fontSize: 13,
-            color: "#ccc",
-            letterSpacing: 0.3,
-            textShadow: "0 0 4px rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
+          {/* Small text logo instead of image */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 4,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                letterSpacing: 0.4,
+                color: "#111827",
+              }}
+            >
+              SEATR
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                color: "#9ca3af",
+              }}
+            >
+              beta
+            </span>
+          </div>
+        </div>
+
+        {/* Subtitle */}
+        <div
+          style={{
+            fontSize: 12,
+            color: "#6b7280",
             minHeight: 16,
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
           }}
         >
           {subtitle}
         </div>
 
-        {/* Divider line */}
+        {/* Subtle divider */}
         <div
           style={{
-            marginTop: 10,
-            height: 2,
-            width: "65%",
-            marginLeft: "auto",
-            marginRight: "auto",
+            marginTop: 4,
+            height: 1,
+            width: "100%",
             background:
-              "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)",
-            opacity: 0.5,
-            borderRadius: 2,
+              "linear-gradient(90deg, rgba(15,23,42,0) 0%, rgba(15,23,42,0.18) 50%, rgba(15,23,42,0) 100%)",
+            borderRadius: 999,
           }}
         />
       </div>
@@ -425,6 +442,8 @@ function PremiumHeader({ activeTab, currentEvent }) {
 function EventsTab({ events, selectedEventId, onSelectEvent }) {
   const [categoryFilter, setCategoryFilter] = useState("all"); // all | football | concert | hockey
   const [dateFilter, setDateFilter] = useState("all"); // all | today | week | month
+  const [searchResults, setSearchResults] = useState(null);
+
 
   const now = new Date();
 
@@ -570,40 +589,110 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         <div
           style={{
             marginBottom: 12,
-            padding: 10,
-            borderRadius: 999,
+            padding: "8px 12px",
+            borderRadius: 12,
+            border: "1px solid rgba(34,197,94,0.5)",
             background:
-              "linear-gradient(90deg, rgba(76,175,80,0.3), rgba(0,0,0,0))",
-            border: "1px solid rgba(76,175,80,0.6)",
+              "linear-gradient(90deg, rgba(21,128,61,0.35), rgba(15,23,42,0.75))",
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            fontSize: 12,
+            gap: 10,
+            fontSize: 11,
             maxWidth: "100%",
+            color: "#e5fbe9",
           }}
         >
-          <span
+          {/* Left: icon + label */}
+          <div
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              backgroundColor: "#4CAF50",
-              boxShadow: "0 0 8px rgba(76,175,80,0.8)",
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              minWidth: 0,
+              flex: 1,
             }}
           >
-            <strong>Live jetzt:</strong>{" "}
-            {liveEvents.map((ev) => ev.name).join(" · ")}
-          </span>
+            {/* Live dot */}
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                backgroundColor: "#22c55e",
+                boxShadow: "0 0 10px rgba(34,197,94,0.95)",
+                flexShrink: 0,
+              }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                minWidth: 0,
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 600,
+                  letterSpacing: 0.5,
+                  textTransform: "uppercase",
+                  fontSize: 10,
+                  opacity: 0.9,
+                }}
+              >
+                Live jetzt
+              </span>
+
+              <span
+                style={{
+                  fontSize: 11,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  opacity: 0.95,
+                }}
+              >
+                {liveEvents.map((ev) => ev.name).join(" · ")}
+              </span>
+            </div>
+          </div>
         </div>
       )}
+
+
+      {/* SEARCH BAR */}
+      <div
+        style={{
+          width: "100%",
+          margin: "0 auto 16px auto",
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+        }}
+      >
+        <input
+          type="text"
+          placeholder="🔍 Suche nach Events..."
+          onChange={(e) => {
+            const q = e.target.value.toLowerCase();
+            // You can adjust this logic or extract to a dedicated state
+            const filtered = events.filter((ev) =>
+              ev.name.toLowerCase().includes(q)
+            );
+            // Store it in state (create a state: const [searchResults, setSearchResults] = useState([]))
+            setSearchResults(filtered);
+          }}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 12,
+            border: "1px solid #333",
+            color: "#000000ff",
+            fontSize: 14,
+          }}
+        />
+      </div>
 
       {/* HERO TOP EVENT */}
 {topEvent && (
@@ -711,22 +800,10 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         justifyContent: "space-between",
         alignItems: "center",
         fontSize: 10,
-        color: "#ccc",
+        color: "#2e2e2eff",
       }}
     >
-      <span>Hohe Nachfrage · ideale Upgrade-Chancen</span>
-      <span
-        style={{
-          padding: "4px 8px",
-          borderRadius: 999,
-          backgroundColor: "rgba(255,255,255,0.1)",
-          border: "1px solid #000",
-          color: "#fff",
-          whiteSpace: "nowrap",
-        }}
-      >
-        Sitz eingeben
-      </span>
+      <span>Hohe Nachfrage · Last-Minute</span>
     </div>
   </div>
 )}
@@ -839,7 +916,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           gap: 8,
         }}
       >
-        {filteredEvents.map((ev) => {
+        {(searchResults || filteredEvents).map((ev) => {
           const isActive = ev.id === selectedEventId;
           const { weekday, day, month, time } = getDateParts(ev);
 
@@ -1196,6 +1273,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         letterSpacing: 1.2,
         color: "rgba(0, 0, 0, 0.5)",
         marginBottom: 4,
+        textAlign: "center"
       }}
     >
       Arena Specials
@@ -1207,6 +1285,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         fontWeight: 600,
         margin: 0,
         color: "#000000ff",
+        textAlign: "center"
       }}
     >
       Kuratierte Erlebnisse
@@ -1219,6 +1298,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         marginTop: 6,
         marginBottom: 12,
         lineHeight: 1.45,
+        textAlign: "center"
       }}
     >
       Exklusive Erlebnisse für besondere Momente vor, während oder nach dem Event.
@@ -1230,7 +1310,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     {
       id: "hf",
       code: "UPG-HF15",
-      headerColor: "#4F46E5",
+      headerColor: "#A9C7A6",
       title: "Eisbären – High Five Lane",
       subtitle: "On-Ice Experience · UBER Arena",
       price: "15 €",
@@ -1242,7 +1322,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     {
       id: "drake",
       code: "UPG-MG299",
-      headerColor: "#FACC15",
+      headerColor: "#606E8C",
       title: "Drake – Meet & Greet",
       subtitle: "Backstage Access · UBER Arena",
       price: "299 €",
@@ -1254,7 +1334,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     {
       id: "koeln",
       code: "UPG-VIP199",
-      headerColor: "#22C55E",
+      headerColor: "#5D6970",
       title: "Köln – After Match VIP Club",
       subtitle: "Hospitality · RheinEnergieSTADION",
       price: "199 €",
@@ -1465,7 +1545,7 @@ function UpgradesTab({
   const [ticketCode, setTicketCode] = useState("");
   const [ticketStatus, setTicketStatus] = useState("idle"); // "idle" | "checking" | "ok" | "error"
 
-  // Simple availability + dynamic price demo (you can adjust)
+  // Simple availability + dynamic price demo
   const [availability] = useState({
     1: 5,
     2: 3,
@@ -1491,8 +1571,6 @@ function UpgradesTab({
   const hasVerifiedSeat = ticketStatus === "ok" && hasSeatEntered;
   const canCheckoutWithTicket = ticketStatus === "ok" && hasSeatEntered;
 
-  // --- PRICE + FEES FOR CHECKOUT ---
-
   const serviceFee = checkoutOffer
     ? Math.round(checkoutOffer.priceEuro * 0.08 * 100) / 100
     : 0;
@@ -1500,16 +1578,12 @@ function UpgradesTab({
     ? Math.round((checkoutOffer.priceEuro + serviceFee) * 100) / 100
     : 0;
 
-  // --- HELPERS ---
-
   function handleChangeTicketCode(value) {
     setTicketCode(value);
-    if (ticketStatus !== "idle") {
-      setTicketStatus("idle");
-    }
+    if (ticketStatus !== "idle") setTicketStatus("idle");
   }
 
-  function handleVerifyTicket() {
+    function handleVerifyAndLoadOffers() {
     const trimmed = (ticketCode || "").trim();
 
     if (!trimmed) {
@@ -1519,6 +1593,7 @@ function UpgradesTab({
 
     setTicketStatus("checking");
 
+    // simulate async ticket check
     setTimeout(() => {
       const normalized = trimmed.toUpperCase();
       const seatInfo = lookupSeatFromTicket(currentEvent.id, normalized);
@@ -1528,13 +1603,22 @@ function UpgradesTab({
         return;
       }
 
+      // ✅ Sitz aus Ticket übernehmen
       setBlock(seatInfo.block);
       setRow(String(seatInfo.row));
       setSeat(String(seatInfo.seat));
-
       setTicketStatus("ok");
+
+      // ⏱ WICHTIG: erst im nächsten Tick onSubmit aufrufen,
+      // damit der Parent die aktualisierten block/row/seat-Werte sieht.
+      setTimeout(() => {
+        if (typeof onSubmit === "function") {
+          onSubmit({ preventDefault: () => {} });
+        }
+      }, 0);
     }, 700);
   }
+
 
   function handleSubmitCheckout(e) {
     e.preventDefault();
@@ -1553,9 +1637,7 @@ function UpgradesTab({
         ? availability[String(offer.id)]
         : null;
 
-    if (remaining === null || remaining <= 0) {
-      return offer.priceEuro;
-    }
+    if (remaining === null || remaining <= 0) return offer.priceEuro;
 
     let factor = 1;
     if (remaining <= 3) factor = 1.25;
@@ -1565,21 +1647,20 @@ function UpgradesTab({
     return Math.round(offer.priceEuro * factor * 100) / 100;
   }
 
-  // --- LAYOUT: full-width hero + overlapping white sheet ---
-
   return (
     <div
       style={{
         width: "100%",
-        backgroundColor: "#f9fafb", // white base
+        background: "transparent", // no big grey container
       }}
     >
-      {/* FULL-WIDTH HERO (mobile first, but works everywhere) */}
+      {/* FULL-BLEED HERO AT TOP */}
       <div
         style={{
           position: "relative",
-          width: "100%",
-          height: 230,
+          width: "100vw",
+          marginLeft: "calc(50% - 50vw)", // make it truly edge-to-edge
+          height: 260,
           overflow: "hidden",
           backgroundColor: "#000",
         }}
@@ -1592,111 +1673,67 @@ function UpgradesTab({
             height: "100%",
             objectFit: "cover",
             display: "block",
-            transform: "scale(1.04)",
           }}
         />
 
-        {/* dark gradient overlay for readable text */}
+        {/* gradient so text is readable */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.25))",
+              "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.75))",
+            zIndex: 1,
           }}
         />
 
-        {/* top chip */}
-        <div
-          style={{
-            position: "absolute",
-            top: 14,
-            left: 16,
-            padding: "4px 10px",
-            borderRadius: 999,
-            backgroundColor: "rgba(0,0,0,0.65)",
-            border: "1px solid rgba(255,255,255,0.3)",
-            fontSize: 11,
-            color: "#f9fafb",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <span
-            style={{
-              display: "inline-block",
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              backgroundColor: "#22c55e",
-            }}
-          />
-          <span>Upgrade deinen Platz</span>
-        </div>
-
-        {/* text bottom-left on the image */}
+        {/* text over the image, always visible */}
         <div
           style={{
             position: "absolute",
             left: 16,
             right: 16,
-            bottom: 18,
+            bottom: 24,
+            zIndex: 2,
           }}
         >
           <div
             style={{
-              fontSize: 12,
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#ffffff",
+              marginBottom: 4,
+            }}
+          >
+            {currentEvent.name}
+          </div>
+          <div
+            style={{
+              fontSize: 13,
               color: "rgba(249,250,251,0.85)",
-              marginBottom: 2,
             }}
           >
             {currentEvent.city
               ? `${currentEvent.city} · ${currentEvent.venue}`
               : currentEvent.venue}
           </div>
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: "#f9fafb",
-              textShadow: "0 10px 24px rgba(0,0,0,0.9)",
-            }}
-          >
-            {currentEvent.name}
-          </div>
         </div>
       </div>
 
-      {/* WHITE "BOTTOM SHEET" OVERLAYING THE HERO */}
+      {/* CONTENT BELOW – NO BIG BUBBLE, JUST NORMAL PAGE */}
       <div
         style={{
-          marginTop: -18, // 👈 overlaps the image
-          borderRadius: "24px 24px 0 0",
-          backgroundColor: "#f9fafb",
           padding: "16px 16px 24px",
           boxSizing: "border-box",
         }}
       >
-        {/* inner max width just to keep it nice on larger screens */}
         <div
           style={{
             maxWidth: 480,
             margin: "0 auto",
           }}
         >
-          {/* small handle like a sheet */}
-          <div
-            style={{
-              width: 40,
-              height: 4,
-              borderRadius: 999,
-              backgroundColor: "#e5e7eb",
-              margin: "0 auto 12px",
-            }}
-          />
-
-          {/* TICKET / SEAT SECTION */}
+          {/* Ticket / Seat section */}
           <div
             style={{
               textAlign: "center",
@@ -1712,8 +1749,8 @@ function UpgradesTab({
                 gap: 6,
                 padding: "3px 10px",
                 borderRadius: 999,
-                backgroundColor: "rgba(0,0,0,0.04)",
-                border: "1px solid rgba(0,0,0,0.06)",
+                backgroundColor: "rgba(15,23,42,0.06)",
+                border: "1px solid rgba(15,23,42,0.1)",
                 fontSize: 11,
                 color: "#374151",
                 marginBottom: 6,
@@ -1729,7 +1766,7 @@ function UpgradesTab({
                 fontSize: 18,
                 fontWeight: 600,
                 letterSpacing: 0.3,
-                color: "#111827",
+                color: "#040404ff",
               }}
             >
               Ticket scannen / eingeben
@@ -1740,12 +1777,12 @@ function UpgradesTab({
                 marginTop: 6,
                 marginBottom: 8,
                 fontSize: 12,
-                color: "#4b5563",
+                color: "#b3b3b3",
                 lineHeight: 1.4,
               }}
             >
-              Gib deine Ticket-ID oder einen Demo-Code ein, wir lesen Block,
-              Reihe und Sitz aus dem System.
+              Gib deine Ticket-ID oder einen Demo-Code ein, wir lesen Block, Reihe
+              und Sitz aus dem System und zeigen dir verfügbare Upgrades.
             </p>
 
             {/* Ticket-ID field – centered bubble */}
@@ -1753,7 +1790,7 @@ function UpgradesTab({
               style={{
                 display: "flex",
                 justifyContent: "center",
-                marginBottom: 12,
+                marginBottom: 10,
               }}
             >
               <input
@@ -1764,63 +1801,60 @@ function UpgradesTab({
                   width: "75%",
                   padding: "12px",
                   borderRadius: 12,
-                  border: "1px solid #d1d5db",
-                  backgroundColor: "#ffffff",
-                  color: "#111827",
+                  border: "1px solid #333",
+                  color: "#fff",
                   fontSize: 14,
                   textAlign: "center",
-                  boxShadow: "0 2px 6px rgba(15,23,42,0.15)",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
                 }}
               />
             </div>
 
-            {/* Ticket verify */}
-            <div
+            {/* ✅ SINGLE BIG BUTTON: Ticket prüfen + Upgrades laden */}
+            <button
+              type="button"
+              onClick={handleVerifyAndLoadOffers}
               style={{
-                display: "flex",
-                gap: 8,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 10,
+                width: "100%",
+                padding: 12,
+                borderRadius: 999,
+                border: "none",
+                background:
+                  ticketStatus === "checking" || isLoading
+                    ? "#555"
+                    : "linear-gradient(90deg,#38bdf8,#a855f7,#f97316)",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor:
+                  ticketStatus === "checking" || isLoading ? "default" : "pointer",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.45)",
+                marginBottom: 6,
               }}
+              disabled={ticketStatus === "checking" || isLoading || !ticketCode.trim()}
             >
-              <button
-                type="button"
-                onClick={handleVerifyTicket}
-                style={{
-                  flexShrink: 0,
-                  padding: "8px 12px",
-                  borderRadius: 999,
-                  border: "none",
-                  backgroundColor:
-                    ticketStatus === "checking" ? "#9ca3af" : "#111827",
-                  color: "#fff",
-                  fontSize: 12,
-                  cursor:
-                    ticketStatus === "checking" ? "default" : "pointer",
-                  fontWeight: "bold",
-                }}
-              >
-                {ticketStatus === "checking"
-                  ? "Ticket wird geprüft..."
-                  : "Ticket prüfen (Demo)"}
-              </button>
+              {ticketStatus === "checking"
+                ? "Ticket wird geprüft..."
+                : isLoading
+                ? "Lade Upgrade-Angebote..."
+                : "Ticket prüfen & Upgrades anzeigen"}
+            </button>
 
-              <div style={{ fontSize: 11, color: "#6b7280" }}>
-                {ticketStatus === "idle" && "Ticket wird nur lokal simuliert."}
-                {ticketStatus === "checking" &&
-                  "Abgleich mit Ticket-System (Demo)..."}
-                {ticketStatus === "ok" && (
-                  <span style={{ color: "#166534" }}>
-                    ✅ Ticket verifiziert (Demo)
-                  </span>
-                )}
-                {ticketStatus === "error" && (
-                  <span style={{ color: "#b91c1c" }}>
-                    ❌ Ticket ungültig (Demo) – Code prüfen.
-                  </span>
-                )}
-              </div>
+            {/* Status text */}
+            <div style={{ fontSize: 11, color: "#bbb", marginBottom: 8 }}>
+              {ticketStatus === "idle" && "Ticket wird nur lokal simuliert (Demo)."}
+              {ticketStatus === "checking" &&
+                "Abgleich mit Ticket-System (Demo)..."}
+              {ticketStatus === "ok" && (
+                <span style={{ color: "#81C784" }}>
+                  ✅ Ticket verifiziert – Angebote werden geladen.
+                </span>
+              )}
+              {ticketStatus === "error" && (
+                <span style={{ color: "#ef9a9a" }}>
+                  ❌ Ticket ungültig (Demo) – Code prüfen.
+                </span>
+              )}
             </div>
 
             {/* Recognized seat after successful verification */}
@@ -1830,10 +1864,10 @@ function UpgradesTab({
                   marginBottom: 12,
                   padding: 10,
                   borderRadius: 10,
-                  backgroundColor: "#0f172a",
-                  border: "1px solid #1f2937",
+                  backgroundColor: "#111",
+                  border: "1px solid #333",
                   fontSize: 12,
-                  color: "#e5e7eb",
+                  color: "#ddd",
                 }}
               >
                 Erkannter Sitzplatz:
@@ -1845,24 +1879,6 @@ function UpgradesTab({
             )}
           </div>
 
-          {/* Request offers */}
-          <form onSubmit={onSubmit}>
-            <button
-              type="submit"
-              style={{
-                ...buttonStyle,
-                width: "100%",
-                marginTop: 4,
-              }}
-              disabled={isLoading || ticketStatus !== "ok" || !hasSeatEntered}
-            >
-              {ticketStatus !== "ok"
-                ? "Ticket zuerst verifizieren"
-                : isLoading
-                ? "Lade Upgrade-Angebote..."
-                : "Upgrade-Angebote anzeigen"}
-            </button>
-          </form>
 
           {/* Error from offer loading */}
           {error && (
@@ -1871,7 +1887,7 @@ function UpgradesTab({
                 marginTop: 16,
                 padding: 12,
                 borderRadius: 10,
-                backgroundColor: "#b91c1c",
+                backgroundColor: "#8B1A1A",
                 color: "#ffdddd",
                 textAlign: "center",
               }}
@@ -1900,17 +1916,14 @@ function UpgradesTab({
                 marginTop: 24,
                 padding: 16,
                 borderRadius: 12,
-                backgroundColor: "#111827",
-                border: "1px solid #1f2937",
-                color: "#e5e7eb",
+                backgroundColor: "#151515",
+                border: "1px solid #333",
               }}
             >
               <h3 style={{ marginTop: 0, marginBottom: 8 }}>
                 Checkout als Gast
               </h3>
-              <p
-                style={{ fontSize: 13, color: "#e5e7eb", marginBottom: 10 }}
-              >
+              <p style={{ fontSize: 13, color: "#ccc", marginBottom: 10 }}>
                 Bestätige dein Upgrade ohne Konto. Deine Tickets würden in
                 einer echten Version per E-Mail verschickt.
               </p>
@@ -1920,17 +1933,17 @@ function UpgradesTab({
                 style={{
                   padding: 12,
                   borderRadius: 10,
-                  backgroundColor: "#020617",
-                  border: "1px solid #1f2937",
+                  backgroundColor: "#111",
+                  border: "1px solid #333",
                   fontSize: 13,
-                  color: "#e5e7eb",
+                  color: "#ccc",
                   marginBottom: 14,
                 }}
               >
                 <div
                   style={{
                     marginBottom: 6,
-                    color: "#9ca3af",
+                    color: "#999",
                     fontWeight: "bold",
                   }}
                 >
@@ -1944,7 +1957,7 @@ function UpgradesTab({
                   style={{
                     marginTop: 10,
                     marginBottom: 6,
-                    color: "#9ca3af",
+                    color: "#999",
                     fontWeight: "bold",
                   }}
                 >
@@ -1956,7 +1969,7 @@ function UpgradesTab({
                     checkoutOffer.targetBlock}
                 </div>
                 <div
-                  style={{ marginTop: 10, fontSize: 12, color: "#cbd5f5" }}
+                  style={{ marginTop: 10, fontSize: 12, color: "#bbb" }}
                 >
                   Höhere Kategorie · bessere Sicht · beliebter Bereich
                 </div>
@@ -1967,10 +1980,10 @@ function UpgradesTab({
                 style={{
                   padding: 12,
                   borderRadius: 10,
-                  backgroundColor: "#020617",
-                  border: "1px solid #1f2937",
+                  backgroundColor: "#101010",
+                  border: "1px solid #333",
                   fontSize: 13,
-                  color: "#e5e7eb",
+                  color: "#ddd",
                   marginBottom: 14,
                 }}
               >
@@ -1990,7 +2003,7 @@ function UpgradesTab({
                     justifyContent: "space-between",
                     marginBottom: 6,
                     fontSize: 12,
-                    color: "#9ca3af",
+                    color: "#bbb",
                   }}
                 >
                   <span>Servicegebühr (8%)</span>
@@ -1998,7 +2011,7 @@ function UpgradesTab({
                 </div>
                 <div
                   style={{
-                    borderTop: "1px solid #1f2937",
+                    borderTop: "1px solid #333",
                     marginTop: 6,
                     paddingTop: 6,
                     display: "flex",
@@ -2021,7 +2034,6 @@ function UpgradesTab({
                     ...inputStyle,
                     textAlign: "left",
                     fontSize: 14,
-                    marginBottom: 8,
                   }}
                 />
                 <input
@@ -2032,7 +2044,6 @@ function UpgradesTab({
                     ...inputStyle,
                     textAlign: "left",
                     fontSize: 14,
-                    marginBottom: 8,
                   }}
                 />
 
@@ -2043,10 +2054,10 @@ function UpgradesTab({
                     marginTop: 4,
                     padding: 10,
                     borderRadius: 10,
-                    backgroundColor: "#020617",
-                    border: "1px solid #1f2937",
+                    backgroundColor: "#111",
+                    border: "1px solid #333",
                     fontSize: 13,
-                    color: "#e5e7eb",
+                    color: "#ddd",
                   }}
                 >
                   <div style={{ marginBottom: 8, fontWeight: "bold" }}>
@@ -2076,10 +2087,10 @@ function UpgradesTab({
                             borderRadius: 8,
                             border: isActive
                               ? "1px solid #fff"
-                              : "1px solid #374151",
+                              : "1px solid #444",
                             backgroundColor: isActive
-                              ? "#16a34a"
-                              : "#111827",
+                              ? "#2E7D32"
+                              : "#1a1a1a",
                             color: "#fff",
                             fontSize: 12,
                             cursor: "pointer",
@@ -2106,7 +2117,7 @@ function UpgradesTab({
                     padding: 12,
                     borderRadius: 10,
                     border: "none",
-                    backgroundColor: !guestEmail ? "#9ca3af" : "#16a34a",
+                    backgroundColor: !guestEmail ? "#444" : "#2E7D32",
                     color: "#fff",
                     fontWeight: "bold",
                     cursor: !guestEmail ? "not-allowed" : "pointer",
@@ -2144,12 +2155,12 @@ function UpgradesTab({
 
                 const availabilityColor =
                   remaining === null
-                    ? "#6b7280"
+                    ? "#bbb"
                     : remaining <= 0
-                    ? "#b91c1c"
+                    ? "#ef9a9a"
                     : remaining <= 3
-                    ? "#b45309"
-                    : "#15803d";
+                    ? "#ffcc80"
+                    : "#a5d6a7";
 
                 const isSoldOut = remaining !== null && remaining <= 0;
 
@@ -2159,7 +2170,7 @@ function UpgradesTab({
                     style={{
                       width: "100%",
                       boxSizing: "border-box",
-                      backgroundColor: "#020617",
+                      backgroundColor: "#1a1a1a",
                       borderLeft: `6px solid ${offer.color}`,
                       padding: 16,
                       borderRadius: 12,
@@ -2176,18 +2187,12 @@ function UpgradesTab({
                       }}
                     >
                       <div>
-                        <h3
-                          style={{
-                            marginTop: 0,
-                            marginBottom: 4,
-                            color: "#e5e7eb",
-                          }}
-                        >
+                        <h3 style={{ marginTop: 0, marginBottom: 4 }}>
                           {offer.title}
                         </h3>
                         <p
                           style={{
-                            color: "#9ca3af",
+                            color: "#ccc",
                             marginTop: 0,
                             fontSize: 13,
                           }}
@@ -2202,7 +2207,6 @@ function UpgradesTab({
                           background: "transparent",
                           cursor: "pointer",
                           fontSize: 18,
-                          color: "#fbbf24",
                         }}
                         aria-label="Merken"
                       >
@@ -2211,13 +2215,7 @@ function UpgradesTab({
                     </div>
 
                     {/* Dynamic price */}
-                    <p
-                      style={{
-                        fontWeight: "bold",
-                        marginTop: 8,
-                        color: "#f9fafb",
-                      }}
-                    >
+                    <p style={{ fontWeight: "bold", marginTop: 8 }}>
                       Preis (dynamisch): {dynamicPrice.toFixed(2)} €
                     </p>
                     {priceChanged && (
@@ -2225,7 +2223,7 @@ function UpgradesTab({
                         style={{
                           marginTop: 2,
                           fontSize: 11,
-                          color: "#9ca3af",
+                          color: "#aaa",
                         }}
                       >
                         Basispreis: {basePrice.toFixed(2)} €
@@ -2274,16 +2272,16 @@ function UpgradesTab({
                           marginTop: 14,
                           padding: 12,
                           borderRadius: 10,
-                          backgroundColor: "#020617",
-                          border: "1px solid #1f2937",
+                          backgroundColor: "#111",
+                          border: "1px solid #333",
                           fontSize: 13,
-                          color: "#e5e7eb",
+                          color: "#ccc",
                         }}
                       >
                         <div
                           style={{
                             marginBottom: 6,
-                            color: "#9ca3af",
+                            color: "#999",
                             fontWeight: "bold",
                           }}
                         >
@@ -2299,7 +2297,7 @@ function UpgradesTab({
                           style={{
                             marginTop: 10,
                             marginBottom: 6,
-                            color: "#9ca3af",
+                            color: "#999",
                             fontWeight: "bold",
                           }}
                         >
@@ -2312,7 +2310,7 @@ function UpgradesTab({
                           style={{
                             marginTop: 10,
                             fontSize: 12,
-                            color: "#cbd5f5",
+                            color: "#bbb",
                           }}
                         >
                           Höhere Kategorie · bessere Sicht · beliebter Bereich
@@ -2336,9 +2334,9 @@ function UpgradesTab({
                         backgroundColor:
                           canCheckoutWithTicket && !isSoldOut
                             ? offer.color
-                            : "#4b5563",
+                            : "#444",
                         border: "none",
-                        color: "#111827",
+                        color: "#111",
                         fontWeight: "bold",
                         cursor:
                           canCheckoutWithTicket && !isSoldOut
@@ -2365,9 +2363,8 @@ function UpgradesTab({
               style={{
                 marginTop: 24,
                 padding: 16,
-                backgroundColor: "#16a34a",
+                backgroundColor: "#2E7D32",
                 borderRadius: 12,
-                color: "#f9fafb",
               }}
             >
               <h3 style={{ marginTop: 0 }}>Upgrade ausgewählt 🎉</h3>
@@ -2394,20 +2391,15 @@ function UpgradesTab({
 
           {/* History (compact) */}
           {history.length > 0 && (
-            <div style={{ marginTop: 28, marginBottom: 8 }}>
-              <h3 style={{ fontSize: 15, color: "#111827" }}>Session-Log</h3>
-              <ul
-                style={{
-                  color: "#4b5563",
-                  paddingLeft: 16,
-                  fontSize: 12,
-                }}
-              >
+            <div style={{ marginTop: 28 }}>
+              <h3 style={{ fontSize: 15 }}>Session-Log</h3>
+              <ul style={{ color: "#bbb", paddingLeft: 16, fontSize: 12 }}>
                 {history.slice(0, 6).map((item, i) => (
                   <li key={i} style={{ marginBottom: 4 }}>
                     [{item.time}] {item.event} – {item.block}/{item.row}/
-                    {item.seat} → {item.offerTitle} (+
-                    {item.priceEuro.toFixed(2)} €){" "}
+                    {item.seat} → {item.offerTitle} (+{item.priceEuro.toFixed(
+                      2
+                    )} €){" "}
                     {item.guestName ? `für ${item.guestName}` : ""}{" "}
                     {item.guestPaymentMethod
                       ? `· Zahlung: ${
