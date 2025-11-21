@@ -2825,9 +2825,9 @@ function lookupSeatFromTicket(eventId, ticketCode) {
 
 /* ---------- BIDDING TAB ---------- */
 
-function BiddingTab({ onSelectOffer }) {
-  // Demo data – you can extend this or load from API later
-  const auctions = [
+function BiddingTab() {
+  // 1) Initial auctions (static template)
+  const INITIAL_AUCTIONS = [
     {
       id: "auction-koeln-1",
       eventName: "1. FC Köln vs Hertha BSC",
@@ -2835,12 +2835,12 @@ function BiddingTab({ onSelectOffer }) {
       block: "S3",
       row: "12",
       seat: "27",
-      currentBid: 89,
+      currentBid: 30,
       minIncrement: 10,
       timeLeft: "23 Min",
       color: "#C8102E",
-      tag: "Lower Bowl",
-      imageHint: "football",
+      tag: "Highlight",
+      image: "picture_koeln_hero.jpg",
     },
     {
       id: "auction-drake-1",
@@ -2849,12 +2849,11 @@ function BiddingTab({ onSelectOffer }) {
       block: "401",
       row: "5",
       seat: "18",
-      currentBid: 55,
-      minIncrement: 10,
+      currentBid: 40,
+      minIncrement: 5,
       timeLeft: "1 Std 12 Min",
       color: "#7c3aed",
-      tag: "Oberrang",
-      imageHint: "concert",
+      tag: "Last-Minute",
     },
     {
       id: "auction-eisbaeren-1",
@@ -2863,12 +2862,11 @@ function BiddingTab({ onSelectOffer }) {
       block: "204",
       row: "8",
       seat: "11",
-      currentBid: 39,
+      currentBid: 35,
       minIncrement: 5,
       timeLeft: "Heute · Live",
       color: "#0ea5e9",
-      tag: "Unterrang",
-      imageHint: "hockey",
+      tag: "Penny DEL",
     },
     {
       id: "auction-koeln-2",
@@ -2889,7 +2887,7 @@ function BiddingTab({ onSelectOffer }) {
       block: "305",
       row: "9",
       seat: "32",
-      currentBid: 190,
+      currentBid: 120,
       minIncrement: 10,
       timeLeft: "2 Tage",
       color: "#7c3aed",
@@ -2908,6 +2906,12 @@ function BiddingTab({ onSelectOffer }) {
     },
   ];
 
+  // 2) State: live bids
+  const [auctions, setAuctions] = useState(INITIAL_AUCTIONS);
+
+  // 3) State: bid input values per auction (hero + featured)
+  const [bidInputs, setBidInputs] = useState({}); // { [auctionId]: "12" }
+
   if (!auctions || auctions.length === 0) {
     return (
       <div
@@ -2915,7 +2919,7 @@ function BiddingTab({ onSelectOffer }) {
           width: "100%",
           maxWidth: 480,
           margin: "0 auto",
-          padding: "16px 16px 24px",
+          padding: "0px 0px 24px",
           boxSizing: "border-box",
         }}
       >
@@ -2946,21 +2950,43 @@ function BiddingTab({ onSelectOffer }) {
   const featured = auctions.slice(1, 3);
   const others = auctions.slice(3, 8);
 
-  function handleBidClick(auction) {
-    if (typeof onSelectOffer === "function") {
-      onSelectOffer({
-        id: auction.id,
-        title: `${auction.eventName} – Block ${auction.block}, Reihe ${auction.row}, Sitz ${auction.seat}`,
-        priceEuro: auction.currentBid + auction.minIncrement,
-        color: auction.color || "#0f172a",
-      });
-    } else {
-      alert(
-        `Demo: Gebot über ${(auction.currentBid + auction.minIncrement).toFixed(
-          0
-        )} € abgegeben.`
+  // helper: place a bid using the entered amount in bidInputs
+  function placeCustomBid(auctionId) {
+    setAuctions((prev) => {
+      const raw = bidInputs[auctionId];
+      if (raw == null || raw === "") return prev;
+
+      // allow comma or dot
+      const normalized = String(raw).replace(",", ".");
+      const amount = parseFloat(normalized);
+
+      if (isNaN(amount) || amount <= 0) {
+        return prev;
+      }
+
+      return prev.map((a) =>
+        a.id === auctionId
+          ? { ...a, currentBid: a.currentBid + amount }
+          : a
       );
-    }
+    });
+
+    // clear input after bid
+    setBidInputs((prev) => ({
+      ...prev,
+      [auctionId]: "",
+    }));
+  }
+
+  // small quick-bid (for the bottom list) still uses minIncrement
+  function handleQuickBid(auctionId) {
+    setAuctions((prev) =>
+      prev.map((a) =>
+        a.id === auctionId
+          ? { ...a, currentBid: a.currentBid + a.minIncrement }
+          : a
+      )
+    );
   }
 
   return (
@@ -2969,7 +2995,7 @@ function BiddingTab({ onSelectOffer }) {
         width: "100%",
         maxWidth: 480,
         margin: "0 auto",
-        padding: "16px 16px 24px",
+        padding: "0px 0px 24px",
         boxSizing: "border-box",
       }}
     >
@@ -3012,8 +3038,24 @@ function BiddingTab({ onSelectOffer }) {
               color: "#6b7280",
             }}
           >
-            Du entscheidest wie viel dir das Ticket wert ist – erhöhe dein Gebot in Echtzeit!
+            Hol dir den Platz, den du wirklich willst – mit Live-Geboten in Echtzeit.
           </p>
+        </div>
+
+        <div
+          style={{
+            padding: "3px 8px",
+            borderRadius: 999,
+            border: "1px solid #e5e7eb",
+            backgroundColor: "#f9fafb",
+            fontSize: 10,
+            color: "#4b5563",
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Bidding · Beta
         </div>
       </div>
 
@@ -3043,17 +3085,14 @@ function BiddingTab({ onSelectOffer }) {
           backgroundColor: "#000",
         }}
       >
-        {/* fake hero image / gradient */}
+        {/* picture_koeln_hero.jpg as hero */}
         <div
           style={{
             position: "relative",
             height: 200,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
             overflow: "hidden",
           }}
         >
-          {/* Hero background image */}
           <img
             src={pictureKoelnHero}
             alt={hero.eventName}
@@ -3065,29 +3104,28 @@ function BiddingTab({ onSelectOffer }) {
             }}
           />
 
-          {/* dark gradient for readable text */}
+          {/* gradient overlay */}
           <div
             style={{
               position: "absolute",
               inset: 0,
               background:
-                "linear-gradient(to top, rgba(15,23,42,0.85), rgba(15,23,42,0.15))",
+                "linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.2))",
             }}
           />
 
-          {/* Content overlay */}
+          {/* hero text */}
           <div
             style={{
               position: "absolute",
               left: 16,
               right: 16,
-              bottom: 16,
+              bottom: 14,
               display: "flex",
               flexDirection: "column",
               gap: 4,
             }}
           >
-            {/* Venue */}
             <div
               style={{
                 fontSize: 11,
@@ -3097,8 +3135,6 @@ function BiddingTab({ onSelectOffer }) {
             >
               {hero.venue}
             </div>
-
-            {/* Title */}
             <div
               style={{
                 fontSize: 18,
@@ -3109,8 +3145,6 @@ function BiddingTab({ onSelectOffer }) {
             >
               {hero.eventName}
             </div>
-
-            {/* Seat info */}
             <div
               style={{
                 fontSize: 12,
@@ -3122,7 +3156,7 @@ function BiddingTab({ onSelectOffer }) {
             </div>
           </div>
 
-          {/* Top-right Tag */}
+          {/* top-right tag */}
           {hero.tag && (
             <div
               style={{
@@ -3131,17 +3165,16 @@ function BiddingTab({ onSelectOffer }) {
                 right: 12,
                 padding: "4px 10px",
                 borderRadius: 999,
-                backgroundColor: "rgba(15,23,42,0.7)",
-                border: "1px solid rgba(148,163,184,0.6)",
+                backgroundColor: "rgba(15,23,42,0.8)",
+                border: "1px solid rgba(148,163,184,0.7)",
                 fontSize: 11,
-                color: "#f9fafb",
+                color: "#e5e7eb",
               }}
             >
               {hero.tag}
             </div>
           )}
         </div>
-
 
         {/* hero bottom section */}
         <div
@@ -3192,7 +3225,7 @@ function BiddingTab({ onSelectOffer }) {
                     color: "#6b7280",
                   }}
                 >
-                  + min. {hero.minIncrement} €
+                  + min. 5€
                 </span>
               </div>
             </div>
@@ -3213,26 +3246,59 @@ function BiddingTab({ onSelectOffer }) {
             </div>
           </div>
 
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
-          <button
-            type="button"
-            onClick={() => handleBidClick(hero)}
+          {/* input + button (custom bid) */}
+          <div
             style={{
-              width: "75%",
-              padding: 10,
-              borderRadius: 999,
-              border: "none",
-              background:
-                "linear-gradient(135deg, #545554ff, #5d5d5dff)",
-              color: "#f9fafb",
-              fontSize: 10,
-              fontWeight: 600,
-              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              marginTop: 4,
             }}
           >
-            Höheres Gebot abgeben (+{hero.minIncrement} €)
-          </button>
-        </div>
+            <input
+              type="number"
+              min="1"
+              value={bidInputs[hero.id] ?? ""}
+              onChange={(e) =>
+                setBidInputs((prev) => ({
+                  ...prev,
+                  [hero.id]: e.target.value,
+                }))
+              }
+              placeholder="Eigenes Gebot (€)"
+              style={{
+                width: "100%",
+                padding: 8,
+                borderRadius: 999,
+                border: "1px solid #e5e7eb",
+                backgroundColor: "#f9fafb",
+                fontSize: 12,
+                color: "#0f172a",
+                textAlign: "center",
+                outline: "none",
+              }}
+            />
+
+            <button
+              type="button"
+              onClick={() => placeCustomBid(hero.id)}
+              style={{
+                width: "100%",
+                padding: 10,
+                borderRadius: 10,
+                border: "none",
+                background: "linear-gradient(135deg, #545554ff, #5d5d5dff)",
+                color: "#f9fafb",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "block",
+                margin: "0 auto",
+              }}
+            >
+              Jetzt bieten!
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3348,7 +3414,7 @@ function BiddingTab({ onSelectOffer }) {
                     color: "#6b7280",
                   }}
                 >
-                  + {a.minIncrement} €
+                  + min. {a.minIncrement} €
                 </span>
               </div>
 
@@ -3366,28 +3432,61 @@ function BiddingTab({ onSelectOffer }) {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleBidClick(a)}
+            {/* input + button (custom bid) */}
+            <div
               style={{
                 marginTop: 4,
-                padding: "9px 12px",
-                borderRadius: 10,
-                border: "none",
-                backgroundColor: a.color || "#0f172a",
-                color: "#f9fafb",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
               }}
             >
-              Direkt mitbieten
-            </button>
+              <input
+                type="number"
+                min="1"
+                value={bidInputs[a.id] ?? ""}
+                onChange={(e) =>
+                  setBidInputs((prev) => ({
+                    ...prev,
+                    [a.id]: e.target.value,
+                  }))
+                }
+                placeholder="Eigenes Gebot (€)"
+                style={{
+                  width: "100%",
+                  padding: 8,
+                  borderRadius: 999,
+                  border: "1px solid #e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  fontSize: 12,
+                  color: "#0f172a",
+                  textAlign: "center",
+                  outline: "none",
+                }}
+              />
+
+              <button
+                type="button"
+                onClick={() => placeCustomBid(a.id)}
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: 10,
+                  border: "none",
+                  backgroundColor: "#0f172a",
+                  color: "#f9fafb",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Jetzt bieten!
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* === SMALL LIST BELOW (5 compact auctions) === */}
+      {/* === SMALL LIST BELOW (compact auctions) === */}
       {others.length > 0 && (
         <div
           style={{
@@ -3415,7 +3514,7 @@ function BiddingTab({ onSelectOffer }) {
               <button
                 key={a.id}
                 type="button"
-                onClick={() => handleBidClick(a)}
+                onClick={() => handleQuickBid(a.id)}
                 style={{
                   width: "100%",
                   textAlign: "left",
@@ -3522,7 +3621,7 @@ function BottomNav({ activeTab, onChange }) {
   const items = [
     { id: "events", label: "Events"},
     { id: "upgrades", label: "Upgrades"},
-    { id: "bidding", label: "Auction"},
+    { id: "bidding", label: "Auktion"},
     { id: "account", label: "Konto"},
   ];
 
