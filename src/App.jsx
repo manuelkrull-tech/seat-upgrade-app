@@ -29,7 +29,7 @@ const EVENTS = [
     name: "Drake – Boy Meets World Tour",
     venue: "Uber Arena Berlin",
     city: "Berlin",
-    primaryColor: "#8E24AA",
+    primaryColor: "rgba(222, 236, 221, 0.85)",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
     dateUtc: "2025-11-19T14:35:00Z",
@@ -135,7 +135,7 @@ function App() {
 
   const mainContainer = {
     width: "100%",
-    maxWidth: 420,
+    maxWidth: "100%",
     padding: "16px 16px 72px",
     boxSizing: "border-box",
   };
@@ -260,64 +260,66 @@ function App() {
   const savedIds = new Set(savedOffers.map((o) => o.id));
 
   return (
-    <div style={pageStyles}>
-      {/* PREMIUM HEADER */}
+  <div style={pageStyles}>
+    {/* PREMIUM HEADER ONLY ON EVENTS TAB */}
+    {activeTab === "events" && (
       <PremiumHeader activeTab={activeTab} currentEvent={currentEvent} />
+    )}
 
-      <div style={mainContainer}>
-        {/* TAB CONTENT */}
-        {activeTab === "events" && (
-          <EventsTab
-            events={EVENTS}
-            selectedEventId={selectedEventId}
-            onSelectEvent={handleSelectEvent}
-          />
-        )}
+    <div style={mainContainer}>
+      {/* TAB CONTENT */}
+      {activeTab === "events" && (
+        <EventsTab
+          events={EVENTS}
+          selectedEventId={selectedEventId}
+          onSelectEvent={handleSelectEvent}
+        />
+      )}
 
-        {activeTab === "upgrades" && (
-          <UpgradesTab
-            currentEvent={currentEvent}
-            block={block}
-            row={row}
-            seat={seat}
-            setBlock={setBlock}
-            setRow={setRow}
-            setSeat={setSeat}
-            inputStyle={inputStyle}
-            buttonStyle={buttonStyle}
-            error={error}
-            isLoading={isLoading}
-            offers={offers}
-            checkoutOffer={checkoutOffer}
-            selectedOffer={selectedOffer}
-            checkoutGuest={checkoutGuest}
-            savedIds={savedIds}
-            onSubmit={handleSubmit}
-            onStartCheckout={handleStartCheckout}
-            onConfirmCheckout={handleConfirmCheckout}
-            onToggleSave={handleToggleSave}
-            history={history}
-          />
-        )}
+      {activeTab === "upgrades" && (
+        <UpgradesTab
+          currentEvent={currentEvent}
+          block={block}
+          row={row}
+          seat={seat}
+          setBlock={setBlock}
+          setRow={setRow}
+          setSeat={setSeat}
+          inputStyle={inputStyle}
+          buttonStyle={buttonStyle}
+          error={error}
+          isLoading={isLoading}
+          offers={offers}
+          checkoutOffer={checkoutOffer}
+          selectedOffer={selectedOffer}
+          checkoutGuest={checkoutGuest}
+          savedIds={savedIds}
+          onSubmit={handleSubmit}
+          onStartCheckout={handleStartCheckout}
+          onConfirmCheckout={handleConfirmCheckout}
+          onToggleSave={handleToggleSave}
+          history={history}
+        />
+      )}
 
-        {activeTab === "saved" && (
-          <SavedTab
-            savedOffers={savedOffers}
-            onSelectOffer={(offer) => {
-              setActiveTab("upgrades");
-              setCheckoutOffer(offer);
-              setSelectedOffer(null);
-            }}
-          />
-        )}
+      {activeTab === "saved" && (
+        <SavedTab
+          savedOffers={savedOffers}
+          onSelectOffer={(offer) => {
+            setActiveTab("upgrades");
+            setCheckoutOffer(offer);
+            setSelectedOffer(null);
+          }}
+        />
+      )}
 
-        {activeTab === "account" && <AccountTab />}
-      </div>
-
-      {/* BOTTOM NAV */}
-      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      {activeTab === "account" && <AccountTab />}
     </div>
-  );
+
+    {/* BOTTOM NAV */}
+    <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+  </div>
+);
 }
 
 /* ---------- HEADER ---------- */
@@ -340,11 +342,11 @@ function PremiumHeader({ activeTab, currentEvent }) {
         width: "100%",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        background: "rgba(53, 76, 70, 1.0)",
+        background: "rgba(244 244, 244, 1.0)",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
         zIndex: 100,
       }}
-    >
+    >.     
       <div
         style={{
           maxWidth: "100%",
@@ -851,7 +853,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
                 border: `1px solid ${
                   isActive ? ev.primaryColor : "#333"
                 }`,
-                backgroundColor: isActive ? "#1f1f1f" : "#141414",
+                backgroundColor:"rgba(53, 76, 70, 1.0)",
                 color: "white",
                 textAlign: "left",
                 cursor: "pointer",
@@ -1032,271 +1034,363 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
         })}
       </div>
 
-{/* AD / PARTNER SECTION */}
-<div
-  style={{
-    marginTop: 32,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: "#101010",
-    border: "1px solid #333",
-    boxSizing: "border-box",
-  }}
->
-  <h3
-    style={{
-      fontSize: 14,
-      marginBottom: 10,
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-    }}
-  >
-    <span>Partner-Angebot</span>
-  </h3>
-
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-    }}
-  >
-    <div
-      style={{
-        borderRadius: 10,
-        overflow: "hidden",
-        backgroundColor: "#151515",
-        border: "1px solid #222",
-      }}
-    >
-      <img
-        src={picture_ad_event}
-        alt="Sponsored Event Ad"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
+      {/* BRAND PARTNER AD – COCA-COLA */}
       <div
         style={{
-          padding: 10,
-          fontSize: 12,
+          marginTop: 32,
+          padding: 16,
+          borderRadius: 18,
+          background:
+            "radial-gradient(circle at top left, rgba(248,113,113,0.16), transparent 55%) #080808",
+          border: "1px solid rgba(148,27,27,0.6)",
+          boxSizing: "border-box",
         }}
       >
+        {/* small “presented by” row */}
         <div
           style={{
-            fontWeight: 600,
-            marginBottom: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            marginBottom: 8,
           }}
         >
-          Exklusives Erfrischungs-Upgrade
+          <div>
+            <div
+              style={{
+                fontSize: 10,
+                textTransform: "uppercase",
+                letterSpacing: 1.2,
+                color: "rgba(255,255,255,0.45)",
+              }}
+            >
+              Presented by
+            </div>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#ffffff",
+              }}
+            >
+              Coca-Cola
+            </div>
+          </div>
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "rgba(255,255,255,0.6)",
+              textAlign: "right",
+              maxWidth: 120,
+            }}
+          >
+            Offizieller Erfrischungspartner
+          </span>
+        </div>
+
+        {/* visual */}
+        <div
+          style={{
+            marginTop: 8,
+            marginBottom: 12,
+            borderRadius: 14,
+            overflow: "hidden",
+            position: "relative",
+            boxShadow: "0 10px 26px rgba(0,0,0,0.55)", // softer, no visible border
+          }}
+        >
+          <img
+            src={picture_ad_event}
+            alt="Coca-Cola Arena Experience"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+              transform: "scale(1.03)",
+            }}
+          />
+          {/* subtle gradient overlay for text readability if needed later */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0.05))",
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+
+        {/* copy */}
+        <div
+          style={{
+            fontSize: 13,
+            color: "#f5f5f5",
+            marginBottom: 4,
+            fontWeight: 500,
+          }}
+        >
+          Exklusives Coca-Cola Arena Special
         </div>
         <div
           style={{
-            color: "#bbb",
-            marginBottom: 6,
+            fontSize: 12,
+            color: "#d4d4d4",
+            lineHeight: 1.4,
+            marginBottom: 10,
           }}
         >
-          Sichere dir mit jedem Upgrade ein 10% Rabatt für alle Coca Cola Produkte.
+          Sichere dir mit jedem erfolgreichen Upgrade{" "}
+          <strong>10&nbsp;% Rabatt</strong> auf alle Coca-Cola Produkte
+          in deiner Arena – vom ersten Drink bis zur letzten Pause.
         </div>
         <div
           style={{
             fontSize: 11,
-            color: "#888",
+            color: "#9e9e9e",
           }}
         >
-          Hinweis: Dieses Feld kann später für echte Club-Partner, Marken oder
-          Special Promotions genutzt werden.
+          Gültig nur an teilnehmenden Standorten. Das Modul kann später für echte
+          Partnerkampagnen oder Club-Deals genutzt werden.
         </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-{/* ARENA-BASED UPGRADES */}
+        {/* CTA – simple, not pill-like */}
+        <button
+          type="button"
+          style={{
+            marginTop: 14,
+            width: "100%",
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: "1px solid rgba(248,113,113,0.7)",
+            background:
+              "linear-gradient(90deg, #b91c1c, #ef4444)",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#ffffff",
+            cursor: "pointer",
+            outline: "none",
+          }}
+        >
+          Mehr zu Coca-Cola Vorteilen
+        </button>
+      </div>
+
+{/* ARENA-BASED UPGRADES — standalone cards */}
 <div
   style={{
-    marginTop: 24,
-    padding: 18,
-    borderRadius: 18,
-    background:
-      "radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 55%), #181818",
-    border: "1px solid rgba(255,255,255,0.10)",
-    boxShadow: "0 18px 45px rgba(0,0,0,0.55)",
-    boxSizing: "border-box",
+    marginTop: 28,
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
   }}
 >
-  {/* Header */}
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "baseline",
-      marginBottom: 10,
-      gap: 8,
-    }}
-  >
-    <div>
-      <div
-        style={{
-          fontSize: 10,
-          textTransform: "uppercase",
-          letterSpacing: 1.2,
-          color: "#8f9ba8",
-          marginBottom: 4,
-        }}
-      >
-        Arena Specials
-      </div>
-      <h3
-        style={{
-          fontSize: 16,
-          fontWeight: 600,
-          margin: 0,
-        }}
-      >
-        Kuratierte Erlebnisse
-      </h3>
+  {/* Section title */}
+  <div>
+    <div
+      style={{
+        fontSize: 10,
+        textTransform: "uppercase",
+        letterSpacing: 1.2,
+        color: "rgba(0, 0, 0, 0.5)",
+        marginBottom: 4,
+      }}
+    >
+      Arena Specials
     </div>
+
+    <h3
+      style={{
+        fontSize: 16,
+        fontWeight: 600,
+        margin: 0,
+        color: "#000000ff",
+      }}
+    >
+      Kuratierte Erlebnisse
+    </h3>
+
+    <p
+      style={{
+        fontSize: 12,
+        color: "rgba(0, 0, 0, 0.55)",
+        marginTop: 6,
+        marginBottom: 12,
+        lineHeight: 1.45,
+      }}
+    >
+      Exklusive Erlebnisse für besondere Momente vor, während oder nach dem Event.
+    </p>
   </div>
 
-  <p
-    style={{
-      fontSize: 12,
-      color: "#9ca3af",
-      marginBottom: 14,
-      lineHeight: 1.4,
-    }}
-  >
-    Wähle exklusive Erlebnisse für Spielerlebnisse vor, während oder nach dem Event.
-  </p>
-
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-    }}
-  >
-    {[
-      {
-        title: "Eisbären – High Five Lane",
-        arena: "UBER Arena · Berlin",
-        desc: "Begleite das Team beim Einlauf und erlebe High Fives direkt am Eis.",
-        price: "15 €",
-      },
-      {
-        title: "Drake – Meet & Greet",
-        arena: "UBER Arena · Berlin",
-        desc: "Exklusives Meet & Greet inklusive Foto, Early Entry und Merch-Desk Fast Lane.",
-        price: "299 €",
-      },
-      {
-        title: "Köln – After Match VIP Club",
-        arena: "RheinEnergieSTADION · Köln",
-        desc: "Zugang zum After Match VIP Club mit Drinks, Snacks und Spieler-Interviews.",
-        price: "199 €",
-      },
-    ].map((u) => (
+  {/* UPGRADE CARDS */}
+  {[
+    {
+      id: "hf",
+      code: "UPG-HF15",
+      headerColor: "#4F46E5",
+      title: "Eisbären – High Five Lane",
+      subtitle: "On-Ice Experience · UBER Arena",
+      price: "15 €",
+      statusLabel: "Verfügbar",
+      statusBg: "rgba(191,219,254,0.6)",
+      statusColor: "#1F2937",
+      cta: "Upgrade ansehen",
+    },
+    {
+      id: "drake",
+      code: "UPG-MG299",
+      headerColor: "#FACC15",
+      title: "Drake – Meet & Greet",
+      subtitle: "Backstage Access · UBER Arena",
+      price: "299 €",
+      statusLabel: "Premium",
+      statusBg: "rgba(244,114,182,0.28)",
+      statusColor: "#9D174D",
+      cta: "Upgrade ansehen",
+    },
+    {
+      id: "koeln",
+      code: "UPG-VIP199",
+      headerColor: "#22C55E",
+      title: "Köln – After Match VIP Club",
+      subtitle: "Hospitality · RheinEnergieSTADION",
+      price: "199 €",
+      statusLabel: "Limited",
+      statusBg: "rgba(96,165,250,0.25)",
+      statusColor: "#1D4ED8",
+      cta: "Upgrade ansehen",
+    },
+  ].map((u) => (
+    <div
+      key={u.id}
+      style={{
+        borderRadius: 18,
+        overflow: "hidden",
+        backgroundColor: "#F9FAFB",
+        marginLeft: 2,
+        marginRight: 2,
+        border: `1px solid ${u.headerColor}`,
+      }}
+    >
+      {/* TOP COLORED BAR */}
       <div
-        key={u.title}
         style={{
-          padding: 12,
-          borderRadius: 14,
-          background:
-            "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.6))",
-          border: "1px solid rgba(255,255,255,0.12)",
+          backgroundColor: u.headerColor,
+          padding: "8px 14px",
           display: "flex",
-          flexDirection: "column",
-          gap: 6,
+          justifyContent: "space-between",
+          alignItems: "center",
+          color: "#F9FAFB",
+          fontSize: 11,
+          fontWeight: 500,
         }}
       >
-        {/* Title + meta */}
+        <span>{u.code}</span>
+        <span style={{ opacity: 0.9 }}>Arena Upgrade</span>
+      </div>
+
+      {/* BODY */}
+      <div
+        style={{
+          padding: "12px 14px 14px",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        {/* Title + status */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            gap: 4,
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 6,
           }}
         >
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#f9fafb",
-            }}
-          >
-            {u.title}
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 6,
-              rowGap: 4,
-            }}
-          >
-            <span
+          <div>
+            <div
               style={{
-                fontSize: 10,
-                padding: "2px 8px",
-                borderRadius: 999,
-                border: "1px solid rgba(148,163,184,0.6)",
-                backgroundColor: "rgba(15,23,42,0.6)",
-                color: "#e5e7eb",
-                textTransform: "uppercase",
-                letterSpacing: 0.8,
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#111827",
+                marginBottom: 2,
               }}
             >
-              {u.arena}
-            </span>
+              {u.title}
+            </div>
+
+            <div
+              style={{
+                fontSize: 11,
+                color: "#6B7280",
+              }}
+            >
+              {u.subtitle}
+            </div>
           </div>
+
+          <span
+            style={{
+              padding: "3px 10px",
+              borderRadius: 999,
+              backgroundColor: u.statusBg,
+              color: u.statusColor,
+              fontSize: 10,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {u.statusLabel}
+          </span>
         </div>
 
-        {/* Description */}
+        {/* Divider */}
         <div
           style={{
-            fontSize: 12,
-            color: "#d1d5db",
-            lineHeight: 1.4,
+            borderTop: "1px dashed rgba(156,163,175,0.7)",
+            margin: "8px 0 12px",
           }}
-        >
-          {u.desc}
-        </div>
+        />
 
-        {/* Price line under text */}
+        {/* Price + CTA */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
-            marginTop: 4,
-            gap: 8,
+            alignItems: "center",
           }}
         >
           <div
             style={{
-              padding: "4px 12px",
-              borderRadius: 999,
-              background:
-                "linear-gradient(90deg, rgba(56,189,248,0.24), rgba(37,99,235,0.32))",
-              border: "1px solid rgba(191,219,254,0.7)",
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#f9fafb",
-              boxShadow: "0 0 0 1px rgba(15,23,42,0.6)",
+              fontSize: 18,
+              fontWeight: 700,
+              color: "#111827",
             }}
           >
-            {u.price} · pro Ticket
+            {u.price}
           </div>
+
+          <button
+            type="button"
+            style={{
+              border: "none",
+              outline: "none",
+              padding: "6px 16px",
+              borderRadius: 999,
+              backgroundColor: "#020617",
+              color: "#F9FAFB",
+              fontSize: 11,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            {u.cta}
+          </button>
         </div>
       </div>
-    ))}
-  </div>
+    </div>
+  ))}
 </div>
 
 
@@ -1341,7 +1435,6 @@ function getEventHeroImage(ev) {
   }
 }
 
-
 function UpgradesTab({
   currentEvent,
   block,
@@ -1374,7 +1467,6 @@ function UpgradesTab({
 
   // Simple availability + dynamic price demo (you can adjust)
   const [availability] = useState({
-    // offerId: remaining seats (demo)
     1: 5,
     2: 3,
     3: 10,
@@ -1396,6 +1488,7 @@ function UpgradesTab({
   }
 
   const hasSeatEntered = !!(block && row && seat);
+  const hasVerifiedSeat = ticketStatus === "ok" && hasSeatEntered;
   const canCheckoutWithTicket = ticketStatus === "ok" && hasSeatEntered;
 
   // --- PRICE + FEES FOR CHECKOUT ---
@@ -1435,7 +1528,6 @@ function UpgradesTab({
         return;
       }
 
-      // ✅ Seat comes ONLY from ticket now
       setBlock(seatInfo.block);
       setRow(String(seatInfo.row));
       setSeat(String(seatInfo.seat));
@@ -1473,793 +1565,866 @@ function UpgradesTab({
     return Math.round(offer.priceEuro * factor * 100) / 100;
   }
 
-  const hasVerifiedSeat = ticketStatus === "ok" && hasSeatEntered;
+  // --- LAYOUT: full-width hero + overlapping white sheet ---
 
   return (
     <div
       style={{
-        maxWidth: 400,
-        margin: "0 auto",
+        width: "100%",
+        backgroundColor: "#f9fafb", // white base
       }}
     >
-      {/* Event hero bubble – same style as Top Event card */}
-      {currentEvent && (
-        <div
-          style={{
-            marginBottom: 20,
-            padding: 14,
-            borderRadius: 16,
-            background: `linear-gradient(135deg, ${
-              currentEvent.primaryColor || "#444"
-            }, rgba(0,0,0,0.9))`,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
-          }}
-        >
-          {/* Hero image */}
-          <div
-            style={{
-              borderRadius: 12,
-              overflow: "hidden",
-              height: 170,
-              border: "1px solid rgba(255,255,255,0.25)",
-            }}
-          >
-            <img
-              src={getEventHeroImage(currentEvent)}
-              alt={currentEvent.name}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </div>
-
-          {/* Text */}
-          <div>
-            <div
-              style={{
-                fontWeight: "bold",
-                fontSize: 16,
-                marginBottom: 2,
-              }}
-            >
-              {currentEvent.name}
-            </div>
-
-            <div
-              style={{
-                fontSize: 12,
-                color: "#f5f5f5",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span style={{ fontSize: 14 }}>📍</span>
-              <span>
-                {currentEvent.city
-                  ? `${currentEvent.city} · ${currentEvent.venue}`
-                  : currentEvent.venue}
-              </span>
-            </div>
-
-            <div
-              style={{
-                fontSize: 11,
-                color: "#ddd",
-                marginTop: 6,
-                opacity: 0.9,
-              }}
-            >
-              Demo: Ticket-ID eingeben – wir erkennen deinen Sitzplatz
-              automatisch.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Ticket / Seat section */}
+      {/* FULL-WIDTH HERO (mobile first, but works everywhere) */}
       <div
         style={{
-          textAlign: "center",
-          marginTop: 4,
-          marginBottom: 10,
+          position: "relative",
+          width: "100%",
+          height: 230,
+          overflow: "hidden",
+          backgroundColor: "#000",
         }}
       >
-        {/* Small label chip */}
+        <img
+          src={getEventHeroImage(currentEvent)}
+          alt={currentEvent.name}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            transform: "scale(1.04)",
+          }}
+        />
+
+        {/* dark gradient overlay for readable text */}
         <div
           style={{
-            display: "inline-flex",
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.25))",
+          }}
+        />
+
+        {/* top chip */}
+        <div
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 16,
+            padding: "4px 10px",
+            borderRadius: 999,
+            backgroundColor: "rgba(0,0,0,0.65)",
+            border: "1px solid rgba(255,255,255,0.3)",
+            fontSize: 11,
+            color: "#f9fafb",
+            display: "flex",
             alignItems: "center",
             gap: 6,
-            padding: "3px 10px",
-            borderRadius: 999,
-            backgroundColor: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            fontSize: 11,
-            color: "#ddd",
-            marginBottom: 6,
           }}
         >
-          <span>🎫</span>
-          <span>Ticket-ID prüfen</span>
-        </div>
-
-        <h3
-          style={{
-            margin: 0,
-            fontSize: 18,
-            fontWeight: 600,
-            letterSpacing: 0.3,
-          }}
-        >
-          Ticket scannen / eingeben
-        </h3>
-
-        <p
-          style={{
-            marginTop: 6,
-            marginBottom: 8,
-            fontSize: 12,
-            color: "#b3b3b3",
-            lineHeight: 1.4,
-          }}
-        >
-          Gib deine Ticket-ID oder einen Demo-Code ein, wir lesen Block, Reihe
-          und Sitz aus dem System.
-        </p>
-
-        {/* Ticket-ID field – centered bubble */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 12,
-          }}
-        >
-          <input
-            value={ticketCode}
-            onChange={(e) => handleChangeTicketCode(e.target.value)}
-            placeholder="Ticket-ID / Barcode (Demo)"
+          <span
             style={{
-              width: "75%",
-              padding: "12px",
-              borderRadius: 12,
-              border: "1px solid #333",
-              backgroundColor: "#1a1a1a",
-              color: "#fff",
-              fontSize: 14,
-              textAlign: "center",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              display: "inline-block",
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              backgroundColor: "#22c55e",
             }}
           />
+          <span>Upgrade deinen Platz</span>
         </div>
 
-        {/* Ticket verify */}
+        {/* text bottom-left on the image */}
         <div
           style={{
-            display: "flex",
-            gap: 8,
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 10,
+            position: "absolute",
+            left: 16,
+            right: 16,
+            bottom: 18,
           }}
         >
-          <button
-            type="button"
-            onClick={handleVerifyTicket}
+          <div
             style={{
-              flexShrink: 0,
-              padding: "8px 12px",
+              fontSize: 12,
+              color: "rgba(249,250,251,0.85)",
+              marginBottom: 2,
+            }}
+          >
+            {currentEvent.city
+              ? `${currentEvent.city} · ${currentEvent.venue}`
+              : currentEvent.venue}
+          </div>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: "#f9fafb",
+              textShadow: "0 10px 24px rgba(0,0,0,0.9)",
+            }}
+          >
+            {currentEvent.name}
+          </div>
+        </div>
+      </div>
+
+      {/* WHITE "BOTTOM SHEET" OVERLAYING THE HERO */}
+      <div
+        style={{
+          marginTop: -18, // 👈 overlaps the image
+          borderRadius: "24px 24px 0 0",
+          backgroundColor: "#f9fafb",
+          padding: "16px 16px 24px",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* inner max width just to keep it nice on larger screens */}
+        <div
+          style={{
+            maxWidth: 480,
+            margin: "0 auto",
+          }}
+        >
+          {/* small handle like a sheet */}
+          <div
+            style={{
+              width: 40,
+              height: 4,
               borderRadius: 999,
-              border: "none",
-              backgroundColor:
-                ticketStatus === "checking" ? "#555" : "#444",
-              color: "#fff",
-              fontSize: 12,
-              cursor:
-                ticketStatus === "checking" ? "default" : "pointer",
-              fontWeight: "bold",
+              backgroundColor: "#e5e7eb",
+              margin: "0 auto 12px",
             }}
-          >
-            {ticketStatus === "checking"
-              ? "Ticket wird geprüft..."
-              : "Ticket prüfen (Demo)"}
-          </button>
+          />
 
-          <div style={{ fontSize: 11, color: "#bbb" }}>
-            {ticketStatus === "idle" && "Ticket wird nur lokal simuliert."}
-            {ticketStatus === "checking" &&
-              "Abgleich mit Ticket-System (Demo)..."}
-            {ticketStatus === "ok" && (
-              <span style={{ color: "#81C784" }}>
-                ✅ Ticket verifiziert (Demo)
-              </span>
-            )}
-            {ticketStatus === "error" && (
-              <span style={{ color: "#ef9a9a" }}>
-                ❌ Ticket ungültig (Demo) – Code prüfen.
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Recognized seat after successful verification */}
-        {hasVerifiedSeat && (
+          {/* TICKET / SEAT SECTION */}
           <div
             style={{
-              marginBottom: 12,
-              padding: 10,
-              borderRadius: 10,
-              backgroundColor: "#111",
-              border: "1px solid #333",
-              fontSize: 12,
-              color: "#ddd",
+              textAlign: "center",
+              marginTop: 4,
+              marginBottom: 10,
             }}
           >
-            Erkannter Sitzplatz:
-            <br />
-            <span style={{ fontWeight: "bold" }}>
-              Block {block} · Reihe {row} · Sitz {seat}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Request offers */}
-      <form onSubmit={onSubmit}>
-        <button
-          type="submit"
-          style={buttonStyle}
-          disabled={isLoading || ticketStatus !== "ok" || !hasSeatEntered}
-        >
-          {ticketStatus !== "ok"
-            ? "Ticket zuerst verifizieren"
-            : isLoading
-            ? "Lade Upgrade-Angebote..."
-            : "Upgrade-Angebote anzeigen"}
-        </button>
-      </form>
-
-      {/* Error from offer loading */}
-      {error && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: 12,
-            borderRadius: 10,
-            backgroundColor: "#8B1A1A",
-            color: "#ffdddd",
-            textAlign: "center",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {/* Map */}
-      <div style={{ marginTop: 24 }}>
-        {currentEvent.id === "koeln-hertha" && (
-          <KoelnStadiumMap currentBlock={block} offers={offers} />
-        )}
-        {currentEvent.id === "drake-uber" && (
-          <ConcertArenaMap currentBlock={block} offers={offers} />
-        )}
-        {currentEvent.id === "eisbaeren-adler" && (
-          <HockeyArenaMap currentBlock={block} offers={offers} />
-        )}
-      </div>
-
-      {/* Checkout for a selected offer */}
-      {checkoutOffer && hasSeatEntered && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: 16,
-            borderRadius: 12,
-            backgroundColor: "#151515",
-            border: "1px solid #333",
-          }}
-        >
-          <h3 style={{ marginTop: 0, marginBottom: 8 }}>
-            Checkout als Gast
-          </h3>
-          <p style={{ fontSize: 13, color: "#ccc", marginBottom: 10 }}>
-            Bestätige dein Upgrade ohne Konto. Deine Tickets würden in
-            einer echten Version per E-Mail verschickt.
-          </p>
-
-          {/* Seat comparison */}
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              backgroundColor: "#111",
-              border: "1px solid #333",
-              fontSize: 13,
-              color: "#ccc",
-              marginBottom: 14,
-            }}
-          >
+            {/* Small label chip */}
             <div
               style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "3px 10px",
+                borderRadius: 999,
+                backgroundColor: "rgba(0,0,0,0.04)",
+                border: "1px solid rgba(0,0,0,0.06)",
+                fontSize: 11,
+                color: "#374151",
                 marginBottom: 6,
-                color: "#999",
-                fontWeight: "bold",
               }}
             >
-              Vorher:
-            </div>
-            <div>
-              Block {block}, Reihe {row}, Sitz {seat}
+              <span>🎫</span>
+              <span>Ticket-ID prüfen</span>
             </div>
 
-            <div
+            <h3
               style={{
-                marginTop: 10,
-                marginBottom: 6,
-                color: "#999",
-                fontWeight: "bold",
+                margin: 0,
+                fontSize: 18,
+                fontWeight: 600,
+                letterSpacing: 0.3,
+                color: "#111827",
               }}
             >
-              Nachher (Upgrade):
-            </div>
-            <div style={{ color: "#fff" }}>
-              Block{" "}
-              {checkoutOffer.comparison?.toBlock ||
-                checkoutOffer.targetBlock}
-            </div>
-            <div
-              style={{ marginTop: 10, fontSize: 12, color: "#bbb" }}
-            >
-              Höhere Kategorie · bessere Sicht · beliebter Bereich
-            </div>
-          </div>
+              Ticket scannen / eingeben
+            </h3>
 
-          {/* Price breakdown */}
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              backgroundColor: "#101010",
-              border: "1px solid #333",
-              fontSize: 13,
-              color: "#ddd",
-              marginBottom: 14,
-            }}
-          >
-            <div
+            <p
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 4,
-              }}
-            >
-              <span>Upgrade-Preis (dynamisch)</span>
-              <span>{checkoutOffer.priceEuro.toFixed(2)} €</span>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 6,
-                fontSize: 12,
-                color: "#bbb",
-              }}
-            >
-              <span>Servicegebühr (8%)</span>
-              <span>{serviceFee.toFixed(2)} €</span>
-            </div>
-            <div
-              style={{
-                borderTop: "1px solid #333",
                 marginTop: 6,
-                paddingTop: 6,
-                display: "flex",
-                justifyContent: "space-between",
-                fontWeight: "bold",
+                marginBottom: 8,
+                fontSize: 12,
+                color: "#4b5563",
+                lineHeight: 1.4,
               }}
             >
-              <span>Gesamt</span>
-              <span>{totalPrice.toFixed(2)} €</span>
-            </div>
-          </div>
+              Gib deine Ticket-ID oder einen Demo-Code ein, wir lesen Block,
+              Reihe und Sitz aus dem System.
+            </p>
 
-          {/* Guest details */}
-          <form onSubmit={handleSubmitCheckout}>
-            <input
-              value={guestName}
-              onChange={(e) => setGuestName(e.target.value)}
-              placeholder="Name (optional)"
-              style={{
-                ...inputStyle,
-                textAlign: "left",
-                fontSize: 14,
-              }}
-            />
-            <input
-              value={guestEmail}
-              onChange={(e) => setGuestEmail(e.target.value)}
-              placeholder="E-Mail für Ticketbestätigung"
-              style={{
-                ...inputStyle,
-                textAlign: "left",
-                fontSize: 14,
-              }}
-            />
-
-            {/* Payment method (fake) */}
+            {/* Ticket-ID field – centered bubble */}
             <div
               style={{
+                display: "flex",
+                justifyContent: "center",
                 marginBottom: 12,
-                marginTop: 4,
-                padding: 10,
-                borderRadius: 10,
-                backgroundColor: "#111",
-                border: "1px solid #333",
-                fontSize: 13,
-                color: "#ddd",
               }}
             >
-              <div style={{ marginBottom: 8, fontWeight: "bold" }}>
-                Zahlungsmethode (Demo)
-              </div>
-              <div
+              <input
+                value={ticketCode}
+                onChange={(e) => handleChangeTicketCode(e.target.value)}
+                placeholder="Ticket-ID / Barcode (Demo)"
                 style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "space-between",
+                  width: "75%",
+                  padding: "12px",
+                  borderRadius: 12,
+                  border: "1px solid #d1d5db",
+                  backgroundColor: "#ffffff",
+                  color: "#111827",
+                  fontSize: 14,
+                  textAlign: "center",
+                  boxShadow: "0 2px 6px rgba(15,23,42,0.15)",
+                }}
+              />
+            </div>
+
+            {/* Ticket verify */}
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 10,
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleVerifyTicket}
+                style={{
+                  flexShrink: 0,
+                  padding: "8px 12px",
+                  borderRadius: 999,
+                  border: "none",
+                  backgroundColor:
+                    ticketStatus === "checking" ? "#9ca3af" : "#111827",
+                  color: "#fff",
+                  fontSize: 12,
+                  cursor:
+                    ticketStatus === "checking" ? "default" : "pointer",
+                  fontWeight: "bold",
                 }}
               >
-                {[
-                  { id: "card", label: "Kreditkarte", emoji: "💳" },
-                  { id: "paypal", label: "PayPal", emoji: "🅿️" },
-                  { id: "apple", label: "Apple Pay", emoji: "" },
-                ].map((m) => {
-                  const isActive = paymentMethod === m.id;
-                  return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(m.id)}
-                      style={{
-                        flex: 1,
-                        padding: "6px 4px",
-                        borderRadius: 8,
-                        border: isActive
-                          ? "1px solid #fff"
-                          : "1px solid #444",
-                        backgroundColor: isActive
-                          ? "#2E7D32"
-                          : "#1a1a1a",
-                        color: "#fff",
-                        fontSize: 12,
-                        cursor: "pointer",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <span style={{ fontSize: 16 }}>{m.emoji}</span>
-                      <span>{m.label}</span>
-                    </button>
-                  );
-                })}
+                {ticketStatus === "checking"
+                  ? "Ticket wird geprüft..."
+                  : "Ticket prüfen (Demo)"}
+              </button>
+
+              <div style={{ fontSize: 11, color: "#6b7280" }}>
+                {ticketStatus === "idle" && "Ticket wird nur lokal simuliert."}
+                {ticketStatus === "checking" &&
+                  "Abgleich mit Ticket-System (Demo)..."}
+                {ticketStatus === "ok" && (
+                  <span style={{ color: "#166534" }}>
+                    ✅ Ticket verifiziert (Demo)
+                  </span>
+                )}
+                {ticketStatus === "error" && (
+                  <span style={{ color: "#b91c1c" }}>
+                    ❌ Ticket ungültig (Demo) – Code prüfen.
+                  </span>
+                )}
               </div>
             </div>
 
+            {/* Recognized seat after successful verification */}
+            {hasVerifiedSeat && (
+              <div
+                style={{
+                  marginBottom: 12,
+                  padding: 10,
+                  borderRadius: 10,
+                  backgroundColor: "#0f172a",
+                  border: "1px solid #1f2937",
+                  fontSize: 12,
+                  color: "#e5e7eb",
+                }}
+              >
+                Erkannter Sitzplatz:
+                <br />
+                <span style={{ fontWeight: "bold" }}>
+                  Block {block} · Reihe {row} · Sitz {seat}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Request offers */}
+          <form onSubmit={onSubmit}>
             <button
               type="submit"
-              disabled={!guestEmail}
               style={{
+                ...buttonStyle,
                 width: "100%",
-                padding: 12,
-                borderRadius: 10,
-                border: "none",
-                backgroundColor: !guestEmail ? "#444" : "#2E7D32",
-                color: "#fff",
-                fontWeight: "bold",
-                cursor: !guestEmail ? "not-allowed" : "pointer",
-                fontSize: 15,
+                marginTop: 4,
               }}
+              disabled={isLoading || ticketStatus !== "ok" || !hasSeatEntered}
             >
-              Upgrade jetzt bestätigen
+              {ticketStatus !== "ok"
+                ? "Ticket zuerst verifizieren"
+                : isLoading
+                ? "Lade Upgrade-Angebote..."
+                : "Upgrade-Angebote anzeigen"}
             </button>
           </form>
-        </div>
-      )}
 
-      {/* Offers (only when not in checkout mode) */}
-      {!checkoutOffer && offers.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          {offers.map((offer) => {
-            const isSaved = savedIds.has(offer.id);
-            const remaining =
-              availability[String(offer.id)] != null
-                ? availability[String(offer.id)]
-                : null;
+          {/* Error from offer loading */}
+          {error && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: 12,
+                borderRadius: 10,
+                backgroundColor: "#b91c1c",
+                color: "#ffdddd",
+                textAlign: "center",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
-            const dynamicPrice = getDynamicPrice(offer);
-            const basePrice = offer.priceEuro;
-            const priceChanged = dynamicPrice !== basePrice;
+          {/* Map */}
+          <div style={{ marginTop: 24 }}>
+            {currentEvent.id === "koeln-hertha" && (
+              <KoelnStadiumMap currentBlock={block} offers={offers} />
+            )}
+            {currentEvent.id === "drake-uber" && (
+              <ConcertArenaMap currentBlock={block} offers={offers} />
+            )}
+            {currentEvent.id === "eisbaeren-adler" && (
+              <HockeyArenaMap currentBlock={block} offers={offers} />
+            )}
+          </div>
 
-            const availabilityText =
-              remaining === null
-                ? null
-                : remaining <= 0
-                ? "Ausverkauft (Demo)"
-                : remaining <= 3
-                ? `Nur noch ${remaining} Plätze verfügbar`
-                : `${remaining} Plätze verfügbar`;
+          {/* Checkout for a selected offer */}
+          {checkoutOffer && hasSeatEntered && (
+            <div
+              style={{
+                marginTop: 24,
+                padding: 16,
+                borderRadius: 12,
+                backgroundColor: "#111827",
+                border: "1px solid #1f2937",
+                color: "#e5e7eb",
+              }}
+            >
+              <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+                Checkout als Gast
+              </h3>
+              <p
+                style={{ fontSize: 13, color: "#e5e7eb", marginBottom: 10 }}
+              >
+                Bestätige dein Upgrade ohne Konto. Deine Tickets würden in
+                einer echten Version per E-Mail verschickt.
+              </p>
 
-            const availabilityColor =
-              remaining === null
-                ? "#bbb"
-                : remaining <= 0
-                ? "#ef9a9a"
-                : remaining <= 3
-                ? "#ffcc80"
-                : "#a5d6a7";
-
-            const isSoldOut = remaining !== null && remaining <= 0;
-
-            return (
+              {/* Seat comparison */}
               <div
-                key={offer.id}
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  backgroundColor: "#1a1a1a",
-                  borderLeft: `6px solid ${offer.color}`,
-                  padding: 16,
-                  borderRadius: 12,
+                  padding: 12,
+                  borderRadius: 10,
+                  backgroundColor: "#020617",
+                  border: "1px solid #1f2937",
+                  fontSize: 13,
+                  color: "#e5e7eb",
                   marginBottom: 14,
-                  opacity: isSoldOut ? 0.6 : 1,
+                }}
+              >
+                <div
+                  style={{
+                    marginBottom: 6,
+                    color: "#9ca3af",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Vorher:
+                </div>
+                <div>
+                  Block {block}, Reihe {row}, Sitz {seat}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 10,
+                    marginBottom: 6,
+                    color: "#9ca3af",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Nachher (Upgrade):
+                </div>
+                <div style={{ color: "#fff" }}>
+                  Block{" "}
+                  {checkoutOffer.comparison?.toBlock ||
+                    checkoutOffer.targetBlock}
+                </div>
+                <div
+                  style={{ marginTop: 10, fontSize: 12, color: "#cbd5f5" }}
+                >
+                  Höhere Kategorie · bessere Sicht · beliebter Bereich
+                </div>
+              </div>
+
+              {/* Price breakdown */}
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  backgroundColor: "#020617",
+                  border: "1px solid #1f2937",
+                  fontSize: 13,
+                  color: "#e5e7eb",
+                  marginBottom: 14,
                 }}
               >
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: 8,
+                    marginBottom: 4,
                   }}
                 >
-                  <div>
-                    <h3 style={{ marginTop: 0, marginBottom: 4 }}>
-                      {offer.title}
-                    </h3>
-                    <p
-                      style={{
-                        color: "#ccc",
-                        marginTop: 0,
-                        fontSize: 13,
-                      }}
-                    >
-                      {offer.description}
-                    </p>
+                  <span>Upgrade-Preis (dynamisch)</span>
+                  <span>{checkoutOffer.priceEuro.toFixed(2)} €</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                    fontSize: 12,
+                    color: "#9ca3af",
+                  }}
+                >
+                  <span>Servicegebühr (8%)</span>
+                  <span>{serviceFee.toFixed(2)} €</span>
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #1f2937",
+                    marginTop: 6,
+                    paddingTop: 6,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <span>Gesamt</span>
+                  <span>{totalPrice.toFixed(2)} €</span>
+                </div>
+              </div>
+
+              {/* Guest details */}
+              <form onSubmit={handleSubmitCheckout}>
+                <input
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Name (optional)"
+                  style={{
+                    ...inputStyle,
+                    textAlign: "left",
+                    fontSize: 14,
+                    marginBottom: 8,
+                  }}
+                />
+                <input
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="E-Mail für Ticketbestätigung"
+                  style={{
+                    ...inputStyle,
+                    textAlign: "left",
+                    fontSize: 14,
+                    marginBottom: 8,
+                  }}
+                />
+
+                {/* Payment method (fake) */}
+                <div
+                  style={{
+                    marginBottom: 12,
+                    marginTop: 4,
+                    padding: 10,
+                    borderRadius: 10,
+                    backgroundColor: "#020617",
+                    border: "1px solid #1f2937",
+                    fontSize: 13,
+                    color: "#e5e7eb",
+                  }}
+                >
+                  <div style={{ marginBottom: 8, fontWeight: "bold" }}>
+                    Zahlungsmethode (Demo)
                   </div>
-                  <button
-                    onClick={() => onToggleSave(offer)}
+                  <div
                     style={{
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      fontSize: 18,
+                      display: "flex",
+                      gap: 8,
+                      justifyContent: "space-between",
                     }}
-                    aria-label="Merken"
                   >
-                    {isSaved ? "⭐" : "☆"}
-                  </button>
+                    {[
+                      { id: "card", label: "Kreditkarte", emoji: "💳" },
+                      { id: "paypal", label: "PayPal", emoji: "🅿️" },
+                      { id: "apple", label: "Apple Pay", emoji: "" },
+                    ].map((m) => {
+                      const isActive = paymentMethod === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setPaymentMethod(m.id)}
+                          style={{
+                            flex: 1,
+                            padding: "6px 4px",
+                            borderRadius: 8,
+                            border: isActive
+                              ? "1px solid #fff"
+                              : "1px solid #374151",
+                            backgroundColor: isActive
+                              ? "#16a34a"
+                              : "#111827",
+                            color: "#fff",
+                            fontSize: 12,
+                            cursor: "pointer",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 2,
+                          }}
+                        >
+                          <span style={{ fontSize: 16 }}>{m.emoji}</span>
+                          <span>{m.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Dynamic price */}
-                <p style={{ fontWeight: "bold", marginTop: 8 }}>
-                  Preis (dynamisch): {dynamicPrice.toFixed(2)} €
-                </p>
-                {priceChanged && (
-                  <p
-                    style={{
-                      marginTop: 2,
-                      fontSize: 11,
-                      color: "#aaa",
-                    }}
-                  >
-                    Basispreis: {basePrice.toFixed(2)} €
-                  </p>
-                )}
-
-                {/* Availability line */}
-                {availabilityText && (
-                  <p
-                    style={{
-                      marginTop: 4,
-                      fontSize: 12,
-                      color: availabilityColor,
-                    }}
-                  >
-                    {availabilityText}
-                  </p>
-                )}
-
-                {/* Urgency */}
-                {offer.urgency && (
-                  <div
-                    style={{
-                      marginTop: 10,
-                      padding: "6px 10px",
-                      borderRadius: 8,
-                      backgroundColor:
-                        offer.urgency.level === "high"
-                          ? "#8B1A1A"
-                          : offer.urgency.level === "medium"
-                          ? "#7A4F00"
-                          : "#1b3a1b",
-                      color: "#fff",
-                      fontSize: 13,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {offer.urgency.text}
-                  </div>
-                )}
-
-                {/* Comparison */}
-                {offer.comparison && (
-                  <div
-                    style={{
-                      marginTop: 14,
-                      padding: 12,
-                      borderRadius: 10,
-                      backgroundColor: "#111",
-                      border: "1px solid #333",
-                      fontSize: 13,
-                      color: "#ccc",
-                    }}
-                  >
-                    <div
-                      style={{
-                        marginBottom: 6,
-                        color: "#999",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Vorher:
-                    </div>
-                    <div>
-                      Block {offer.comparison.fromBlock}, Reihe{" "}
-                      {offer.comparison.fromRow}, Sitz{" "}
-                      {offer.comparison.fromSeat}
-                    </div>
-
-                    <div
-                      style={{
-                        marginTop: 10,
-                        marginBottom: 6,
-                        color: "#999",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Nachher (Upgrade):
-                    </div>
-                    <div style={{ color: "#fff" }}>
-                      Block {offer.comparison.toBlock}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: 10,
-                        fontSize: 12,
-                        color: "#bbb",
-                      }}
-                    >
-                      Höhere Kategorie · bessere Sicht · beliebter Bereich
-                    </div>
-                  </div>
-                )}
-
                 <button
-                  onClick={() =>
-                    canCheckoutWithTicket &&
-                    !isSoldOut &&
-                    onStartCheckout({
-                      ...offer,
-                      priceEuro: dynamicPrice,
-                    })
-                  }
+                  type="submit"
+                  disabled={!guestEmail}
                   style={{
-                    marginTop: 12,
-                    padding: "10px 16px",
-                    borderRadius: 8,
-                    backgroundColor:
-                      canCheckoutWithTicket && !isSoldOut
-                        ? offer.color
-                        : "#444",
-                    border: "none",
-                    color: "#111",
-                    fontWeight: "bold",
-                    cursor:
-                      canCheckoutWithTicket && !isSoldOut
-                        ? "pointer"
-                        : "not-allowed",
                     width: "100%",
+                    padding: 12,
+                    borderRadius: 10,
+                    border: "none",
+                    backgroundColor: !guestEmail ? "#9ca3af" : "#16a34a",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    cursor: !guestEmail ? "not-allowed" : "pointer",
+                    fontSize: 15,
                   }}
                 >
-                  {ticketStatus !== "ok"
-                    ? "Ticket zuerst verifizieren"
-                    : isSoldOut
-                    ? "Kontingent erschöpft"
-                    : "Weiter zum Checkout"}
+                  Upgrade jetzt bestätigen
                 </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              </form>
+            </div>
+          )}
 
-      {/* Confirmation after checkout */}
-      {selectedOffer && checkoutGuest && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: 16,
-            backgroundColor: "#2E7D32",
-            borderRadius: 12,
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>Upgrade ausgewählt 🎉</h3>
-          <p>{currentEvent.name}</p>
-          <p>
-            Platz: {block}, Reihe {row}, Sitz {seat}
-          </p>
-          <p>{selectedOffer.title}</p>
-          <p>{selectedOffer.priceEuro.toFixed(2)} €</p>
-          <p style={{ marginTop: 8, fontSize: 12 }}>
-            Bestätigung (Demo) für: {checkoutGuest.name} –{" "}
-            {checkoutGuest.email}
-          </p>
-          <p style={{ marginTop: 4, fontSize: 12 }}>
-            Zahlungsmethode (Demo):{" "}
-            {checkoutGuest.paymentMethod === "card"
-              ? "Kreditkarte"
-              : checkoutGuest.paymentMethod === "paypal"
-              ? "PayPal"
-              : "Apple Pay"}
-          </p>
-        </div>
-      )}
+          {/* Offers (only when not in checkout mode) */}
+          {!checkoutOffer && offers.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              {offers.map((offer) => {
+                const isSaved = savedIds.has(offer.id);
+                const remaining =
+                  availability[String(offer.id)] != null
+                    ? availability[String(offer.id)]
+                    : null;
 
-      {/* History (compact) */}
-      {history.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <h3 style={{ fontSize: 15 }}>Session-Log</h3>
-          <ul style={{ color: "#bbb", paddingLeft: 16, fontSize: 12 }}>
-            {history.slice(0, 6).map((item, i) => (
-              <li key={i} style={{ marginBottom: 4 }}>
-                [{item.time}] {item.event} – {item.block}/{item.row}/
-                {item.seat} → {item.offerTitle} (+{item.priceEuro.toFixed(2)} €
-                ){" "}
-                {item.guestName ? `für ${item.guestName}` : ""}{" "}
-                {item.guestPaymentMethod
-                  ? `· Zahlung: ${
-                      item.guestPaymentMethod === "card"
-                        ? "Kreditkarte"
-                        : item.guestPaymentMethod === "paypal"
-                        ? "PayPal"
-                        : "Apple Pay"
-                    }`
-                  : ""}
-              </li>
-            ))}
-          </ul>
+                const dynamicPrice = getDynamicPrice(offer);
+                const basePrice = offer.priceEuro;
+                const priceChanged = dynamicPrice !== basePrice;
+
+                const availabilityText =
+                  remaining === null
+                    ? null
+                    : remaining <= 0
+                    ? "Ausverkauft (Demo)"
+                    : remaining <= 3
+                    ? `Nur noch ${remaining} Plätze verfügbar`
+                    : `${remaining} Plätze verfügbar`;
+
+                const availabilityColor =
+                  remaining === null
+                    ? "#6b7280"
+                    : remaining <= 0
+                    ? "#b91c1c"
+                    : remaining <= 3
+                    ? "#b45309"
+                    : "#15803d";
+
+                const isSoldOut = remaining !== null && remaining <= 0;
+
+                return (
+                  <div
+                    key={offer.id}
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      backgroundColor: "#020617",
+                      borderLeft: `6px solid ${offer.color}`,
+                      padding: 16,
+                      borderRadius: 12,
+                      marginBottom: 14,
+                      opacity: isSoldOut ? 0.6 : 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 8,
+                      }}
+                    >
+                      <div>
+                        <h3
+                          style={{
+                            marginTop: 0,
+                            marginBottom: 4,
+                            color: "#e5e7eb",
+                          }}
+                        >
+                          {offer.title}
+                        </h3>
+                        <p
+                          style={{
+                            color: "#9ca3af",
+                            marginTop: 0,
+                            fontSize: 13,
+                          }}
+                        >
+                          {offer.description}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => onToggleSave(offer)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          cursor: "pointer",
+                          fontSize: 18,
+                          color: "#fbbf24",
+                        }}
+                        aria-label="Merken"
+                      >
+                        {isSaved ? "⭐" : "☆"}
+                      </button>
+                    </div>
+
+                    {/* Dynamic price */}
+                    <p
+                      style={{
+                        fontWeight: "bold",
+                        marginTop: 8,
+                        color: "#f9fafb",
+                      }}
+                    >
+                      Preis (dynamisch): {dynamicPrice.toFixed(2)} €
+                    </p>
+                    {priceChanged && (
+                      <p
+                        style={{
+                          marginTop: 2,
+                          fontSize: 11,
+                          color: "#9ca3af",
+                        }}
+                      >
+                        Basispreis: {basePrice.toFixed(2)} €
+                      </p>
+                    )}
+
+                    {/* Availability line */}
+                    {availabilityText && (
+                      <p
+                        style={{
+                          marginTop: 4,
+                          fontSize: 12,
+                          color: availabilityColor,
+                        }}
+                      >
+                        {availabilityText}
+                      </p>
+                    )}
+
+                    {/* Urgency */}
+                    {offer.urgency && (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          padding: "6px 10px",
+                          borderRadius: 8,
+                          backgroundColor:
+                            offer.urgency.level === "high"
+                              ? "#8B1A1A"
+                              : offer.urgency.level === "medium"
+                              ? "#7A4F00"
+                              : "#1b3a1b",
+                          color: "#fff",
+                          fontSize: 13,
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {offer.urgency.text}
+                      </div>
+                    )}
+
+                    {/* Comparison */}
+                    {offer.comparison && (
+                      <div
+                        style={{
+                          marginTop: 14,
+                          padding: 12,
+                          borderRadius: 10,
+                          backgroundColor: "#020617",
+                          border: "1px solid #1f2937",
+                          fontSize: 13,
+                          color: "#e5e7eb",
+                        }}
+                      >
+                        <div
+                          style={{
+                            marginBottom: 6,
+                            color: "#9ca3af",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Vorher:
+                        </div>
+                        <div>
+                          Block {offer.comparison.fromBlock}, Reihe{" "}
+                          {offer.comparison.fromRow}, Sitz{" "}
+                          {offer.comparison.fromSeat}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 10,
+                            marginBottom: 6,
+                            color: "#9ca3af",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Nachher (Upgrade):
+                        </div>
+                        <div style={{ color: "#fff" }}>
+                          Block {offer.comparison.toBlock}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 10,
+                            fontSize: 12,
+                            color: "#cbd5f5",
+                          }}
+                        >
+                          Höhere Kategorie · bessere Sicht · beliebter Bereich
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() =>
+                        canCheckoutWithTicket &&
+                        !isSoldOut &&
+                        onStartCheckout({
+                          ...offer,
+                          priceEuro: dynamicPrice,
+                        })
+                      }
+                      style={{
+                        marginTop: 12,
+                        padding: "10px 16px",
+                        borderRadius: 8,
+                        backgroundColor:
+                          canCheckoutWithTicket && !isSoldOut
+                            ? offer.color
+                            : "#4b5563",
+                        border: "none",
+                        color: "#111827",
+                        fontWeight: "bold",
+                        cursor:
+                          canCheckoutWithTicket && !isSoldOut
+                            ? "pointer"
+                            : "not-allowed",
+                        width: "100%",
+                      }}
+                    >
+                      {ticketStatus !== "ok"
+                        ? "Ticket zuerst verifizieren"
+                        : isSoldOut
+                        ? "Kontingent erschöpft"
+                        : "Weiter zum Checkout"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Confirmation after checkout */}
+          {selectedOffer && checkoutGuest && (
+            <div
+              style={{
+                marginTop: 24,
+                padding: 16,
+                backgroundColor: "#16a34a",
+                borderRadius: 12,
+                color: "#f9fafb",
+              }}
+            >
+              <h3 style={{ marginTop: 0 }}>Upgrade ausgewählt 🎉</h3>
+              <p>{currentEvent.name}</p>
+              <p>
+                Platz: {block}, Reihe {row}, Sitz {seat}
+              </p>
+              <p>{selectedOffer.title}</p>
+              <p>{selectedOffer.priceEuro.toFixed(2)} €</p>
+              <p style={{ marginTop: 8, fontSize: 12 }}>
+                Bestätigung (Demo) für: {checkoutGuest.name} –{" "}
+                {checkoutGuest.email}
+              </p>
+              <p style={{ marginTop: 4, fontSize: 12 }}>
+                Zahlungsmethode (Demo):{" "}
+                {checkoutGuest.paymentMethod === "card"
+                  ? "Kreditkarte"
+                  : checkoutGuest.paymentMethod === "paypal"
+                  ? "PayPal"
+                  : "Apple Pay"}
+              </p>
+            </div>
+          )}
+
+          {/* History (compact) */}
+          {history.length > 0 && (
+            <div style={{ marginTop: 28, marginBottom: 8 }}>
+              <h3 style={{ fontSize: 15, color: "#111827" }}>Session-Log</h3>
+              <ul
+                style={{
+                  color: "#4b5563",
+                  paddingLeft: 16,
+                  fontSize: 12,
+                }}
+              >
+                {history.slice(0, 6).map((item, i) => (
+                  <li key={i} style={{ marginBottom: 4 }}>
+                    [{item.time}] {item.event} – {item.block}/{item.row}/
+                    {item.seat} → {item.offerTitle} (+
+                    {item.priceEuro.toFixed(2)} €){" "}
+                    {item.guestName ? `für ${item.guestName}` : ""}{" "}
+                    {item.guestPaymentMethod
+                      ? `· Zahlung: ${
+                          item.guestPaymentMethod === "card"
+                            ? "Kreditkarte"
+                            : item.guestPaymentMethod === "paypal"
+                            ? "PayPal"
+                            : "Apple Pay"
+                        }`
+                      : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
