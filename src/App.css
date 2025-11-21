@@ -6,3 +6,12 @@
     transform: translateX(-50%);
   }
 }
+
+.recent-sales-ticker {
+  animation: tickerMove 22s linear infinite;
+}
+
+@keyframes tickerMove {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}

@@ -7,6 +7,7 @@ import pictureBayernHero from "./assets/picture_bayern_hero.jpg";
 import pictureAlbaHero from "./assets/picture_alba_hero.jpg";
 import pictureRedBullHero from "./assets/picture_redbull_hero.jpg";
 import picture_ad_event from "./assets/picture_ad_event.png";
+import auctionAd from "./assets/auction_ad.jpg";
 import pictureReco1 from "./assets/picture_reco_1.jpg";
 import pictureReco2 from "./assets/picture_reco_2.jpg";
 import AppLogo from "./assets/app_logo.png";
@@ -20,7 +21,7 @@ const EVENTS = [
     primaryColor: "#C8102E",
     seatLabel: "Block (z. B. S3, N2, O3, W1)",
     type: "football",
-    dateUtc: "2025-11-21T15:15:00Z",
+    dateUtc: "2025-11-21T21:15:00Z",
     demandLevel: "medium",
     isUpgradable: true,
     preview: "true",
@@ -33,7 +34,7 @@ const EVENTS = [
     primaryColor: "#555D61)",
     seatLabel: "Bereich (z. B. 211, 103, Innenraum)",
     type: "concert",
-    dateUtc: "2025-11-21T15:15:00Z",
+    dateUtc: "2025-11-21T21:15:00Z",
     demandLevel: "high",
     isUpgradable: true,
     preview: "true",
@@ -327,7 +328,7 @@ function App() {
 function PremiumHeader({ activeTab, currentEvent }) {
   const subtitle =
     activeTab === "events"
-      ? "Wähle dein Event – Echtzeit-Seat-Upgrades"
+      ? "Echtzeit-Seat-Upgrades & Ticket Auktion"
       : activeTab === "upgrades" && currentEvent
       ? currentEvent.name
       : activeTab === "bidding"
@@ -824,21 +825,9 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       marginBottom: 4,
     }}
   >
-    Übersicht
+    EVENTS ENDTECKEN
   </div>
-
-  <h2
-    style={{
-      fontSize: 20,
-      fontWeight: 600,
-      margin: 0,
-      padding: 0,
-      color: "rgba(53, 76, 70, 1.0)",
-    }}
-  >
-    Events entdecken
-  </h2>
-
+  
   <p
     style={{
       fontSize: 13,
@@ -889,8 +878,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
               padding: "4px 8px",
               borderRadius: 999,
               border: isActive ? "1px solid #000000ff" : "1px solid #444",
-              backgroundColor: isActive ? "#ffffff" : "#1a1a1a",
-              color: isActive ? "#111" : "#eee",
+              backgroundColor: isActive ? "#ffffff" : "#E0E0DA",
+              color: isActive ? "#111" : "#4a4a4aff",
               fontSize: 11,
               whiteSpace: "nowrap",
               cursor: "pointer",
@@ -903,6 +892,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       })}
     </div>
   </div>
+  
         {/* SEARCH BAR */}
       <div
         style={{
@@ -915,7 +905,7 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       >
         <input
           type="text"
-          placeholder="🔍 Suche nach Events..."
+          placeholder="Suche nach Events..."
           onChange={(e) => {
             const q = e.target.value.toLowerCase();
             // You can adjust this logic or extract to a dedicated state
@@ -927,8 +917,8 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
           }}
           style={{
             width: "100%",
-            padding: "12px 16px",
-            borderRadius: 12,
+            padding: "6px 16px",
+            borderRadius: 10,
             border: "1px solid #333",
             color: "#000000ff",
             fontSize: 14,
@@ -2949,6 +2939,7 @@ function BiddingTab() {
   const hero = auctions[0];
   const featured = auctions.slice(1, 3);
   const others = auctions.slice(3, 8);
+  const liveCount = auctions.length; // simple demo: all listed = live
 
   // helper: place a bid using the entered amount in bidInputs
   function placeCustomBid(auctionId) {
@@ -3003,75 +2994,114 @@ function BiddingTab() {
       <div
         style={{
           marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 8,
+          padding: 12,
+          borderRadius: 16,
+          background:
+            "radial-gradient(circle at top left, #eef2ff, #ffffff)",
+          border: "1px solid #e5e7eb",
         }}
       >
-        <div>
-          <div
-            style={{
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-              color: "#6b7280",
-              marginBottom: 2,
-            }}
-          >
-            Ticket-Auktionen
-          </div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 18,
-              fontWeight: 600,
-              color: "#0f172a",
-            }}
-          >
-            Live auf Tickets bieten
-          </h2>
-          <p
-            style={{
-              margin: "4px 0 0",
-              fontSize: 12,
-              color: "#6b7280",
-            }}
-          >
-            Hol dir den Platz, den du wirklich willst – mit Live-Geboten in Echtzeit.
-          </p>
-        </div>
-
         <div
           style={{
-            padding: "3px 8px",
-            borderRadius: 999,
-            border: "1px solid #e5e7eb",
-            backgroundColor: "#f9fafb",
-            fontSize: 10,
-            color: "#4b5563",
-            textTransform: "uppercase",
-            letterSpacing: 0.5,
-            whiteSpace: "nowrap",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 10,
           }}
         >
-          Bidding · Beta
-        </div>
-      </div>
+          {/* Left: title + subtitle */}
+          <div>
+            {/* small label row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 4,
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, #22c55e 0%, #16a34a 40%, transparent 70%)",
+                  boxShadow: "0 0 8px rgba(34,197,94,0.8)",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.6,
+                  color: "#6b7280",
+                }}
+              >
+                Ticket-Auktionen · Live
+              </span>
+            </div>
 
-      {/* Demo hint */}
-      <div
-        style={{
-          marginBottom: 16,
-          padding: 10,
-          borderRadius: 12,
-          backgroundColor: "#eff6ff",
-          border: "1px dashed #bfdbfe",
-          fontSize: 11,
-          color: "#1d4ed8",
-        }}
-      >
-        🔐 Demo: Gebote werden nur simuliert – keine echten Käufe.
+            {/* main title */}
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 20,
+                fontWeight: 700,
+                color: "#0f172a",
+                lineHeight: 1.2,
+              }}
+            >
+              Live auf Tickets{" "}
+              <span style={{ color: "#16a34a" }}>bieten</span>
+            </h2>
+
+            {/* subtitle */}
+            <p
+              style={{
+                margin: "4px 0 0",
+                fontSize: 12,
+                color: "#6b7280",
+              }}
+            >
+              Du entscheidest den Preis – biete gegen andere Fans in Echtzeit.
+            </p>
+          </div>
+
+          {/* Right: tiny stats column */}
+          <div
+            style={{
+              textAlign: "right",
+              fontSize: 11,
+              color: "#4b5563",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: 2,
+              minWidth: 90,
+            }}
+          >
+            <div style={{ fontWeight: 600 }}>
+              {liveCount} Auktionen
+            </div>
+            <div style={{ fontSize: 10, color: "#6b7280" }}>
+              ab ca. 30 € · Demo
+            </div>
+          </div>
+        </div>
+
+        {/* thin gradient bar under header */}
+        <div
+          style={{
+            marginTop: 10,
+            height: 3,
+            borderRadius: 999,
+            background:
+              "linear-gradient(90deg, #22c55e, #22d3ee, #6366f1)",
+            opacity: 0.8,
+          }}
+        />
       </div>
 
       {/* === HERO AUCTION (First) === */}
@@ -3302,6 +3332,144 @@ function BiddingTab() {
         </div>
       </div>
 
+{/* RECENT DEALS – dark trading-style panel */}
+<div
+  style={{
+    marginTop: 10,
+    marginBottom: 18,
+    borderRadius: 12,
+    backgroundColor: "#020617",
+    border: "1px solid #1f2937",
+    overflow: "hidden",
+  }}
+>
+  {/* Header line */}
+  <div
+    style={{
+      padding: "8px 12px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderBottom: "1px solid #1e293b",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, #22c55e 0%, #16a34a 60%, transparent 100%)",
+          boxShadow: "0 0 8px rgba(34,197,94,0.9)",
+        }}
+      />
+      <span
+        style={{
+          fontSize: 11,
+          textTransform: "uppercase",
+          letterSpacing: 0.6,
+          color: "#e5e7eb",
+        }}
+      >
+        Recent Deals (Demo)
+      </span>
+    </div>
+
+    <span
+      style={{
+        fontSize: 10,
+        color: "#9ca3af",
+      }}
+    >
+      letzte 15 Min
+    </span>
+  </div>
+
+  {/* Table-like rows */}
+  <div
+    style={{
+      padding: "4px 0",
+    }}
+  >
+    {[
+      { time: "20:14", label: "KLN vs. BSC | S3-12-27", price: "89 €" },
+      { time: "20:11", label: "DRAKE | INNENRAUM", price: "145 €" },
+      { time: "20:07", label: "EBB vs. ERC | 204-8-11", price: "72 €" },
+      { time: "20:03", label: "KLN vs. BSC | N2-18-14", price: "95 €" },
+      { time: "19:58", label: "DRAKE | 305-9-32", price: "132 €" },
+    ].map((deal, idx) => (
+      <div
+        key={idx}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "4px 12px",
+          borderTop: idx === 0 ? "none" : "1px solid rgba(15,23,42,0.9)",
+        }}
+      >
+        {/* Time */}
+        <div
+          style={{
+            width: 48,
+            fontSize: 11,
+            color: "#6b7280",
+            fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+          }}
+        >
+          {deal.time}
+        </div>
+
+        {/* Divider bar */}
+        <div
+          style={{
+            width: 2,
+            height: 14,
+            borderRadius: 999,
+            background:
+              "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.1))",
+            marginRight: 8,
+          }}
+        />
+
+        {/* Label (event + seat condensed) */}
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            fontSize: 11,
+            color: "#e5e7eb",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {deal.label}
+        </div>
+
+        {/* Price */}
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#22c55e",
+            fontVariantNumeric: "tabular-nums",
+            marginLeft: 10,
+          }}
+        >
+          {deal.price}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
       {/* === TWO FEATURED BIG BUBBLES === */}
       <div
         style={{
@@ -3484,6 +3652,143 @@ function BiddingTab() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* TRADE REPUBLIC AD – between featured and list */}
+      <div
+        style={{
+          marginBottom: 18,
+          borderRadius: 18,
+          overflow: "hidden",
+          border: "1px solid #e5e7eb",
+          backgroundColor: "#ffffff",
+          boxShadow: "0 12px 28px rgba(15,23,42,0.08)",
+        }}
+      >
+        {/* Image */}
+        <div
+          style={{
+            position: "relative",
+            height: 120,
+            overflow: "hidden",
+            backgroundColor: "#020617",
+          }}
+        >
+          <img
+            src={auctionAd}
+            alt="Trade Republic Werbung"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+
+          {/* small "Werbung" label */}
+          <div
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              padding: "2px 8px",
+              borderRadius: 999,
+              backgroundColor: "rgba(15,23,42,0.85)",
+              color: "#e5e7eb",
+              fontSize: 10,
+              letterSpacing: 0.4,
+              textTransform: "uppercase",
+            }}
+          >
+            Werbung
+          </div>
+        </div>
+
+        {/* Text block */}
+        <div
+          style={{
+            padding: 12,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 6,
+              gap: 8,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                  color: "#6b7280",
+                  marginBottom: 2,
+                }}
+              >
+                Trade Republic · Partner
+              </div>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#0f172a",
+                }}
+              >
+                Abwechslung gesucht zu Tickets?
+              </div>
+            </div>
+
+            {/* small logo-ish pill */}
+            <div
+              style={{
+                padding: "4px 8px",
+                borderRadius: 8,
+                border: "1px solid #e5e7eb",
+                backgroundColor: "#f9fafb",
+                fontSize: 11,
+                color: "#111827",
+                whiteSpace: "nowrap",
+                fontWeight: 600,
+              }}
+            >
+              TRADE REPUBLIC
+            </div>
+          </div>
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: 12,
+              color: "#6b7280",
+            }}
+          >
+            Investiere parallel zu deinen Event-Geboten in Aktien, ETFs oder
+            Sparpläne – alles in einer App.
+          </p>
+
+          <button
+            type="button"
+            style={{
+              marginTop: 10,
+              width: "100%",
+              padding: 9,
+              borderRadius: 10,
+              border: "none",
+              background:
+                "linear-gradient(135deg, #020617, #111827)",
+              color: "#f9fafb",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Mehr zu Trade Republic
+          </button>
+        </div>
       </div>
 
       {/* === SMALL LIST BELOW (compact auctions) === */}
