@@ -7,6 +7,7 @@ import pictureBayernHero from "./assets/picture_bayern_hero.jpg";
 import pictureAlbaHero from "./assets/picture_alba_hero.jpg";
 import pictureRedBullHero from "./assets/picture_redbull_hero.jpg";
 import picture_ad_event from "./assets/picture_ad_event.png";
+import burger_meister_ad from "./assets/burger_meister_ad.jpg";
 import auctionAd from "./assets/auction_ad.jpg";
 import pictureReco1 from "./assets/picture_reco_1.jpg";
 import pictureReco2 from "./assets/picture_reco_2.jpg";
@@ -592,11 +593,11 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
     onClick={() => onSelectEvent(topEvent.id)}
     style={{
       marginBottom: 18,
-      borderRadius: 16,
+      borderRadius: 10,
       overflow: "hidden",
       position: "relative",
       cursor: "pointer",
-      height: 210,
+      height: 265,
 
       // full card as image
       backgroundImage: `url(${getEventHeroImage(topEvent)})`,
@@ -895,400 +896,635 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
       </div>
 </div>
 
-      {/* MAIN EVENT LIST */}
-      <div
+{/* MAIN EVENT LIST */}
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  }}
+>
+  {(searchResults || filteredEvents).map((ev) => {
+    const isActive = ev.id === selectedEventId;
+    const { weekday, day, month, time } = getDateParts(ev);
+
+    return (
+      <button
+        key={ev.id}
+        onClick={() => onSelectEvent(ev.id)}
         style={{
+          padding: 8,
+          borderRadius: 10,
+          border: `1px solid ${isActive ? ev.primaryColor : "#333"}`,
+          backgroundColor: "#E0E0DA",
+          color: "#111",
+          textAlign: "left",
+          cursor: "pointer",
+          fontSize: 14,
           display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        {(searchResults || filteredEvents).map((ev) => {
-          const isActive = ev.id === selectedEventId;
-          const { weekday, day, month, time } = getDateParts(ev);
-
-          return (
-            <button
-              key={ev.id}
-              onClick={() => onSelectEvent(ev.id)}
-              style={{
-                padding: 8,
-                borderRadius: 10,
-                border: `1px solid ${
-                  isActive ? ev.primaryColor : "#333"
-                }`,
-                backgroundColor:"#E0E0DA",
-                color: "#111",
-                textAlign: "left",
-                cursor: "pointer",
-                fontSize: 14,
-                display: "flex",
-                alignItems: "stretch",
-                gap: 10,
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              {/* LEFT: date column */}
-              <div
-                style={{
-                  width: 56,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "4px 0",
-                  flexShrink: 0,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: "uppercase",
-                    color: "#4a4a4aff",
-                    marginBottom: 2,
-                  }}
-                >
-                  {weekday}
-                </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    lineHeight: 1,
-                  }}
-                >
-                  {day}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "#4a4a4aff",
-                    marginTop: 2,
-                  }}
-                >
-                  {month}
-                </div>
-              </div>
-
-              {/* MIDDLE: vertical separator */}
-              <div
-                style={{
-                  width: 1,
-                  background: "rgba(0, 0, 0, 0.73",
-                  alignSelf: "stretch",
-                  opacity: 0.8,
-                  flexShrink: 0,
-                }}
-              />
-
-              {/* RIGHT: event info */}
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  gap: 2,
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: "bold",
-                    marginBottom: 2,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {ev.name}
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#000000ff",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {(ev.city || "").trim()
-                    ? `${ev.city} | ${ev.venue}`
-                    : ev.venue}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "#525252ff",
-                    marginTop: 2,
-                  }}
-                >
-                  {time} Uhr
-                </div>
-              </div>
-
-              {/* BADGE AREA */}
-              <div
-                style={{
-                  marginLeft: 6,
-                  alignSelf: "center",
-                  textAlign: "right",
-                  flexShrink: 0,
-                }}
-              >
-                {!ev.isUpgradable ? (
-                  <span
-                    style={{
-                      padding: "3px 7px",
-                      borderRadius: 999,
-                      backgroundColor: "rgba(255,255,255,0.08)",
-                      border: "1px solid rgba(0, 0, 0, 0.3)",
-                      color: "#000000ff",
-                      fontSize: 9,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    🕒 Bald verfügbar
-                  </span>
-                ) : ev.isLive ? (
-                  <span
-                    style={{
-                      padding: "3px 7px",
-                      borderRadius: 999,
-                      backgroundColor: "#2e7d32",
-                      color: "#fff",
-                      fontSize: 9,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    🟢 Live
-                  </span>
-                ) : ev.demandLevel === "high" ? (
-                  <span
-                    style={{
-                      padding: "3px 7px",
-                      borderRadius: 999,
-                      backgroundColor: "#8B1A1A",
-                      color: "#fff",
-                      fontSize: 9,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    🔥 Hohe Nachfrage
-                  </span>
-                ) : (
-                  <span
-                    style={{
-                      padding: "3px 7px",
-                      borderRadius: 999,
-                      backgroundColor: "#333",
-                      color: "#ffffffff",
-                      fontSize: 9,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Upgrade verfügbar
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
-        <button
-          style={{
-            width: "50%",
-            margin: "20px auto 0",
-            padding: "8px 0",
-            color: "rgba(53, 76, 70, 1.0)",
-            border: "1px solid #333",
-            borderRadius: 12,
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            // your navigation function here
-            console.log("Go to: Alle Events Entdecken");
-          }}
-        >
-          Alle Events Entdecken
-        </button>
-      </div>
-
-      {/* BRAND PARTNER AD – COCA-COLA */}
-      <div
-        style={{
-          marginTop: 32,
-          padding: 20,
-          borderRadius: 18,
-          background:
-            "radial-gradient(circle at top left, rgba(148,27,27,0.6), transparent 55%) #080808",
-          border: "1px solid rgba(148,27,27,0.6)",
+          alignItems: "stretch",
+          gap: 10,
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
-        {/* small “presented by” row */}
+        {/* LEFT: date column */}
         <div
           style={{
+            width: 56,
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 8,
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "4px 0",
+            flexShrink: 0,
           }}
         >
-          <div>
-            <div
-              style={{
-                fontSize: 10,
-                textTransform: "uppercase",
-                letterSpacing: 1.2,
-                color: "rgba(255,255,255,0.45)",
-              }}
-            >
-              Presented by
-            </div>
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: "#ffffff",
-              }}
-            >
-              Coca-Cola
-            </div>
-          </div>
-
-          <span
-            style={{
-              fontSize: 11,
-              color: "rgba(255,255,255,0.6)",
-              textAlign: "right",
-              maxWidth: 120,
-            }}
-          >
-            Offizieller Erfrischungspartner
-          </span>
-        </div>
-
-        {/* visual */}
-        <div
-          style={{
-            marginTop: 8,
-            marginBottom: 12,
-            borderRadius: 14,
-            overflow: "hidden",
-            position: "relative",
-            boxShadow: "0 10px 26px rgba(0,0,0,0.55)", // softer, no visible border
-          }}
-        >
-          <img
-            src={picture_ad_event}
-            alt="Coca-Cola Arena Experience"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-              transform: "scale(1.03)",
-            }}
-          />
-          {/* subtle gradient overlay for text readability if needed later */}
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0.05))",
-              pointerEvents: "none",
+              fontSize: 10,
+              textTransform: "uppercase",
+              color: "#4a4a4aff",
+              marginBottom: 2,
             }}
-          />
+          >
+            {weekday}
+          </div>
+          <div
+            style={{
+              fontSize: 20,
+              fontWeight: "bold",
+              lineHeight: 1,
+            }}
+          >
+            {day}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#4a4a4aff",
+              marginTop: 2,
+            }}
+          >
+            {month}
+          </div>
         </div>
 
-        {/* copy */}
+        {/* MIDDLE: vertical separator */}
         <div
           style={{
-            fontSize: 13,
-            color: "#f5f5f5",
-            marginBottom: 4,
-            fontWeight: 500,
+            width: 1,
+            background: "rgba(0, 0, 0, 0.73)",
+            alignSelf: "stretch",
+            opacity: 0.8,
+            flexShrink: 0,
           }}
-        >
-          Exklusives Coca-Cola Arena Special
-        </div>
+        />
+
+        {/* RIGHT: event info */}
         <div
           style={{
-            fontSize: 12,
-            color: "#d4d4d4",
-            lineHeight: 1.4,
-            marginBottom: 10,
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: 2,
           }}
         >
-          Sichere dir mit jedem erfolgreichen Upgrade{" "}
-          <strong>10&nbsp;% Rabatt</strong> auf alle Coca-Cola Produkte
-          in deiner Arena – vom ersten Drink bis zur letzten Pause.
-        </div>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#9e9e9e",
-          }}
-        >
-          Gültig nur an teilnehmenden Standorten. Das Modul kann später für echte
-          Partnerkampagnen oder Club-Deals genutzt werden.
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {ev.name}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: "#000000ff",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {(ev.city || "").trim()
+              ? `${ev.city} | ${ev.venue}`
+              : ev.venue}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#525252ff",
+              marginTop: 2,
+            }}
+          >
+            {time} Uhr
+          </div>
         </div>
 
-        {/* CTA – simple, not pill-like */}
-        <button
-          type="button"
+        {/* BADGE AREA */}
+        <div
           style={{
-            marginTop: 14,
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "1px solid rgba(248,113,113,0.7)",
-            background:
-              "linear-gradient(90deg, #b91c1c, #ef4444)",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#ffffff",
-            cursor: "pointer",
-            outline: "none",
+            marginLeft: 6,
+            alignSelf: "center",
+            textAlign: "right",
+            flexShrink: 0,
           }}
         >
-          Mehr zu Coca-Cola Vorteilen
-        </button>
-      </div>
+          {!ev.isUpgradable ? (
+            <span
+              style={{
+                padding: "3px 7px",
+                borderRadius: 999,
+                backgroundColor: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(0, 0, 0, 0.3)",
+                color: "#000000ff",
+                fontSize: 9,
+                whiteSpace: "nowrap",
+              }}
+            >
+              🕒 Bald verfügbar
+            </span>
+          ) : ev.isLive ? (
+            <span
+              style={{
+                padding: "3px 7px",
+                borderRadius: 999,
+                backgroundColor: "#2e7d32",
+                color: "#fff",
+                fontSize: 9,
+                whiteSpace: "nowrap",
+              }}
+            >
+              🟢 Live
+            </span>
+          ) : ev.demandLevel === "high" ? (
+            <span
+              style={{
+                padding: "3px 7px",
+                borderRadius: 999,
+                backgroundColor: "#8B1A1A",
+                color: "#fff",
+                fontSize: 9,
+                whiteSpace: "nowrap",
+              }}
+            >
+              🔥 Hohe Nachfrage
+            </span>
+          ) : (
+            <span
+              style={{
+                padding: "3px 7px",
+                borderRadius: 999,
+                backgroundColor: "#333",
+                color: "#ffffffff",
+                fontSize: 9,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Upgrade verfügbar
+            </span>
+          )}
+        </div>
+      </button>
+    );
+  })}
+</div>
 
+{/* SECTION DIVIDER + EYECATCHER LABEL */}
 <div
   style={{
-    height: 1,
-    width: "100%",
-    margin: "15px 0",
-    background:
-      "linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.25), rgba(0,0,0,0))",
-  }}
-/>      
-
-{/* ARENA-BASED UPGRADES — standalone cards */}
-<div
-  style={{
-    marginTop: 28,
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
+    margin: "28px 0 18px",
+    position: "relative",
   }}
 >
-  {/* Section title */}
-  <div>
+  <div
+    style={{
+      height: 1,
+      width: "100%",
+      background:
+        "linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.25), rgba(0,0,0,0))",
+    }}
+  />
+</div>
+
+{/* Auction Promo Poster – with floating auction bubbles */}
+<div
+  style={{
+    marginTop: 0, // we already have spacing from the divider
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: "#ffffff",
+    boxSizing: "border-box",
+    textAlign: "center",
+  }}
+>
+  {/* small label */}
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      padding: "4px 10px",
+      borderRadius: 999,
+      border: "1px solid #e5e7eb",
+      backgroundColor: "#f9fafb",
+      fontSize: 10,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+      color: "#6b7280",
+      marginBottom: 8,
+    }}
+  >
+    <span
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle, #22c55e 0%, #16a34a 55%, transparent 80%)",
+        boxShadow: "0 0 6px rgba(34,197,94,0.7)",
+      }}
+    />
+    <span>Auktion · Live-Demo</span>
+  </div>
+
+  {/* poster headline */}
+  <div
+    style={{
+      fontSize: 18,
+      fontWeight: 700,
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      color: "#0f172a",
+      marginBottom: 4,
+    }}
+  >
+    Live Ticket-Auktion
+  </div>
+
+  {/* poster subline */}
+  <div
+    style={{
+      fontSize: 13,
+      color: "#4b5563",
+      marginBottom: 10,
+    }}
+  >
+    Dein Sitz. Dein Preis. Dein Erlebnis.
+  </div>
+
+  {/* floating bubbles – auction vibes */}
+  <div
+    style={{
+      position: "relative",
+      height: 90,
+      marginBottom: 14,
+    }}
+  >
+    {/* Bubble 1 – back / left / smaller */}
+    <div
+      style={{
+        position: "absolute",
+        left: 4,
+        top: 18,
+        padding: "7px 11px",
+        borderRadius: 10,
+        backgroundColor: "#020617",
+        border: "1px solid #1f2937",
+        color: "#e5e7eb",
+        fontSize: 10,
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 4,
+        boxShadow: "0 3px 10px rgba(15,23,42,0.55)",
+        whiteSpace: "nowrap",
+        transform: "scale(0.9)",
+        opacity: 0.9,
+        zIndex: 1,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 9,
+          padding: "2px 7px",
+          borderRadius: 999,
+          backgroundColor: "#0f172a",
+          color: "#9ca3af",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
+      >
+        Drake · World Tour
+      </span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 10,
+        }}
+      >
+        <span style={{ color: "#e5e7eb" }}>Block 201</span>
+        <span
+          style={{
+            fontWeight: 600,
+            color: "#f9fafb",
+          }}
+        >
+          45 €
+        </span>
+      </div>
+    </div>
+
+    {/* Bubble 2 – front / center / main size */}
+    <div
+      style={{
+        position: "absolute",
+        left: 50,
+        top: 34,
+        padding: "8px 12px",
+        borderRadius: 10,
+        backgroundColor: "#020617",
+        border: "1px solid #1f2937",
+        color: "#e5e7eb",
+        fontSize: 11,
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 4,
+        boxShadow: "0 4px 12px rgba(15,23,42,0.7)",
+        whiteSpace: "nowrap",
+        zIndex: 2,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 9,
+          padding: "2px 7px",
+          borderRadius: 999,
+          backgroundColor: "#022c22",
+          color: "#a7f3d0",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
+      >
+        Eisbären vs Adler
+      </span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 10,
+        }}
+      >
+        <span style={{ color: "#e5e7eb" }}>Block 214</span>
+        <span
+          style={{
+            fontWeight: 600,
+            color: "#bbf7d0",
+          }}
+        >
+          32 €
+        </span>
+      </div>
+    </div>
+
+    {/* Bubble 3 – 1. FC Köln, higher & on top */}
+    <div
+      style={{
+        position: "absolute",
+        right: 4,
+        top: 4,
+        padding: "7px 11px",
+        borderRadius: 10,
+        backgroundColor: "#020617",
+        border: "1px solid #1f2937",
+        color: "#e5e7eb",
+        fontSize: 10,
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 4,
+        boxShadow: "0 4px 12px rgba(15,23,42,0.7)",
+        whiteSpace: "nowrap",
+        transform: "scale(0.94)",
+        opacity: 0.97,
+        zIndex: 3,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 9,
+          padding: "2px 7px",
+          borderRadius: 999,
+          backgroundColor: "#111827",
+          color: "#cbd5f5",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
+      >
+        1. FC Köln vs Hertha
+      </span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 10,
+        }}
+      >
+        <span style={{ color: "#e5e7eb" }}>Block N5</span>
+        <span
+          style={{
+            fontWeight: 600,
+            color: "#facc15",
+          }}
+        >
+          28 €
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {/* CTA – dark, matches rest of design */}
+  <button
+    type="button"
+    style={{
+      width: "100%",
+      padding: 10,
+      borderRadius: 10,
+      border: "none",
+      background: "linear-gradient(135deg, #111827, #1f2937)",
+      color: "#ffffff",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      boxShadow: "0 4px 14px rgba(15,23,42,0.35)",
+      marginTop: 6,
+    }}
+    onClick={() => {
+      // z. B.: setActiveTab("bidding");
+    }}
+  >
+    Zur Auktion wechseln
+    <span style={{ fontSize: 14 }}>↗</span>
+  </button>
+</div>
+
+{/* BRAND PARTNER AD – COCA-COLA */}
+<div
+  style={{
+    marginTop: 24,
+    padding: "18px 0 20px", // no big padded bubble, just vertical spacing
+    boxSizing: "border-box",
+    background: "radial-gradient(circle at top left, rgba(148,27,27,0.6), transparent 55%) #080808",
+    borderTop: "1px solid rgba(148,27,27,0.6)",   // only top + bottom to frame section
+    borderBottom: "1px solid rgba(148,27,27,0.6)",
+    // ❌ no borderRadius, no full box border
+  }}
+>
+  {/* small “presented by” row */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "baseline",
+      marginBottom: 8,
+      padding: "0 16px", // keep content nicely aligned
+    }}
+  >
+    <div>
+      <div
+        style={{
+          fontSize: 10,
+          textTransform: "uppercase",
+          letterSpacing: 1.2,
+          color: "rgba(207, 207, 207, 0.45)",
+        }}
+      >
+        Presented by
+      </div>
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: 600,
+          color: "#ffffffff",
+        }}
+      >
+        Coca-Cola
+      </div>
+    </div>
+
+    <span
+      style={{
+        fontSize: 11,
+        color: "rgba(215, 215, 215, 0.6)",
+        textAlign: "right",
+        maxWidth: 120,
+      }}
+    >
+      Werbung
+    </span>
+  </div>
+
+  {/* visual */}
+  <div
+    style={{
+      marginTop: 8,
+      marginBottom: 12,
+      overflow: "hidden",
+      position: "relative",
+      marginInline: 16, // same left/right as text
+    }}
+  >
+    <img
+      src={picture_ad_event}
+      alt="Coca-Cola Arena Experience"
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        transform: "scale(1.03)",
+      }}
+    />
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background:
+          "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0.05))",
+        pointerEvents: "none",
+      }}
+    />
+  </div>
+
+  {/* copy */}
+  <div
+    style={{
+      fontSize: 13,
+      color: "#b10000ff",
+      marginBottom: 4,
+      fontWeight: 500,
+      padding: "0 16px",
+    }}
+  >
+    Exklusives Coca-Cola Arena Special
+  </div>
+  <div
+    style={{
+      fontSize: 12,
+      color: "#ffffffff",
+      lineHeight: 1.4,
+      marginBottom: 10,
+      padding: "0 16px",
+    }}
+  >
+    Sichere dir mit jedem erfolgreichen Upgrade{" "}
+    <strong>10&nbsp;% Rabatt</strong> auf alle Coca-Cola Produkte
+    in deiner Arena – vom ersten Drink bis zur letzten Pause.
+  </div>
+</div>
+
+{/* ARENA-BASED UPGRADES — offer matrix */}
+<div
+  style={{
+    marginTop: 24,
+  }}
+>
+  {/* HEADER */}
+  <div style={{ textAlign: "center", marginBottom: 10 }}>
+    <div
+      style={{
+        height: 3,
+        width: 60,
+        margin: "0 auto 6px",
+        borderRadius: 999,
+        background:
+          "linear-gradient(90deg, #0f172a, rgba(0,0,0,0.4))",
+        opacity: 0.3,
+      }}
+    />
+
     <div
       style={{
         fontSize: 10,
+        color: "rgba(0,0,0,0.5)",
         textTransform: "uppercase",
-        letterSpacing: 1.2,
-        color: "rgba(0, 0, 0, 0.5)",
-        marginBottom: 4,
-        textAlign: "center"
+        letterSpacing: 1,
+        marginBottom: 3,
       }}
     >
       Arena Specials
@@ -1296,11 +1532,10 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
 
     <h3
       style={{
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 600,
         margin: 0,
-        color: "#000000ff",
-        textAlign: "center"
+        color: "#0f172a",
       }}
     >
       Kuratierte Erlebnisse
@@ -1308,186 +1543,194 @@ function EventsTab({ events, selectedEventId, onSelectEvent }) {
 
     <p
       style={{
-        fontSize: 12,
-        color: "rgba(0, 0, 0, 0.55)",
-        marginTop: 6,
-        marginBottom: 12,
-        lineHeight: 1.45,
-        textAlign: "center"
+        fontSize: 11,
+        color: "rgba(0,0,0,0.55)",
+        marginTop: 4,
+        marginBottom: 0,
+        lineHeight: 1.4,
       }}
     >
-      Exklusive Erlebnisse für besondere Momente vor, während oder nach dem Event.
+      Kompakte Übersicht deiner Signature-Erlebnisse in der Arena.
     </p>
   </div>
 
-  {/* UPGRADE CARDS */}
-  {[
-    {
-      id: "hf",
-      code: "EHC-301125",
-      headerColor: "#A9C7A6",
-      title: "Eisbären – High Five Lane",
-      subtitle: "Spielertunnel · UBER Arena",
-      price: "ab 15 €",
-      statusLabel: "Verfügbar",
-      statusBg: "rgba(191,219,254,0.6)",
-      statusColor: "#1F2937",
-      cta: "Upgrade ansehen",
-    },
-    {
-      id: "drake",
-      code: "DRAKE-MG299",
-      headerColor: "#606E8C",
-      title: "Drake – Meet & Greet",
-      subtitle: "Backstage Access · UBER Arena",
-      price: "ab 299 €",
-      statusLabel: "Premium",
-      statusBg: "rgba(244,114,182,0.28)",
-      statusColor: "#9D174D",
-      cta: "Upgrade ansehen",
-    },
-    {
-      id: "gasag",
-      code: "GASAG-EHC25",
-      headerColor: "#5D6970",
-      title: "GASAG Energy Shot - Pausenspiel",
-      subtitle: "On-Ice Experience · UBER Arena",
-      price: "Kostenlos",
-      statusLabel: "Fans",
-      statusBg: "rgba(96,165,250,0.25)",
-      statusColor: "#1D4ED8",
-      cta: "Anmelden",
-    },
-  ].map((u) => (
+  {/* OFFER MATRIX CARD */}
+  <div
+    style={{
+      borderRadius: 16,
+      border: "1px solid #e5e7eb",
+      backgroundColor: "#ffffff",
+      padding: "6px 10px 6px",
+    }}
+  >
+    {/* column labels */}
     <div
-      key={u.id}
       style={{
-        borderRadius: 18,
-        overflow: "hidden",
-        backgroundColor: "#F9FAFB",
-        marginLeft: 2,
-        marginRight: 2,
-        border: `1px solid ${u.headerColor}`,
+        display: "flex",
+        alignItems: "center",
+        fontSize: 9,
+        textTransform: "uppercase",
+        letterSpacing: 0.6,
+        color: "#9ca3af",
+        marginBottom: 4,
       }}
     >
-      {/* TOP COLORED BAR */}
-      <div
-        style={{
-          backgroundColor: u.headerColor,
-          padding: "8px 14px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          color: "#F9FAFB",
-          fontSize: 11,
-          fontWeight: 500,
-        }}
-      >
-        <span>{u.code}</span>
-        <span style={{ opacity: 0.9 }}>Arena Upgrade</span>
-      </div>
+    </div>
 
-      {/* BODY */}
+    {[
+      {
+        id: "hf",
+        headerColor: "#A9C7A6",
+        title: "Eisbären – High Five Lane",
+        subtitle: "Spielertunnel · UBER Arena",
+        price: "ab 15 €",
+        statusLabel: "Verfügbar",
+        statusBg: "rgba(191,219,254,0.6)",
+        statusColor: "#1F2937",
+        cta: "Upgrade ansehen",
+      },
+      {
+        id: "drake",
+        headerColor: "#606E8C",
+        title: "Drake – Meet & Greet",
+        subtitle: "Backstage Access · SAP Arena",
+        price: "ab 299 €",
+        statusLabel: "Premium",
+        statusBg: "rgba(244,114,182,0.28)",
+        statusColor: "#9D174D",
+        cta: "Upgrade ansehen",
+      },
+      {
+        id: "gasag",
+        headerColor: "#5D6970",
+        title: "GASAG Energy Shot - Pausenspiel",
+        subtitle: "On-Ice Experience · UBER Arena",
+        price: "Kostenlos",
+        statusLabel: "Fans",
+        statusBg: "rgba(96,165,250,0.25)",
+        statusColor: "#1D4ED8",
+        cta: "Anmelden",
+      },
+    ].map((u, idx) => (
       <div
+        key={u.id}
         style={{
-          padding: "12px 14px 14px",
-          backgroundColor: "#FFFFFF",
+          padding: "8px 0",
+          borderTop:
+            idx === 0 ? "none" : "1px dashed rgba(209,213,219,0.9)",
         }}
       >
-        {/* Title + status */}
+        {/* MAIN ROW */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 6,
+            alignItems: "center",
+            gap: 8,
           }}
         >
-          <div>
+          {/* colored dot */}
+          <div
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              backgroundColor: u.headerColor,
+              flexShrink: 0,
+            }}
+          />
+
+          {/* title + subtitle */}
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
             <div
               style={{
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 600,
                 color: "#111827",
-                marginBottom: 2,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {u.title}
             </div>
-
             <div
               style={{
                 fontSize: 11,
                 color: "#6B7280",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {u.subtitle}
             </div>
           </div>
 
-          <span
-            style={{
-              padding: "3px 10px",
-              borderRadius: 999,
-              backgroundColor: u.statusBg,
-              color: u.statusColor,
-              fontSize: 10,
-              fontWeight: 500,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {u.statusLabel}
-          </span>
-        </div>
-
-        {/* Divider */}
-        <div
-          style={{
-            borderTop: "1px dashed rgba(156,163,175,0.7)",
-            margin: "8px 0 12px",
-          }}
-        />
-
-        {/* Price + CTA */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: "#111827",
-            }}
-          >
-            {u.price}
-          </div>
-
+          {/* CTA */}
           <button
             type="button"
             style={{
               border: "none",
               outline: "none",
-              padding: "6px 16px",
+              padding: "6px 10px",
               borderRadius: 999,
               backgroundColor: "#020617",
               color: "#F9FAFB",
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 500,
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
           >
             {u.cta}
           </button>
         </div>
-      </div>
-    </div>
-  ))}
-</div>
 
+        {/* BOTTOM ROW — price + status */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 4,
+            paddingLeft: 14,
+            fontSize: 10,
+            color: "#6B7280",
+          }}
+        >
+          {/* PRICE (repeated for clarity, replaces the code) */}
+          <div
+            style={{
+              fontWeight: 600,
+              color: "#374151",
+            }}
+          >
+            {u.price}
+          </div>
+
+          <span
+            style={{
+              padding: "2px 8px",
+              borderRadius: 999,
+              backgroundColor: u.statusBg,
+              color: u.statusColor,
+              fontSize: 9,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {u.statusLabel} · Arena Upgrade
+          </span>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
       {/* FOOTER */}
       <div
@@ -1529,6 +1772,8 @@ function getEventHeroImage(ev) {
       return pictureKoelnHero;
   }
 }
+
+/* UPGRADE TAB */
 
 function UpgradesTab({
   currentEvent,
@@ -2011,6 +2256,123 @@ function UpgradesTab({
               <HockeyArenaMap currentBlock={block} offers={offers} />
             )}
           </div>
+
+          {/* How it works – quick explainer */}
+          <div
+            style={{
+              marginTop: 22,
+              padding: 14,
+              borderRadius: 14,
+              backgroundColor: "#ffffffff",
+              border: "1px solid #ffffffff",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+                color: "#6b7280",
+                marginBottom: 4,
+              }}
+            >
+              Wie funktioniert SEATR?
+            </div>
+
+            <h3
+              style={{
+                margin: 0,
+                marginBottom: 6,
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#111827",
+              }}
+            >
+              In drei Schritten zum besseren Platz
+            </h3>
+
+            <p
+              style={{
+                margin: 0,
+                marginBottom: 10,
+                fontSize: 12,
+                color: "#6b7280",
+                lineHeight: 1.45,
+              }}
+            >
+              Dieses Modul zeigt dir, wie Sitzplatz-Upgrades aussehen könnten –
+              komplett als Demo. Teste einfach verschiedene Ticket-IDs und
+              probiere die Upgrades aus.
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                fontSize: 12,
+                color: "#374151",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "flex-start",
+                }}
+              >
+                <span style={{ fontSize: 16 }}>①</span>
+                <div>
+                  <strong>Ticket-ID eingeben</strong>
+                  <div style={{ fontSize: 11, color: "#6b7280" }}>
+                    Trage deine Ticket-ID oben ein. Das System erkennt deinen
+                    aktuellen Block und Sitzplatz automatisch (Demo-Daten).
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "flex-start",
+                }}
+              >
+                <span style={{ fontSize: 16 }}>②</span>
+                <div>
+                  <strong>Upgrades im Saalplan sehen</strong>
+                  <div style={{ fontSize: 11, color: "#6b7280" }}>
+                    Der Saalplan zeigt dir passende Upgrade-Bereiche. In der
+                    Liste darunter findest du konkrete Angebote mit Preis
+                    &amp; Verfügbarkeit.
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "flex-start",
+                }}
+              >
+                <span style={{ fontSize: 16 }}>③</span>
+                <div>
+                  <strong>Upgrade auswählen &amp; Demo-Checkout</strong>
+                  <div style={{ fontSize: 11, color: "#6b7280" }}>
+                    Wähle ein Upgrade aus und schließe den Demo-Checkout als
+                    Gast ab. In einer echten Version würdest du hier deine
+                    Tickets direkt digital erhalten.{" "}
+                    <span style={{ fontStyle: "italic" }}>
+                      (Hier kannst du später echte Benefits / Regeln ergänzen)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
 
           {/* Checkout for a selected offer */}
           {checkoutOffer && hasSeatEntered && (
@@ -2727,7 +3089,6 @@ function UpgradesTab({
             </div>
           )}
 
-
           {/* History (compact) */}
           {history.length > 0 && (
             <div style={{ marginTop: 28 }}>
@@ -2754,11 +3115,367 @@ function UpgradesTab({
               </ul>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+
+          {/* BRAND PARTNER AD – BURGERMEISTER (always last, compact) */}
+          <div
+            style={{
+              marginTop: 24,
+              padding: 16,
+              borderRadius: 0,
+              background:
+                "radial-gradient(circle at top left, rgba(245,158,11,0.45), transparent 55%) #050505",
+              boxSizing: "border-box",
+            }}
+          >
+            {/* header row */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+                gap: 8,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                    color: "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  Presented by
+                </div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "#ffffff",
+                  }}
+                >
+                  Burgermeister
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: 10,
+                  color: "rgba(255,255,255,0.7)",
+                  textAlign: "right",
+                }}
+              >
+                Werbung
+              </span>
+            </div>
+
+            {/* visual – fixed height to keep it compact */}
+            <div
+              style={{
+                marginBottom: 8,
+                borderRadius: 0,
+                overflow: "hidden",
+                position: "relative",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.55)",
+                height: 130,
+              }}
+            >
+              <img
+                src={burger_meister_ad}
+                alt="Burgermeister Event Special"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.05))",
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
+
+            {/* copy – shortened */}
+            <div
+              style={{
+                fontSize: 12,
+                color: "#f5f5f5",
+                marginBottom: 4,
+                fontWeight: 500,
+              }}
+            >
+              Burgermeister Game Night Deal
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#d4d4d4",
+                lineHeight: 1.35,
+                marginBottom: 6,
+              }}
+            >
+              Nutze dein Eventticket für einen{" "}
+              <strong>[PLATZHALTER-DEAL]</strong> bei Burgermeister – ideal für
+              einen schnellen Burger rund um dein Event.
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                color: "#9e9e9e",
+              }}
+            >
+              Details &amp; Konditionen können später pro Location / Event
+              angepasst werden.
+            </div>
+          </div>
+          
+          {/* EVENTS – floating, typographic only */}
+          <div
+            style={{
+              marginTop: 32,
+              marginBottom: 8,
+            }}
+          >
+            {/* overline */}
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: "#9ca3af",
+                marginBottom: 4,
+              }}
+            >
+              Auswahl
+            </div>
+
+            {/* main title */}
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 600,
+                color: "#0f172a",
+                marginBottom: 4,
+              }}
+            >
+              Nächste Events im SEATR-Flow
+            </div>
+
+            {/* subtle description */}
+            <div
+              style={{
+                fontSize: 12,
+                color: "#64748b",
+                marginBottom: 10,
+                maxWidth: 440,
+              }}
+            >
+              Drei Beispiele, wie sehr unterschiedliche Events in einem
+              einheitlichen Upgrade-Erlebnis aussehen können.
+            </div>
+
+            {/* hairline divider */}
+            <div
+              style={{
+                height: 1,
+                width: "100%",
+                background:
+                  "linear-gradient(to right, rgba(148,163,184,0.30), rgba(148,163,184,0.02))",
+                marginBottom: 10,
+              }}
+            />
+          </div>
+
+          {/* EVENTS LIST – text only */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              fontSize: 12,
+              color: "#0f172a",
+            }}
+          >
+            {/* Red Bull */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  Red Bull Showdown
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#64748b",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  High-Energy Action · Arena-Highlight
+                </div>
+              </div>
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: 11,
+                  color: "#94a3b8",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                14. März · 20:00
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "#16a34a",
+                    marginTop: 2,
+                  }}
+                >
+                  Featured Event
+                </div>
+              </div>
+            </div>
+
+            {/* Bayern */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  FC Bayern · Premium Event
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#64748b",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  Top-Spiel mit maximaler Atmosphäre.
+                </div>
+              </div>
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: 11,
+                  color: "#94a3b8",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                22. März · 18:30
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "#1d4ed8",
+                    marginTop: 2,
+                  }}
+                >
+                  Highlight
+                </div>
+              </div>
+            </div>
+
+            {/* ALBA */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  ALBA Berlin · Game Night
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#64748b",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  Schneller Basketball & Berliner Flair.
+                </div>
+              </div>
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: 11,
+                  color: "#94a3b8",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                06. April · 19:00
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "#15803d",
+                    marginTop: 2,
+                  }}
+                >
+                  Tipp
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>   closes inner content container (maxWidth 480) */
+      </div>    /* closes white sheet container */
+    </div>      /* closes outer wrapper */
   );
 }
+
+
+
 
 function lookupSeatFromTicket(eventId, ticketCode) {
   // Demo mapping: in a real app this would call the ticketing system.
@@ -3833,29 +4550,460 @@ function BiddingTab() {
 /* ---------- ACCOUNT TAB ---------- */
 
 function AccountTab() {
+  const upcomingEventsDemo = [
+    {
+      id: "evt-1",
+      date: "Sa · 21. Dez",
+      time: "19:30",
+      title: "Eisbären Berlin vs. Adler Mannheim",
+      venue: "Uber Arena",
+      status: "Upgrade-Optionen verfügbar",
+    },
+    {
+      id: "evt-2",
+      date: "Fr · 10. Jan",
+      time: "20:00",
+      title: "FC Bayern · Premium Matchday",
+      venue: "Allianz Arena",
+      status: "Ticket gespeichert (Demo)",
+    },
+  ];
+
+  const pastUpgradesDemo = [
+    {
+      id: "past-1",
+      date: "08. Nov 2024",
+      title: "Block 214 → Block 201",
+      event: "Drake · World Tour",
+      price: "32,00 €",
+    },
+    {
+      id: "past-2",
+      date: "14. Okt 2024",
+      title: "Kategorie 3 → Kategorie 1",
+      event: "ALBA Berlin · Game Night",
+      price: "24,50 €",
+    },
+  ];
+
   return (
-    <div>
-      <h2 style={{ fontSize: 18, marginBottom: 8 }}>Konto</h2>
-      <p style={{ fontSize: 13, color: "#000000ff", marginBottom: 12 }}>
-        In einer echten Version könntest du hier dein Fanprofil, bevorzugte
-        Teams, Zahlungsarten und Benachrichtigungen verwalten.
-      </p>
+    <div
+      style={{
+        width: "100%",
+        color: "#0f172a",
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+      {/* Header */}
       <div
         style={{
-          padding: 14,
-          borderRadius: 12,
-          backgroundColor: "#151515",
-          border: "1px solid #333",
-          fontSize: 13,
+          marginBottom: 16,
         }}
       >
-        <div style={{ marginBottom: 6 }}>👤 Gast-Fan</div>
-        <div style={{ color: "#ccc" }}>
-          • Keine Anmeldung erforderlich in dieser Demo.
+        <div
+          style={{
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            color: "#9ca3af",
+            marginBottom: 4,
+          }}
+        >
+          Konto & Profil
         </div>
-        <div style={{ color: "#ccc" }}>
-          • Upgrades werden nur lokal simuliert.
+        <h2
+          style={{
+            fontSize: 20,
+            margin: 0,
+            color: "#0f172a",
+            fontWeight: 600,
+          }}
+        >
+          Dein SEATR-Bereich
+        </h2>
+        <p
+          style={{
+            fontSize: 12,
+            color: "#6b7280",
+            marginTop: 6,
+            marginBottom: 0,
+            lineHeight: 1.5,
+          }}
+        >
+          In einer echten Version würdest du hier dein Fanprofil, bevorzugte
+          Teams, Zahlungsarten und Benachrichtigungen verwalten – inklusive
+          Übersicht über alle Upgrades.
+        </p>
+      </div>
+
+      {/* Profile summary */}
+      <div
+        style={{
+          marginBottom: 20,
+          borderRadius: 14,
+          border: "1px solid #e5e7eb",
+          padding: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: "linear-gradient(to right, #ffffff, #f9fafb)",
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: "999px",
+            background:
+              "radial-gradient(circle at 30% 30%, #0f172a, #1f2937 55%, #020617)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#f9fafb",
+            fontSize: 16,
+            fontWeight: 600,
+            flexShrink: 0,
+          }}
+        >
+          G
         </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#0f172a",
+              marginBottom: 2,
+            }}
+          >
+            Gast-Fan (Demo)
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#6b7280",
+            }}
+          >
+            Keine Anmeldung erforderlich – alle Aktionen werden lokal simuliert.
+          </div>
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            padding: "4px 8px",
+            borderRadius: 999,
+            border: "1px solid #e5e7eb",
+            color: "#6b7280",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Demo-Modus aktiv
+        </div>
+      </div>
+
+      {/* Upcoming events */}
+      <div style={{ marginBottom: 22 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#0f172a",
+            }}
+          >
+            Bevorstehende Events
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#9ca3af",
+            }}
+          >
+            Demo-Daten – nur zur Visualisierung
+          </div>
+        </div>
+
+        {upcomingEventsDemo.length === 0 ? (
+          <div
+            style={{
+              fontSize: 12,
+              color: "#9ca3af",
+              padding: "8px 0",
+            }}
+          >
+            Aktuell sind keine zukünftigen Events hinterlegt.
+          </div>
+        ) : (
+          <div
+            style={{
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              padding: 8,
+              backgroundColor: "#ffffff",
+            }}
+          >
+            {upcomingEventsDemo.map((ev, index) => (
+              <div
+                key={ev.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "8px 6px",
+                  gap: 10,
+                  borderBottom:
+                    index === upcomingEventsDemo.length - 1
+                      ? "none"
+                      : "1px solid #f1f5f9",
+                }}
+              >
+                {/* date column */}
+                <div
+                  style={{
+                    minWidth: 70,
+                    textAlign: "left",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#0f172a",
+                    }}
+                  >
+                    {ev.date}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: "#9ca3af",
+                    }}
+                  >
+                    {ev.time} Uhr
+                  </div>
+                </div>
+
+                {/* event info */}
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: "#111827",
+                      marginBottom: 2,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {ev.title}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#6b7280",
+                      marginBottom: 2,
+                    }}
+                  >
+                    {ev.venue}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: "#0f766e",
+                    }}
+                  >
+                    {ev.status}
+                  </div>
+                </div>
+
+                {/* small chevron */}
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: "#cbd5f5",
+                    paddingLeft: 4,
+                  }}
+                >
+                  →
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Past upgrades / purchases */}
+      <div style={{ marginBottom: 22 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#0f172a",
+            }}
+          >
+            Vergangene Upgrades (Demo)
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#9ca3af",
+            }}
+          >
+            Nicht mit echten Tickets verknüpft
+          </div>
+        </div>
+
+        {pastUpgradesDemo.length === 0 ? (
+          <div
+            style={{
+              fontSize: 12,
+              color: "#9ca3af",
+              padding: "8px 0",
+            }}
+          >
+            Noch keine Upgrades in dieser Session.
+          </div>
+        ) : (
+          <div
+            style={{
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              padding: 8,
+              backgroundColor: "#ffffff",
+            }}
+          >
+            {pastUpgradesDemo.map((item, index) => (
+              <div
+                key={item.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "8px 6px",
+                  gap: 10,
+                  borderBottom:
+                    index === pastUpgradesDemo.length - 1
+                      ? "none"
+                      : "1px solid #f1f5f9",
+                }}
+              >
+                {/* date */}
+                <div
+                  style={{
+                    minWidth: 80,
+                    fontSize: 11,
+                    color: "#6b7280",
+                  }}
+                >
+                  {item.date}
+                </div>
+
+                {/* description */}
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: "#111827",
+                      marginBottom: 2,
+                    }}
+                  >
+                    {item.title}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#9ca3af",
+                    }}
+                  >
+                    {item.event}
+                  </div>
+                </div>
+
+                {/* price */}
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#0f172a",
+                  }}
+                >
+                  {item.price}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Settings / preferences (concept copy) */}
+      <div
+        style={{
+          marginBottom: 10,
+          paddingTop: 6,
+          borderTop: "1px solid #e5e7eb",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#0f172a",
+            marginBottom: 8,
+          }}
+        >
+          Einstellungen & Präferenzen
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: "#64748b",
+            marginBottom: 8,
+            lineHeight: 1.5,
+          }}
+        >
+          In einer vollwertigen Version könntest du hier:
+        </div>
+
+        <ul
+          style={{
+            margin: 0,
+            paddingLeft: 18,
+            fontSize: 12,
+            color: "#475569",
+            lineHeight: 1.5,
+          }}
+        >
+          <li>Bevorzugte Teams & Ligen speichern</li>
+          <li>Zahlungsmethoden hinterlegen (Wallet, Karte, PayPal, etc.)</li>
+          <li>Benachrichtigungen für Upgrades & Auktionen aktivieren</li>
+          <li>Deine vergangenen Käufe & Rechnungen einsehen</li>
+        </ul>
       </div>
     </div>
   );
@@ -3867,7 +5015,7 @@ function BottomNav({ activeTab, onChange }) {
   const items = [
     { id: "events", label: "Events"},
     { id: "upgrades", label: "Upgrades"},
-    { id: "bidding", label: "Auktion"},
+    { id: "bidding", label: "Bid"},
     { id: "account", label: "Konto"},
   ];
 
