@@ -4550,6 +4550,8 @@ function BiddingTab() {
 /* ---------- ACCOUNT TAB ---------- */
 
 function AccountTab() {
+  const [viewMode, setViewMode] = useState("customer"); // "customer" | "arena"
+
   const upcomingEventsDemo = [
     {
       id: "evt-1",
@@ -4568,6 +4570,54 @@ function AccountTab() {
       status: "Ticket gespeichert (Demo)",
     },
   ];
+
+  const exclusiveUpgradesDemo = [
+    {
+      id: "ex-1",
+      type: "ticket",
+      label: "Ticket-Upgrade",
+      title: "Block 214 → Block 201",
+      description: "Bessere Sicht, näher am Eis – nur für dieses Ticket verfügbar.",
+      badge: "Nur für dich",
+    },
+    {
+      id: "ex-2",
+      type: "merch",
+      label: "Merch-Vorteil",
+      title: "10 % Rabatt auf Merch",
+      description:
+        "Einmaliger Rabattcode für Fans, die SEATR getestet haben (Demo-Inhalt).",
+      badge: "Limited",
+    },
+  ];
+
+  const nextEventOverviewDemo = {
+    id: "evt-1",
+    name: "Eisbären Berlin vs. Adler Mannheim",
+    dateLabel: "Sa · 21. Dez · 19:30 Uhr",
+    venue: "Uber Arena",
+    capacity: 14400,
+    ticketsSold: 12980,
+    availableUpgrades: 42,
+    upgradeTypes: [
+      "PK 1 Unterrang Mitte",
+      "PK 2 Kurve",
+      "Last-Minute Row Upgrade",
+    ],
+    otherOffers: [
+      "Burgermeister Combo Special",
+      "10 % Fanshop auf Trikots",
+    ],
+  };
+
+  const revenueForecastDemo = {
+    tonightMin: 480,
+    tonightMax: 720,
+    uplift: 0.12, // +12% vs. ohne SEATR
+    comparableEvents: 4,
+  };
+
+
 
   const pastUpgradesDemo = [
     {
@@ -4594,417 +4644,1419 @@ function AccountTab() {
         fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      {/* Header */}
+      {/* Header with view toggle */}
       <div
         style={{
           marginBottom: 16,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            textTransform: "uppercase",
-            letterSpacing: 1,
-            color: "#9ca3af",
-            marginBottom: 4,
-          }}
-        >
-          Konto & Profil
-        </div>
-        <h2
-          style={{
-            fontSize: 20,
-            margin: 0,
-            color: "#0f172a",
-            fontWeight: 600,
-          }}
-        >
-          Dein SEATR-Bereich
-        </h2>
-        <p
-          style={{
-            fontSize: 12,
-            color: "#6b7280",
-            marginTop: 6,
-            marginBottom: 0,
-            lineHeight: 1.5,
-          }}
-        >
-          In einer echten Version würdest du hier dein Fanprofil, bevorzugte
-          Teams, Zahlungsarten und Benachrichtigungen verwalten – inklusive
-          Übersicht über alle Upgrades.
-        </p>
-      </div>
-
-      {/* Profile summary */}
-      <div
-        style={{
-          marginBottom: 20,
-          borderRadius: 14,
-          border: "1px solid #e5e7eb",
-          padding: 12,
           display: "flex",
-          alignItems: "center",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
           gap: 12,
-          background: "linear-gradient(to right, #ffffff, #f9fafb)",
         }}
       >
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: "999px",
-            background:
-              "radial-gradient(circle at 30% 30%, #0f172a, #1f2937 55%, #020617)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#f9fafb",
-            fontSize: 16,
-            fontWeight: 600,
-            flexShrink: 0,
-          }}
-        >
-          G
-        </div>
+        {/* left: title + copy */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: "#0f172a",
-              marginBottom: 2,
-            }}
-          >
-            Gast-Fan (Demo)
-          </div>
-          <div
-            style={{
               fontSize: 11,
-              color: "#6b7280",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              color: "#9ca3af",
+              marginBottom: 4,
             }}
           >
-            Keine Anmeldung erforderlich – alle Aktionen werden lokal simuliert.
+            Konto & Profil
           </div>
+          <h2
+            style={{
+              fontSize: 20,
+              margin: 0,
+              color: "#0f172a",
+              fontWeight: 600,
+            }}
+          >
+            Dein SEATR-Bereich
+          </h2>
+          <p
+            style={{
+              fontSize: 12,
+              color: "#6b7280",
+              marginTop: 6,
+              marginBottom: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            {viewMode === "customer"
+              ? "In einer echten Version würdest du hier dein Fanprofil, bevorzugte Teams, Zahlungsarten und Benachrichtigungen verwalten – inklusive Übersicht über alle Upgrades."
+              : "Wechsle in die Arena/Team-Sicht, um Upgrades, Events und Performance aus Veranstalter-Perspektive zu sehen – komplett als Demo simuliert."}
+          </p>
         </div>
-        <div
-          style={{
-            fontSize: 10,
-            padding: "4px 8px",
-            borderRadius: 999,
-            border: "1px solid #e5e7eb",
-            color: "#6b7280",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Demo-Modus aktiv
-        </div>
-      </div>
 
-      {/* Upcoming events */}
-      <div style={{ marginBottom: 22 }}>
+        {/* right: view toggle */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 6,
+            alignItems: "center",
+            justifyContent: "flex-end",
           }}
         >
           <div
             style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#0f172a",
+              display: "inline-flex",
+              padding: 3,
+              borderRadius: 999,
+              border: "1px solid #e5e7eb",
+              background:
+                "linear-gradient(to right, #f9fafb, #ffffff, #f3f4f6)",
+              boxShadow: "0 4px 12px rgba(15,23,42,0.05)",
+              gap: 2,
             }}
           >
-            Bevorstehende Events
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#9ca3af",
-            }}
-          >
-            Demo-Daten – nur zur Visualisierung
+            <button
+              type="button"
+              onClick={() => setViewMode("customer")}
+              style={{
+                border: "none",
+                outline: "none",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: "pointer",
+                letterSpacing: 0.4,
+                textTransform: "uppercase",
+                transition: "all 0.15s ease-out",
+                backgroundColor:
+                  viewMode === "customer" ? "#0f172a" : "transparent",
+                color: viewMode === "customer" ? "#f9fafb" : "#6b7280",
+              }}
+            >
+              Customer
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("arena")}
+              style={{
+                border: "none",
+                outline: "none",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: "pointer",
+                letterSpacing: 0.4,
+                textTransform: "uppercase",
+                transition: "all 0.15s ease-out",
+                backgroundColor:
+                  viewMode === "arena" ? "#0f172a" : "transparent",
+                color: viewMode === "arena" ? "#f9fafb" : "#6b7280",
+              }}
+            >
+              Arena / Team
+            </button>
           </div>
         </div>
+      </div>
 
-        {upcomingEventsDemo.length === 0 ? (
+      {/* ----- CUSTOMER VIEW ----- */}
+      {viewMode === "customer" && (
+        <>
+          {/* Profile summary */}
           <div
             style={{
-              fontSize: 12,
-              color: "#9ca3af",
-              padding: "8px 0",
-            }}
-          >
-            Aktuell sind keine zukünftigen Events hinterlegt.
-          </div>
-        ) : (
-          <div
-            style={{
-              borderRadius: 12,
+              marginBottom: 20,
+              borderRadius: 14,
               border: "1px solid #e5e7eb",
-              padding: 8,
-              backgroundColor: "#ffffff",
+              padding: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              background: "linear-gradient(to right, #ffffff, #f9fafb)",
             }}
           >
-            {upcomingEventsDemo.map((ev, index) => (
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "999px",
+                background:
+                  "radial-gradient(circle at 30% 30%, #0f172a, #1f2937 55%, #020617)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#f9fafb",
+                fontSize: 16,
+                fontWeight: 600,
+                flexShrink: 0,
+              }}
+            >
+              G
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
-                key={ev.id}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "8px 6px",
-                  gap: 10,
-                  borderBottom:
-                    index === upcomingEventsDemo.length - 1
-                      ? "none"
-                      : "1px solid #f1f5f9",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#0f172a",
+                  marginBottom: 2,
                 }}
               >
-                {/* date column */}
+                Gast-Fan (Demo)
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#6b7280",
+                }}
+              >
+                Keine Anmeldung erforderlich – alle Aktionen werden lokal
+                simuliert.
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                padding: "4px 8px",
+                borderRadius: 999,
+                border: "1px solid #e5e7eb",
+                color: "#6b7280",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Demo-Modus aktiv
+            </div>
+          </div>
+
+          {/* Upcoming events */}
+          <div style={{ marginBottom: 22 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: 6,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#0f172a",
+                }}
+              >
+                Bevorstehende Events
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#9ca3af",
+                }}
+              >
+                Demo-Daten – nur zur Visualisierung
+              </div>
+            </div>
+
+            {upcomingEventsDemo.length === 0 ? (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  padding: "8px 0",
+                }}
+              >
+                Aktuell sind keine zukünftigen Events hinterlegt.
+              </div>
+            ) : (
+              <div
+                style={{
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  padding: 8,
+                  backgroundColor: "#ffffff",
+                }}
+              >
+                {upcomingEventsDemo.map((ev, index) => (
+                  <div
+                    key={ev.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "8px 6px",
+                      gap: 10,
+                      borderBottom:
+                        index === upcomingEventsDemo.length - 1
+                          ? "none"
+                          : "1px solid #f1f5f9",
+                    }}
+                  >
+                    {/* date column */}
+                    <div
+                      style={{
+                        minWidth: 70,
+                        textAlign: "left",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: "#0f172a",
+                        }}
+                      >
+                        {ev.date}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          color: "#9ca3af",
+                        }}
+                      >
+                        {ev.time} Uhr
+                      </div>
+                    </div>
+
+                    {/* event info */}
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: "#111827",
+                          marginBottom: 2,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {ev.title}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#6b7280",
+                          marginBottom: 2,
+                        }}
+                      >
+                        {ev.venue}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          color: "#0f766e",
+                        }}
+                      >
+                        {ev.status}
+                      </div>
+                    </div>
+
+                    {/* small chevron */}
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#cbd5f5",
+                        paddingLeft: 4,
+                      }}
+                    >
+                      →
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Exclusive upgrades for this guest — 2-column premium layout */}
+          <div style={{ marginBottom: 30, marginTop: 10 }}>
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: 14,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 16,          // ⬅ bigger header
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  letterSpacing: 0.2,
+                }}
+              >
+                Exklusive Upgrades nur für dich
+              </div>
+
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#9ca3af",
+                }}
+              >
+                Personalisiert (Demo)
+              </div>
+            </div>
+
+            {/* Two-column layout */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 12,
+              }}
+            >
+              {exclusiveUpgradesDemo.map((offer) => (
                 <div
+                  key={offer.id}
                   style={{
-                    minWidth: 70,
-                    textAlign: "left",
+                    padding: 16,
+                    borderRadius: 16,
+                    border: "1px solid #e5e7eb",
+                    background:
+                      "linear-gradient(to bottom right, #ffffff, #f9fafb 70%)",
+                    boxShadow: "0 4px 12px rgba(15,23,42,0.05)",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: 170,           // ⬅ more height for breathing room
+                    justifyContent: "space-between",
                   }}
                 >
+                  {/* Top row */}
                   <div
                     style={{
-                      fontSize: 11,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {/* Icon bubble */}
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 14,
+                        background:
+                          offer.type === "ticket"
+                            ? "linear-gradient(135deg,#eef2ff,#e0e7ff)"
+                            : "linear-gradient(135deg,#ecfdf5,#d1fae5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 20,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {offer.type === "ticket" ? "🎟️" : "🛍️"}
+                    </div>
+
+                    {/* Badge */}
+                    <div
+                      style={{
+                        fontSize: 10,
+                        padding: "4px 8px",
+                        borderRadius: 999,
+                        backgroundColor:
+                          offer.badge === "Nur für dich" ? "#eff6ff" : "#fef3c7",
+                        color:
+                          offer.badge === "Nur für dich" ? "#1d4ed8" : "#92400e",
+                        border: "1px solid rgba(0,0,0,0.07)",
+                        whiteSpace: "nowrap",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {offer.badge}
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <div
+                    style={{
+                      fontSize: 14,
                       fontWeight: 600,
                       color: "#0f172a",
+                      marginBottom: 4,
+                      lineHeight: 1.3,
                     }}
                   >
-                    {ev.date}
+                    {offer.title}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: "#9ca3af",
-                    }}
-                  >
-                    {ev.time} Uhr
-                  </div>
-                </div>
 
-                {/* event info */}
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
+                  {/* Description */}
                   <div
                     style={{
                       fontSize: 12,
-                      fontWeight: 500,
-                      color: "#111827",
-                      marginBottom: 2,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {ev.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
                       color: "#6b7280",
-                      marginBottom: 2,
+                      lineHeight: 1.45,
+                      flexGrow: 1,
+                      marginBottom: 10,
                     }}
                   >
-                    {ev.venue}
+                    {offer.description}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: "#0f766e",
-                    }}
-                  >
-                    {ev.status}
-                  </div>
-                </div>
 
-                {/* small chevron */}
+                  {/* CTA */}
+                  <button
+                    type="button"
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      border: "1px solid #e5e7eb",
+                      background: "linear-gradient(90deg,#f8fafc,#f1f5f9)",
+                      color: "#0f172a",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    {offer.type === "ticket"
+                      ? "Upgrade anzeigen"
+                      : "Rabatt aktivieren"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+
+          {/* Past upgrades / purchases */}
+          <div style={{ marginBottom: 22 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: 6,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#0f172a",
+                }}
+              >
+                Vergangene Upgrades (Demo)
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#9ca3af",
+                }}
+              >
+                Nicht mit echten Tickets verknüpft
+              </div>
+            </div>
+
+            {pastUpgradesDemo.length === 0 ? (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  padding: "8px 0",
+                }}
+              >
+                Noch keine Upgrades in dieser Session.
+              </div>
+            ) : (
+              <div
+                style={{
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  padding: 8,
+                  backgroundColor: "#ffffff",
+                }}
+              >
+                {pastUpgradesDemo.map((item, index) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "8px 6px",
+                      gap: 10,
+                      borderBottom:
+                        index === pastUpgradesDemo.length - 1
+                          ? "none"
+                          : "1px solid #f1f5f9",
+                    }}
+                  >
+                    {/* date */}
+                    <div
+                      style={{
+                        minWidth: 80,
+                        fontSize: 11,
+                        color: "#6b7280",
+                      }}
+                    >
+                      {item.date}
+                    </div>
+
+                    {/* description */}
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: "#111827",
+                          marginBottom: 2,
+                        }}
+                      >
+                        {item.title}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#9ca3af",
+                        }}
+                      >
+                        {item.event}
+                      </div>
+                    </div>
+
+                    {/* price */}
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#0f172a",
+                      }}
+                    >
+                      {item.price}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Settings / preferences (concept copy) */}
+          <div
+            style={{
+              marginBottom: 10,
+              paddingTop: 6,
+              borderTop: "1px solid #e5e7eb",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#0f172a",
+                marginBottom: 8,
+              }}
+            >
+              Einstellungen & Präferenzen
+            </div>
+
+            <div
+              style={{
+                fontSize: 12,
+                color: "#64748b",
+                marginBottom: 8,
+                lineHeight: 1.5,
+              }}
+            >
+              In einer vollwertigen Version könntest du hier:
+            </div>
+
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: 18,
+                fontSize: 12,
+                color: "#475569",
+                lineHeight: 1.5,
+              }}
+            >
+              <li>Bevorzugte Teams & Ligen speichern</li>
+              <li>Zahlungsmethoden hinterlegen (Wallet, Karte, PayPal, etc.)</li>
+              <li>Benachrichtigungen für Upgrades & Auktionen aktivieren</li>
+              <li>Deine vergangenen Käufe & Rechnungen einsehen</li>
+            </ul>
+          </div>
+        </>
+      )}
+
+      {/* ----- ARENA / TEAM VIEW ----- */}
+      {viewMode === "arena" && (
+        <>
+          {/* Arena profile summary */}
+          <div
+            style={{
+              marginBottom: 20,
+              borderRadius: 14,
+              border: "1px solid #e5e7eb",
+              padding: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              background: "linear-gradient(to right, #0f172a, #020617)",
+              color: "#e5e7eb",
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "999px",
+                background:
+                  "radial-gradient(circle at 30% 30%, #38bdf8, #0ea5e9 55%, #0369a1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#0f172a",
+                fontSize: 16,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              A
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  marginBottom: 2,
+                }}
+              >
+                Arena / Team Dashboard (Demo)
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  opacity: 0.8,
+                }}
+              >
+                Simulierte Veranstalter-Sicht – ideal für Sales, Ticketing und
+                Game Ops.
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                padding: "4px 8px",
+                borderRadius: 999,
+                border: "1px solid rgba(148,163,184,0.4)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Internal View
+            </div>
+          </div>
+
+          {/* KPI row */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: 8,
+              marginBottom: 18,
+            }}
+          >
+            {[
+              {
+                label: "Aktive Events",
+                value: "2",
+                sub: "mit SEATR Upgrades",
+              },
+              {
+                label: "Ø Upgrade-Wert",
+                value: "28,40 €",
+                sub: "pro Transaktion (Demo)",
+              },
+              {
+                label: "Upgrade-Quote",
+                value: "17 %",
+                sub: "Fans mit Upgrade",
+              },
+            ].map((kpi) => (
+              <div
+                key={kpi.label}
+                style={{
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  padding: 10,
+                  backgroundColor: "#ffffff",
+                }}
+              >
                 <div
                   style={{
-                    fontSize: 14,
-                    color: "#cbd5f5",
-                    paddingLeft: 4,
+                    fontSize: 10,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                    color: "#9ca3af",
+                    marginBottom: 4,
                   }}
                 >
-                  →
+                  {kpi.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: "#0f172a",
+                    marginBottom: 2,
+                  }}
+                >
+                  {kpi.value}
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "#9ca3af",
+                  }}
+                >
+                  {kpi.sub}
                 </div>
               </div>
             ))}
           </div>
-        )}
-      </div>
 
-      {/* Past upgrades / purchases */}
-      <div style={{ marginBottom: 22 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 6,
-          }}
-        >
+          {/* Event-Konfiguration – Quick Actions */}
           <div
             style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#0f172a",
-            }}
-          >
-            Vergangene Upgrades (Demo)
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#9ca3af",
-            }}
-          >
-            Nicht mit echten Tickets verknüpft
-          </div>
-        </div>
-
-        {pastUpgradesDemo.length === 0 ? (
-          <div
-            style={{
-              fontSize: 12,
-              color: "#9ca3af",
-              padding: "8px 0",
-            }}
-          >
-            Noch keine Upgrades in dieser Session.
-          </div>
-        ) : (
-          <div
-            style={{
+              marginBottom: 20,
               borderRadius: 12,
               border: "1px solid #e5e7eb",
-              padding: 8,
+              padding: 10,
               backgroundColor: "#ffffff",
             }}
           >
-            {pastUpgradesDemo.map((item, index) => (
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#0f172a",
+                marginBottom: 6,
+              }}
+            >
+              Event-Konfiguration (Demo)
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#9ca3af",
+                marginBottom: 10,
+              }}
+            >
+              Schnelle Anpassungen für das aktuelle Spiel – in einer echten Version direkt mit eurem Ticketing verknüpft.
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: 8,
+              }}
+            >
+              {[
+                {
+                  id: "qa1",
+                  icon: "💶",
+                  label: "Upgrade-Preise anpassen",
+                },
+                {
+                  id: "qa2",
+                  icon: "⏱️",
+                  label: "Zeitfenster setzen",
+                },
+                {
+                  id: "qa3",
+                  icon: "🧩",
+                  label: "Blöcke aktiv/deaktiv",
+                },
+                {
+                  id: "qa4",
+                  icon: "🎟️",
+                  label: "Kontingent limitieren",
+                },
+                {
+                  id: "qa5",
+                  icon: "🧾",
+                  label: "Merch-Rabatt verbinden",
+                },
+                {
+                  id: "qa6",
+                  icon: "⚙️",
+                  label: "Regeln & Layer",
+                },
+              ].map((action) => (
+                <button
+                  key={action.id}
+                  type="button"
+                  style={{
+                    borderRadius: 10,
+                    border: "1px solid #e5e7eb",
+                    padding: "8px 6px",
+                    backgroundColor: "#f9fafb",
+                    fontSize: 11,
+                    color: "#0f172a",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>{action.icon}</span>
+                  <span
+                    style={{
+                      textAlign: "left",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {action.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+        {/* Nächstes Event – Gesamtüberblick */}
+        <div
+          style={{
+            marginBottom: 20,
+            borderRadius: 14,
+            border: "1px solid #e5e7eb",
+            padding: 12,
+            background: "linear-gradient(to bottom right,#ffffff,#f9fafb 65%)",
+            boxShadow: "0 6px 18px rgba(15,23,42,0.06)",
+          }}
+        >
+          {/* Header row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 10,
+              marginBottom: 8,
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
-                key={item.id}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "8px 6px",
-                  gap: 10,
-                  borderBottom:
-                    index === pastUpgradesDemo.length - 1
-                      ? "none"
-                      : "1px solid #f1f5f9",
+                  fontSize: 12,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.6,
+                  color: "#9ca3af",
+                  marginBottom: 2,
                 }}
               >
-                {/* date */}
-                <div
-                  style={{
-                    minWidth: 80,
-                    fontSize: 11,
-                    color: "#6b7280",
-                  }}
-                >
-                  {item.date}
-                </div>
+                Nächstes Event im Fokus
+              </div>
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "#0f172a",
+                  marginBottom: 2,
+                }}
+              >
+                {nextEventOverviewDemo.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#6b7280",
+                }}
+              >
+                {nextEventOverviewDemo.dateLabel} · {nextEventOverviewDemo.venue}
+              </div>
+            </div>
 
-                {/* description */}
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: 4,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  backgroundColor: "#ecfdf3",
+                  color: "#166534",
+                  border: "1px solid #bbf7d0",
+                  whiteSpace: "nowrap",
+                  fontWeight: 600,
+                }}
+              >
+                SEATR Upgrades aktiv
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  padding: "3px 8px",
+                  borderRadius: 999,
+                  backgroundColor: "#eff6ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #dbeafe",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Demo-Ansicht
+              </div>
+            </div>
+          </div>
+
+          {/* Capacity + tickets sold */}
+          <div
+            style={{
+              marginTop: 6,
+              marginBottom: 12,
+            }}
+          >
+            {(() => {
+              const { capacity, ticketsSold } = nextEventOverviewDemo;
+              const pct = capacity > 0 ? Math.round((ticketsSold / capacity) * 100) : 0;
+              const pctLabel = `${ticketsSold.toLocaleString("de-DE")} / ${capacity.toLocaleString(
+                "de-DE"
+              )} Tickets · ${pct}% ausgelastet`;
+
+              return (
+                <>
                   <div
                     style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: "#111827",
-                      marginBottom: 2,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 4,
                     }}
                   >
-                    {item.title}
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: "#0f172a",
+                      }}
+                    >
+                      Auslastung & Ticketverkauf
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                      }}
+                    >
+                      {pctLabel}
+                    </div>
                   </div>
                   <div
+                    style={{
+                      height: 8,
+                      borderRadius: 999,
+                      backgroundColor: "#e5e7eb",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${pct}%`,
+                        height: "100%",
+                        borderRadius: 999,
+                        background:
+                          "linear-gradient(90deg,#22c55e,#16a34a,#15803d)",
+                        transition: "width 0.2s ease-out",
+                      }}
+                    />
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Upgrades + available seats */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1.6fr)",
+              gap: 10,
+              marginBottom: 12,
+            }}
+          >
+            {/* Upgrades summary */}
+            <div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#0f172a",
+                  marginBottom: 4,
+                }}
+              >
+                Upgrades heute
+              </div>
+              <div
+                style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  marginBottom: 4,
+                }}
+              >
+                {nextEventOverviewDemo.availableUpgrades}
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#6b7280",
+                  marginBottom: 6,
+                }}
+              >
+                verfügbare Upgrade-Sitzplätze über alle Kategorien hinweg.
+              </div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 11,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  backgroundColor: "#eff6ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #dbeafe",
+                }}
+              >
+                <span>ℹ️</span>
+                <span>Bestände werden in Echtzeit aus dem Ticketing gespiegelt.</span>
+              </div>
+            </div>
+
+            {/* Upgrade types + other offers */}
+            <div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#0f172a",
+                  marginBottom: 4,
+                }}
+              >
+                Aktive Upgrade-Typen
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6,
+                  marginBottom: 8,
+                }}
+              >
+                {nextEventOverviewDemo.upgradeTypes.map((label) => (
+                  <span
+                    key={label}
                     style={{
                       fontSize: 11,
-                      color: "#9ca3af",
+                      padding: "4px 8px",
+                      borderRadius: 999,
+                      backgroundColor: "#f1f5f9",
+                      color: "#0f172a",
+                      border: "1px solid #e5e7eb",
+                      maxWidth: "100%",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
                     }}
                   >
-                    {item.event}
-                  </div>
-                </div>
+                    {label}
+                  </span>
+                ))}
+              </div>
 
-                {/* price */}
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#0f172a",
+                  marginBottom: 4,
+                }}
+              >
+                Weitere Angebote am Spieltag
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6,
+                }}
+              >
+                {nextEventOverviewDemo.otherOffers.map((offer) => (
+                  <span
+                    key={offer}
+                    style={{
+                      fontSize: 11,
+                      padding: "4px 8px",
+                      borderRadius: 999,
+                      backgroundColor: "#fefce8",
+                      color: "#854d0e",
+                      border: "1px solid #facc15",
+                      maxWidth: "100%",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {offer}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue forecast – integrated in this card */}
+          <div
+            style={{
+              borderTop: "1px solid #e5e7eb",
+              paddingTop: 8,
+              marginTop: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "#0f172a",
+                  marginBottom: 2,
+                }}
+              >
+                Erwarteter Upgrade-Umsatz heute (Demo)
+              </div>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#0f172a",
+                }}
+              >
+                {revenueForecastDemo.tonightMin.toFixed(0)}–{" "}
+                {revenueForecastDemo.tonightMax.toFixed(0)} €
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: 4,
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 11,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  backgroundColor: "#ecfdf3",
+                  color: "#166534",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
+                <span>⬆</span>
+                <span>
+                  +{Math.round(revenueForecastDemo.uplift * 100)} % vs. ohne SEATR
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#9ca3af",
+                }}
+              >
+                Basierend auf {revenueForecastDemo.comparableEvents} ähnlichen
+                Heimspielen.
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+          {/* Event list but framed as arena view */}
+          <div style={{ marginBottom: 22 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: 6,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#0f172a",
+                }}
+              >
+                Events mit Upgrades (Arena-Sicht)
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#9ca3af",
+                }}
+              >
+                Verknüpft mit deinem Ticketing (Demo)
+              </div>
+            </div>
+
+            <div
+              style={{
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                padding: 8,
+                backgroundColor: "#ffffff",
+              }}
+            >
+              {upcomingEventsDemo.map((ev, index) => (
                 <div
+                  key={ev.id}
                   style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "#0f172a",
+                    display: "flex",
+                    flexDirection: "column",
+                    padding: "8px 6px",
+                    gap: 4,
+                    borderBottom:
+                      index === upcomingEventsDemo.length - 1
+                        ? "none"
+                        : "1px solid #f1f5f9",
                   }}
                 >
-                  {item.price}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#111827",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {ev.title}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {ev.date} · {ev.time} Uhr
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                      }}
+                    >
+                      {ev.venue}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                        backgroundColor: "#ecfdf3",
+                        color: "#166534",
+                      }}
+                    >
+                      Upgrade-Flow aktiv
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Settings / preferences (concept copy) */}
-      <div
-        style={{
-          marginBottom: 10,
-          paddingTop: 6,
-          borderTop: "1px solid #e5e7eb",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#0f172a",
-            marginBottom: 8,
-          }}
-        >
-          Einstellungen & Präferenzen
-        </div>
-
-        <div
-          style={{
-            fontSize: 12,
-            color: "#64748b",
-            marginBottom: 8,
-            lineHeight: 1.5,
-          }}
-        >
-          In einer vollwertigen Version könntest du hier:
-        </div>
-
-        <ul
-          style={{
-            margin: 0,
-            paddingLeft: 18,
-            fontSize: 12,
-            color: "#475569",
-            lineHeight: 1.5,
-          }}
-        >
-          <li>Bevorzugte Teams & Ligen speichern</li>
-          <li>Zahlungsmethoden hinterlegen (Wallet, Karte, PayPal, etc.)</li>
-          <li>Benachrichtigungen für Upgrades & Auktionen aktivieren</li>
-          <li>Deine vergangenen Käufe & Rechnungen einsehen</li>
-        </ul>
-      </div>
+          {/* Arena settings / integration copy */}
+          <div
+            style={{
+              marginBottom: 10,
+              paddingTop: 6,
+              borderTop: "1px solid #e5e7eb",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#0f172a",
+                marginBottom: 8,
+              }}
+            >
+              Einstellungen für Arenen & Teams (Demo)
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#64748b",
+                marginBottom: 8,
+                lineHeight: 1.5,
+              }}
+            >
+              In einer echten Arena-Sicht würdet ihr hier:
+            </div>
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: 18,
+                fontSize: 12,
+                color: "#475569",
+                lineHeight: 1.5,
+              }}
+            >
+              <li>Events aus Ticketing-Systemen (Eventim, Ticketmaster, etc.) verknüpfen</li>
+              <li>Upgrade-Regeln & Preislayer für einzelne Blöcke definieren</li>
+              <li>Live-Performance von Upgrades & Auktionen verfolgen</li>
+              <li>Exports für Finance & Sponsoring (CSV/Excel) erstellen</li>
+            </ul>
+          </div>
+        </>
+      )}
     </div>
   );
 }
