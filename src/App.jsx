@@ -3500,6 +3500,19 @@ function lookupSeatFromTicket(eventId, ticketCode) {
 
 /* ---------- BIDDING TAB ---------- */
 
+// Map auction.image strings to real image imports
+const IMAGE_MAP = {
+  "picture_koeln_hero.jpg": pictureKoelnHero,
+  "picture_drake_hero.jpg": pictureDrakeHero,
+  "picture_eisbaeren_hero.jpg": pictureEisbaerenHero,
+};
+
+function getAuctionImage(auction) {
+  if (!auction || !auction.image) return pictureKoelnHero;
+  return IMAGE_MAP[auction.image] || pictureKoelnHero;
+}
+
+
 function BiddingTab() {
   // 1) Initial auctions (static template)
   const INITIAL_AUCTIONS = [
@@ -3529,6 +3542,7 @@ function BiddingTab() {
       timeLeft: "1 Std 12 Min",
       color: "#7c3aed",
       tag: "Last-Minute",
+      image: "picture_drake_hero.jpg"
     },
     {
       id: "auction-eisbaeren-1",
@@ -3542,6 +3556,7 @@ function BiddingTab() {
       timeLeft: "Heute · Live",
       color: "#0ea5e9",
       tag: "Penny DEL",
+      image: "picture_eisbaeren_hero.jpg"
     },
     {
       id: "auction-koeln-2",
@@ -3900,417 +3915,511 @@ function BiddingTab() {
 </div>
 
 
-      {/* === HERO AUCTION (First) === */}
+{/* === COMBINED HERO + MINI-HEROS CARD === */}
+<div
+  style={{
+    marginBottom: 20,
+    borderRadius: 10,
+    overflow: "hidden",
+    border: "1px solid #0b1120",
+    backgroundColor: "#020617",
+  }}
+>
+  {/* TOP: MAIN HERO IMAGE AREA */}
+  <div
+    style={{
+      position: "relative",
+      height: 230,
+      overflow: "hidden",
+      backgroundColor: "#000",
+    }}
+  >
+    <img
+      src={getAuctionImage(hero)}
+      alt={hero.eventName}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        transform: "scale(1.03)",
+      }}
+    />
+
+    {/* gradient overlay */}
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background:
+          "linear-gradient(to top, rgba(3,7,18,0.95), rgba(15,23,42,0.25))",
+      }}
+    />
+
+    {/* top-left label */}
+    <div
+      style={{
+        position: "absolute",
+        top: 12,
+        left: 14,
+        padding: "4px 10px",
+        borderRadius: 999,
+        backgroundColor: "rgba(15,23,42,0.85)",
+        border: "1px solid rgba(148,163,184,0.6)",
+        fontSize: 10,
+        letterSpacing: 1,
+        textTransform: "uppercase",
+        color: "#e5e7eb",
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, #22c55e 0%, #16a34a 45%, transparent 70%)",
+          boxShadow: "0 0 8px rgba(34,197,94,0.9)",
+        }}
+      />
+      Live-Auktion
+    </div>
+
+    {/* top-right tag */}
+    {hero.tag && (
       <div
         style={{
-          marginBottom: 18,
-          borderRadius: 10,
-          overflow: "hidden",
-          boxShadow: "0 20px 40px rgba(15,23,42,0.25)",
-          border: "1px solid #e5e7eb",
-          backgroundColor: "#000",
+          position: "absolute",
+          top: 12,
+          right: 14,
+          padding: "4px 10px",
+          borderRadius: 999,
+          backgroundColor: "rgba(15,23,42,0.85)",
+          border: "1px solid rgba(148,163,184,0.7)",
+          fontSize: 11,
+          color: "#e5e7eb",
         }}
       >
-        {/* picture_koeln_hero.jpg as hero */}
-        <div
+        {hero.tag}
+      </div>
+    )}
+
+    {/* bottom text overlay */}
+    <div
+      style={{
+        position: "absolute",
+        left: 16,
+        right: 16,
+        bottom: 16,
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          color: "#cbd5f5",
+        }}
+      >
+        {hero.venue}
+      </div>
+
+      <div
+        style={{
+          fontSize: 20,
+          fontWeight: 700,
+          color: "#f9fafb",
+          lineHeight: 1.25,
+        }}
+      >
+        {hero.eventName}
+      </div>
+
+      {/* seat + time row */}
+      <div
+        style={{
+          marginTop: 6,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+          alignItems: "center",
+        }}
+      >
+        <span
           style={{
-            position: "relative",
-            height: 200,
-            overflow: "hidden",
+            fontSize: 11,
+            padding: "4px 10px",
+            borderRadius: 999,
+            backgroundColor: "rgba(15,23,42,0.85)",
+            border: "1px solid rgba(148,163,184,0.6)",
+            color: "#e5e7eb",
           }}
         >
-          <img
-            src={pictureKoelnHero}
-            alt={hero.eventName}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
+          Block {hero.block} · Reihe {hero.row} · Sitz {hero.seat}
+        </span>
 
-          {/* gradient overlay */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.2))",
-            }}
-          />
+        <span
+          style={{
+            fontSize: 11,
+            marginLeft: "auto",
+            color: "#fed7aa",
+            fontWeight: 600,
+          }}
+        >
+          Endet in {hero.timeLeft}
+        </span>
+      </div>
+    </div>
+  </div>
 
-          {/* hero text */}
-          <div
-            style={{
-              position: "absolute",
-              left: 16,
-              right: 16,
-              bottom: 14,
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 11,
-                color: "#e5e7eb",
-                marginBottom: 2,
-              }}
-            >
-              {hero.venue}
-            </div>
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: "#f9fafb",
-                lineHeight: 1.2,
-              }}
-            >
-              {hero.eventName}
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: "#e5e7eb",
-                marginTop: 4,
-              }}
-            >
-              Block {hero.block} · Reihe {hero.row} · Sitz {hero.seat}
-            </div>
-          </div>
-
-          {/* top-right tag */}
-          {hero.tag && (
-            <div
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                padding: "4px 10px",
-                borderRadius: 999,
-                backgroundColor: "rgba(15,23,42,0.8)",
-                border: "1px solid rgba(148,163,184,0.7)",
-                fontSize: 11,
-                color: "#e5e7eb",
-              }}
-            >
-              {hero.tag}
-            </div>
-          )}
+  {/* BOTTOM PANEL: BIDDING + MINI-HEROS */}
+  <div
+    style={{
+      padding: 14,
+      background:
+        "radial-gradient(circle at top left, #e5f2ff 0, #ffffff 55%, #f9fafb 100%)",
+      borderTop: "1px solid #e5e7eb",
+    }}
+  >
+    {/* MAIN BIDDING AREA */}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        marginBottom: 10,
+        gap: 12,
+      }}
+    >
+      {/* left: how it works */}
+      <div
+        style={{
+          fontSize: 11,
+          color: "#6b7280",
+          lineHeight: 1.4,
+        }}
+      >
+        <div
+          style={{
+            textTransform: "uppercase",
+            letterSpacing: 0.6,
+            fontSize: 10,
+            fontWeight: 600,
+            color: "#9ca3af",
+            marginBottom: 2,
+          }}
+        >
+          Dein Gebot, dein Platz
         </div>
-
-        {/* hero bottom section */}
-        <div
-          style={{
-            padding: 12,
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 8,
-              gap: 10,
-            }}
-          >
-            {/* Current bid */}
-            <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#6b7280",
-                  marginBottom: 2,
-                }}
-              >
-                Aktuelles Gebot
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 6,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: "#0f172a",
-                  }}
-                >
-                  {hero.currentBid.toFixed(0)} €
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "#6b7280",
-                  }}
-                >
-                  + min. 5€
-                </span>
-              </div>
-            </div>
-
-            {/* Time left pill */}
-            <div
-              style={{
-                padding: "4px 12px",
-                borderRadius: 999,
-                backgroundColor: "#fef9c3",
-                border: "1px solid #facc15",
-                fontSize: 11,
-                color: "#854d0e",
-                whiteSpace: "nowrap",
-              }}
-            >
-              ⏱ Endet in {hero.timeLeft}
-            </div>
-          </div>
-
-          {/* input + button (custom bid) */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              marginTop: 4,
-            }}
-          >
-            <input
-              type="number"
-              min="1"
-              value={bidInputs[hero.id] ?? ""}
-              onChange={(e) =>
-                setBidInputs((prev) => ({
-                  ...prev,
-                  [hero.id]: e.target.value,
-                }))
-              }
-              placeholder="Eigenes Gebot (€)"
-              style={{
-                width: "100%",
-                padding: 8,
-                borderRadius: 10,
-                border: "1px solid #e5e7eb",
-                backgroundColor: "#f9fafb",
-                fontSize: 12,
-                color: "#0f172a",
-                textAlign: "center",
-                outline: "none",
-              }}
-            />
-
-            <button
-              type="button"
-              onClick={() => placeCustomBid(hero.id)}
-              style={{
-                width: "100%",
-                padding: 10,
-                borderRadius: 10,
-                border: "none",
-                background: "linear-gradient(135deg, #545554ff, #5d5d5dff)",
-                color: "#f9fafb",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "block",
-                margin: "0 auto",
-              }}
-            >
-              Jetzt bieten!
-            </button>
-          </div>
+        <div>
+          Steige über das aktuelle Gebot und sichere dir den Sitz – in Echtzeit
+          gegen andere Fans.
         </div>
       </div>
 
-      {/* === TWO FEATURED BIG BUBBLES === */}
+      {/* right: big price */}
+      <div
+        style={{
+          textAlign: "right",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            color: "#6b7280",
+            marginBottom: 2,
+          }}
+        >
+          Aktuelles Gebot
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 6,
+            justifyContent: "flex-end",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 30,
+              fontWeight: 800,
+              color: "#0f172a",
+              fontVariantNumeric: "tabular-nums",
+              letterSpacing: 0.3,
+            }}
+          >
+            {hero.currentBid.toFixed(0)} €
+          </span>
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: "#6b7280",
+            marginTop: 2,
+          }}
+        >
+          Mindestschritt: {hero.minIncrement} €
+        </div>
+      </div>
+    </div>
+
+    {/* quick-add chips */}
+    <div
+      style={{
+        display: "flex",
+        gap: 6,
+        flexWrap: "wrap",
+        marginBottom: 8,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          color: "#6b7280",
+          marginRight: 2,
+        }}
+      >
+        Schnell wählen:
+      </span>
+
+      {[1, 2, 3].map((mult) => (
+        <button
+          key={mult}
+          type="button"
+          onClick={() =>
+            setBidInputs((prev) => ({
+              ...prev,
+              [hero.id]: (hero.minIncrement * mult).toString(),
+            }))
+          }
+          style={{
+            fontSize: 11,
+            padding: "4px 10px",
+            borderRadius: 999,
+            border: "1px solid #e5e7eb",
+            backgroundColor: "#ffffff",
+            cursor: "pointer",
+          }}
+        >
+          +{hero.minIncrement * mult} €
+        </button>
+      ))}
+    </div>
+
+    {/* input + main bid button */}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        gap: 8,
+        alignItems: "center",
+      }}
+    >
+      <input
+        type="number"
+        min="1"
+        value={bidInputs[hero.id] ?? ""}
+        onChange={(e) =>
+          setBidInputs((prev) => ({
+            ...prev,
+            [hero.id]: e.target.value,
+          }))
+        }
+        placeholder="Eigenes Gebot (€)"
+        style={{
+          flex: 1,
+          padding: 9,
+          borderRadius: 999,
+          border: "1px solid #e5e7eb",
+          backgroundColor: "#f9fafb",
+          fontSize: 12,
+          color: "#0f172a",
+          textAlign: "center",
+          outline: "none",
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={() => placeCustomBid(hero.id)}
+        style={{
+          padding: "10px 16px",
+          borderRadius: 999,
+          border: "none",
+          background: "linear-gradient(135deg,#0f172a,#111827)",
+          color: "#f9fafb",
+          fontSize: 12,
+          fontWeight: 700,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+          boxShadow: "0 8px 18px rgba(15,23,42,0.35)",
+        }}
+      >
+        Jetzt bieten
+      </button>
+    </div>
+
+    {/* DIVIDER */}
+    <div
+      style={{
+        margin: "14px 0 10px",
+        height: 1,
+        background:
+          "linear-gradient(to right, rgba(148,163,184,0.3), rgba(148,163,184,0))",
+      }}
+    />
+
+{/* MINI-HEROS — APPLE STYLE, CLEAN & TYPOGRAPHIC */}
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  }}
+>
+  {featured.slice(0, 2).map((a) => (
+    <div
+      key={a.id}
+      style={{
+        padding: "14px 16px",
+        borderRadius: 16,
+        backgroundColor: "#ffffff",
+        border: "1px solid #e5e7eb",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+      }}
+    >
+      {/* HEADER: event name */}
+      <div
+        style={{
+          fontSize: 16,
+          fontWeight: 600,
+          color: "#111827",
+          lineHeight: 1.25,
+          letterSpacing: -0.2,
+        }}
+      >
+        {a.eventName}
+      </div>
+
+      {/* SUBTEXT: venue */}
+      <div
+        style={{
+          fontSize: 13,
+          color: "#6b7280",
+        }}
+      >
+        {a.venue}
+      </div>
+
+      {/* SEAT INFO */}
+      <div
+        style={{
+          fontSize: 13,
+          color: "#374151",
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 2,
+        }}
+      >
+        <span>
+          Block {a.block} · Reihe {a.row} · Sitz {a.seat}
+        </span>
+
+        <span
+          style={{
+            fontWeight: 600,
+            color: "#dc2626",
+            fontSize: 12,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {a.timeLeft}
+        </span>
+      </div>
+
+      {/* DIVIDER */}
+      <div
+        style={{
+          height: 1,
+          backgroundColor: "#e5e7eb",
+          margin: "2px 0 6px",
+        }}
+      />
+
+      {/* PRICE & BUTTON ROW */}
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          gap: 10,
-          marginBottom: 18,
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        {featured.map((a) => (
-          <div
-            key={a.id}
+        {/* PRICE BLOCK */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <span
             style={{
-              borderRadius: 10,
-              border: "1px solid #e5e7eb",
-              backgroundColor: "#ffffff",
-              padding: 12,
-              boxShadow: "0 10px 24px rgba(15,23,42,0.06)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#0f172a",
+              lineHeight: 1,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: 8,
-              }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#0f172a",
-                    marginBottom: 2,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {a.eventName}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "#6b7280",
-                    marginBottom: 4,
-                  }}
-                >
-                  {a.venue}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "#4b5563",
-                  }}
-                >
-                  Block {a.block} · Reihe {a.row} · Sitz {a.seat}
-                </div>
-              </div>
+            {a.currentBid.toFixed(0)} €
+          </span>
 
-              {a.tag && (
-                <span
-                  style={{
-                    fontSize: 10,
-                    padding: "3px 8px",
-                    borderRadius: 999,
-                    backgroundColor: "#f9fafb",
-                    border: "1px solid #e5e7eb",
-                    color: "#4b5563",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {a.tag}
-                </span>
-              )}
-            </div>
+          <span
+            style={{
+              fontSize: 12,
+              color: "#6b7280",
+              marginBottom: 2,
+            }}
+          >
+            Aktuelles Gebot
+          </span>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginTop: 4,
-                gap: 10,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 6,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: "#0f172a",
-                  }}
-                >
-                  {a.currentBid.toFixed(0)} €
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "#6b7280",
-                  }}
-                >
-                  + min. {a.minIncrement} €
-                </span>
-              </div>
+        </div>
 
-              <div
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: 999,
-                  backgroundColor: "#f3f4f6",
-                  fontSize: 11,
-                  color: "#4b5563",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                ⏱ {a.timeLeft}
-              </div>
-            </div>
-
-            {/* input + button (custom bid) */}
-            <div
-              style={{
-                marginTop: 4,
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-              }}
-            >
-              <input
-                type="number"
-                min="1"
-                value={bidInputs[a.id] ?? ""}
-                onChange={(e) =>
-                  setBidInputs((prev) => ({
-                    ...prev,
-                    [a.id]: e.target.value,
-                  }))
-                }
-                placeholder="Eigenes Gebot (€)"
-                style={{
-                  width: "100%",
-                  padding: 8,
-                  borderRadius: 999,
-                  border: "1px solid #e5e7eb",
-                  backgroundColor: "#f9fafb",
-                  fontSize: 12,
-                  color: "#0f172a",
-                  textAlign: "center",
-                  outline: "none",
-                }}
-              />
-
-              <button
-                type="button"
-                onClick={() => placeCustomBid(a.id)}
-                style={{
-                  padding: "9px 12px",
-                  borderRadius: 10,
-                  border: "none",
-                  backgroundColor: "#0f172a",
-                  color: "#f9fafb",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                Jetzt bieten!
-              </button>
-            </div>
-          </div>
-        ))}
+        {/* BUTTON */}
+        <button
+          type="button"
+          style={{
+            padding: "8px 14px",
+            borderRadius: 999,
+            border: "1px solid #d1d5db",
+            backgroundColor: "#f9fafb",
+            color: "#111827",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            transition: "all 0.2s",
+          }}
+        >
+          Zur Auktion
+        </button>
       </div>
+    </div>
+  ))}
+</div>
+
+  </div>
+</div>
+
+
+
 
       {/* TRADE REPUBLIC AD – between featured and list */}
       <div
